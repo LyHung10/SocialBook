@@ -1,0 +1,38 @@
+name: Sync with upstream
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/daithien2004/SocialBook.git
+          git fetch upstream
+
+      - name: Merge upstream/master
+        run: |
+          git checkout master
+          git merge upstream/master --no-edit || echo "No changes to merge"
+
+      - name: Push changes
+        run: |
+          git push origin master
