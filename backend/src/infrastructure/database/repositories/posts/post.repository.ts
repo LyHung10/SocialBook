@@ -63,6 +63,7 @@ export class PostRepository implements IPostRepository {
     id: string,
     viewerUserId?: string,
   ): Promise<PostEntity | null> {
+
     const found = await this.model
       .findOne({ _id: id, isDeleted: false })
       .populate(POPULATE_USER)
@@ -85,11 +86,17 @@ export class PostRepository implements IPostRepository {
     if (options.userId) {
       filter.userId = new Types.ObjectId(options.userId);
     }
-    if (options.isFlagged !== undefined) {
-      filter.isFlagged = options.isFlagged;
-    }
     if (options.cursor) {
       filter._id = { $lt: new Types.ObjectId(options.cursor) };
+    }
+
+    if (options.isFlagged !== undefined) {
+      filter.isFlagged = options.isFlagged;
+    } else {
+      if (options.userId && options.viewerUserId === options.userId) {
+      } else {
+        filter.isFlagged = { $ne: true };
+      }
     }
 
     const docs = await this.model
@@ -212,9 +219,9 @@ export class PostRepository implements IPostRepository {
   }
 
   private async enrichPosts(
-    docs: any[],
+    docs: PostDocument[],
     viewerUserId?: string,
-  ): Promise<any[]> {
+  ): Promise<PostDocument[]> {
     if (!docs.length) {
       return docs;
     }
@@ -279,13 +286,16 @@ export class PostRepository implements IPostRepository {
       likedDocs.map((item) => item.targetId.toString()),
     );
 
-    return docs.map((doc) => ({
-      ...doc,
-      likesCount: likeCountMap.get(doc._id.toString()) ?? 0,
-      commentsCount: commentCountMap.get(doc._id.toString()) ?? 0,
-      likedByCurrentUser: viewerUserId
-        ? likedPostIds.has(doc._id.toString())
-        : false,
-    }));
+    return docs.map((doc) => {
+      const docObj = doc instanceof Model ? doc.toObject() : doc;
+      return {
+        ...docObj,
+        likesCount: likeCountMap.get(doc._id.toString()) ?? 0,
+        commentsCount: commentCountMap.get(doc._id.toString()) ?? 0,
+        likedByCurrentUser: viewerUserId
+          ? likedPostIds.has(doc._id.toString())
+          : false,
+      } as unknown as PostDocument;
+    });
   }
 }
