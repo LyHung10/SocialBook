@@ -1,6 +1,7 @@
 import { BaseQueryFn } from '@reduxjs/toolkit/query';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { getSession, signOut } from 'next-auth/react';
+import { getAccessToken } from './token-store';
 import { toast } from 'sonner';
 import { ErrorResponseDto } from '../types/response';
 
@@ -31,18 +32,13 @@ export const axiosBaseQuery =
     unknown,
     { status: number; data: ErrorResponseDto }
   > =>
-    async ({ url, method = 'GET', body, headers, params }, { getState }) => {
+    async ({ url, method = 'GET', body, headers, params }) => {
       const requestHeaders: Record<string, string> = {
         ...(headers as Record<string, string>),
       };
 
       try {
-        const state = getState() as { auth?: { accessToken?: string | null } };
-        let accessToken: string | null | undefined = state?.auth?.accessToken;
-        if (!accessToken) {
-          const session = await getSession();
-          accessToken = (session as { accessToken?: string } | null)?.accessToken;
-        }
+        const accessToken = getAccessToken();
 
         if (accessToken) {
           requestHeaders.Authorization = `Bearer ${accessToken}`;

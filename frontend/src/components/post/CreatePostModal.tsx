@@ -108,31 +108,33 @@ export default function CreatePostModal() {
             <div className="p-6 pb-2">
               <ScrollArea className="max-h-[60vh]">
                 <div className="space-y-4">
-                                    <FormField
-                    control={form.control}
-                    name="bookId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-semibold text-slate-700 dark:text-gray-300">
-                          Sách liên quan
-                        </FormLabel>
-                        <FormControl>
-                          <BookSelector
-                            value={field.value}
-                            onChange={(bookId, book) => {
-                              field.onChange(bookId);
-                              if (book) {
-                                form.setValue('bookTitle', book.title);
-                              }
-                            }}
-                            placeholder="Chọn sách cho bài viết..."
-                            onlyLibrary
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {!defaultBookId && (
+                    <FormField
+                      control={form.control}
+                      name="bookId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold text-slate-700 dark:text-gray-300">
+                            Sách liên quan
+                          </FormLabel>
+                          <FormControl>
+                            <BookSelector
+                              value={field.value}
+                              onChange={(bookId, book) => {
+                                field.onChange(bookId);
+                                if (book) {
+                                  form.setValue('bookTitle', book.title);
+                                }
+                              }}
+                              placeholder="Chọn sách cho bài viết..."
+                              onlyLibrary
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
