@@ -12,6 +12,8 @@ import { SearchBar } from '@/components/book/SearchBar';
 import { FilterSection } from '@/components/book/FilterSection';
 import { SortDropdown } from '@/components/book/SortDropdown';
 import { ActiveFilters } from '@/components/book/ActiveFilters';
+import { useTracking, UserEventType } from '@/hooks/use-tracking';
+import { useEffect } from 'react';
 
 export default function BooksPage() {
   const {
@@ -46,6 +48,17 @@ export default function BooksPage() {
     sortBy,
     order,
   });
+
+  const { trackEvent } = useTracking();
+
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim().length >= 2) {
+      trackEvent({
+        eventType: UserEventType.SEARCH,
+        metadata: { keyword: searchQuery }
+      });
+    }
+  }, [searchQuery, trackEvent]);
 
   return (
     <div className="min-h-screen bg-background text-foreground relative transition-colors duration-300">
