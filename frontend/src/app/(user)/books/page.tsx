@@ -48,7 +48,7 @@ export default function BooksPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#161515] text-gray-900 dark:text-gray-100 relative transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground relative transition-colors duration-300">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/main-background.jpg"
@@ -157,7 +157,7 @@ export default function BooksPage() {
           )}
 
           {!hasMore && books.length > 0 && (
-            <div className="flex justify-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="flex justify-center py-8 text-muted-foreground">
               <p>Đã hiển thị tất cả sách</p>
             </div>
           )}
