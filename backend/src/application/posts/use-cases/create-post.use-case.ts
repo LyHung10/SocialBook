@@ -54,6 +54,7 @@ export class CreatePostUseCase {
     // Save
     const createdPost = await this.postRepository.create(post);
 
+
     this.eventEmitter.emit('post.created', {
       postId: createdPost.id,
       userId: command.userId,
