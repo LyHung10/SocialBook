@@ -1,13 +1,11 @@
 'use client';
 import { useCallback } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
-import { useAppAuth } from '@/features/auth/hooks';
 import { useSocket } from '@/context/SocketProvider';
 import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
 import type { RoomComment } from '../types/room-interaction.types';
 
-export const useRoomAnnotations = (roomId?: string) => {
-  const { user } = useAppAuth();
+export const useRoomAnnotations = () => {
   const { getSocket } = useSocket();
   const socket = getSocket('/reading-rooms');
 

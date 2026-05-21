@@ -1,13 +1,3 @@
-export interface AuthResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    image?: string;
-  };
-}
-
 export interface ResponseDto<T> {
   success: boolean;
   statusCode: number;

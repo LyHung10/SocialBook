@@ -3,7 +3,7 @@ import {
   useUpdateReadingProgressMutation,
   useGetChapterProgressQuery,
 } from '@/features/library/api/libraryApi';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
 
 export function useReadingProgress(
   bookId: string,

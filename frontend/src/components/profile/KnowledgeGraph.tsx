@@ -8,10 +8,19 @@ import { Loader2, ZoomIn, ZoomOut, Maximize2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { ComponentType } from 'react';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
   ssr: false,
-}) as any;
+}) as ComponentType<any>;
+
+interface GraphRef {
+  zoomToFit(durationMs?: number, padding?: number): void;
+  centerAt(x?: number, y?: number, durationMs?: number): void;
+  zoom(): number;
+  zoom(scale: number, durationMs?: number): void;
+  refresh(): void;
+}
 
 interface KnowledgeGraphProps {
   data: KnowledgeGraphData;
@@ -20,7 +29,7 @@ interface KnowledgeGraphProps {
 
 export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
   const { theme } = useTheme();
-  const fgRef = useRef<any>();
+  const fgRef = useRef<GraphRef>(null);
   const imgCache = useRef<Record<string, HTMLImageElement>>({});
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [showGaps, setShowGaps] = useState(true);
@@ -105,8 +114,14 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
     setSelectedNode(null);
   }, []);
 
-  const zoomIn = () => fgRef.current?.zoom(fgRef.current.zoom() * 1.2, 400);
-  const zoomOut = () => fgRef.current?.zoom(fgRef.current.zoom() * 0.8, 400);
+  const zoomIn = () => {
+    const ref = fgRef.current;
+    if (ref) ref.zoom(ref.zoom() * 1.2, 400);
+  };
+  const zoomOut = () => {
+    const ref = fgRef.current;
+    if (ref) ref.zoom(ref.zoom() * 0.8, 400);
+  };
   const resetZoom = () => {
     fgRef.current?.zoomToFit(400, 100);
     setSelectedNode(null);

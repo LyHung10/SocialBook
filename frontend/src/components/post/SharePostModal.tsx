@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { Facebook, Mail, Twitter, X, Link2, Check } from 'lucide-react';
 import {
   EmailShareButton,
@@ -53,7 +54,7 @@ export default function SharePostModal() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      toast.error('Không thể sao chép liên kết');
     }
   };
 

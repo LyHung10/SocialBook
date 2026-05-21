@@ -31,7 +31,7 @@ export default function ReadingRoomsHub() {
       }).unwrap();
       toast.success('Tạo phòng thành công!');
       router.push(`/reading-rooms/${res.roomId}`);
-    } catch (e: any) {
+    } catch (e) {
       toast.error('Không thể tạo phòng đọc');
     }
   };

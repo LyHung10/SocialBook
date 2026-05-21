@@ -43,6 +43,8 @@ export interface UpdateUserOverviewRequest {
 
 export interface SearchUsersParams {
     keyword: string;
+    current?: number;
+    pageSize?: number;
 }
 
 export interface SearchUserItem {

@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface ChatMessage {
@@ -82,8 +83,8 @@ export function useChatWidget({ askChatbot }: UseChatWidgetOptions): UseChatWidg
                 content: formatAIResponse(data.answer),
             };
             setMessages((prev) => [...prev, aiMsg]);
-        } catch (error) {
-            console.error('Chat error:', error);
+        } catch {
+            toast.error('Không thể kết nối đến trợ lý. Vui lòng thử lại.');
             const errorMsg: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: 'ai',

@@ -17,6 +17,7 @@ import {
 import { Chapter, Paragraph } from '@/features/chapters/types/chapter.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
 export function useChapterManagement() {
   const params = useParams();
@@ -277,8 +278,8 @@ export function useChapterManagement() {
       setShowNewChapterForm(false);
       setNewChapterTitle('');
       setNewChapterParagraphs([{ id: uuidv4(), content: '' }]);
-    } catch (error: any) {
-      toast.error(`Tạo thất bại: ${error?.data?.message || 'Lỗi không xác định'}`);
+    } catch (error) {
+      toast.error(`Tạo thất bại: ${getErrorMessage(error)}`);
     }
   };
 
@@ -289,8 +290,8 @@ export function useChapterManagement() {
       setChapters(prev => prev.map(ch =>
         ch.id === chapterId ? { ...ch, ttsStatus: 'completed' as const, audioUrl: ttsResult.audioUrl } : ch
       ));
-    } catch (error: any) {
-      toast.error(`Tạo audio thất bại: ${error?.data?.message || 'Lỗi không xác định'}`);
+    } catch (error) {
+      toast.error(`Tạo audio thất bại: ${getErrorMessage(error)}`);
     }
   };
 
@@ -301,8 +302,8 @@ export function useChapterManagement() {
       const result = await generateBookAudio({ bookId }).unwrap();
       alert(`Hoàn thành!\nThành công: ${result.successful}/${result.total}\nThất bại: ${result.failed}`);
       refetchChapters();
-    } catch (error: any) {
-      alert(`Lỗi: ${error?.data?.message || 'Lỗi không xác định'}`);
+    } catch (error) {
+      alert(`Lỗi: ${getErrorMessage(error)}`);
     }
   };
 
@@ -347,8 +348,8 @@ export function useChapterManagement() {
 
         await new Promise((r) => setTimeout(r, POLL_MS));
       }
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Lỗi', { id: toastId });
+    } catch (error) {
+      toast.error(getErrorMessage(error), { id: toastId });
     }
   };
 

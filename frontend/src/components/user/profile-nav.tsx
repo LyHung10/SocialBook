@@ -57,7 +57,7 @@ export function ProfileNav({ profileUserId, initialFollowState }: ProfileNavProp
                 );
             }
         } catch (e) {
-            console.log(e);
+            // Silently fail — follow state remains unchanged
         }
     };
 

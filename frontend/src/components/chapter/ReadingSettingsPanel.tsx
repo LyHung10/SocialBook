@@ -1,6 +1,7 @@
 'use client';
 // Cá nhân hóa trải nghiệm đọc
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -30,6 +31,7 @@ import {
 } from '@/features/users/api/usersApi';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useReadingSettings } from '@/store/useReadingSettings';
+import { ReadingPreferences } from '@/types/reading-preferences.interface';
 import { AlertTriangle, Layout, Palette, RotateCcw, Type } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -88,7 +90,7 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
             await new Promise(resolve => setTimeout(resolve, 300));
             setShowResetDialog(false);
         } catch (error) {
-            console.error('Reset failed:', error);
+            toast.error('Đặt lại thất bại');
         } finally {
             setIsResetting(false);
         }
@@ -116,7 +118,7 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                         key={preset.theme}
                                         onClick={() => {
                                             updateSettings({
-                                                theme: preset.theme as any,
+                                                theme: preset.theme as ReadingPreferences['theme'],
                                                 backgroundColor: preset.bgColor,
                                                 textColor: preset.textColor,
                                             });
@@ -224,11 +226,11 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                         {/* Text Alignment */}
                         <Section icon={<Layout size={18} />} title="Căn chỉnh văn bản">
                             <div className="flex gap-2 bg-card p-1 rounded-xl border border-border">
-                                {['left', 'center', 'justify'].map((align) => (
+                                {(['left', 'center', 'justify'] as const).map((align) => (
                                     <Button
                                         key={align}
                                         variant={settings.textAlign === align ? 'default' : 'ghost'}
-                                        onClick={() => updateSettings({ textAlign: align as any })}
+                                        onClick={() => updateSettings({ textAlign: align })}
                                         className="flex-1 px-0 h-9"
                                     >
                                         <div className="flex flex-col gap-1 items-center justify-center py-1 w-full scale-75">

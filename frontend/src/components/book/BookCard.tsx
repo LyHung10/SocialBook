@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Book } from '@/features/books/types/book.interface';
-import { cn, formatCompact } from '@/lib/utils';
+import { formatCompact } from '@/lib/utils';
 import { useModalStore } from '@/store/useModalStore';
 
 interface BookCardProps {

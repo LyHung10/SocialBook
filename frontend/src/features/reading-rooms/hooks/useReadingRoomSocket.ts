@@ -132,15 +132,15 @@ export const useReadingRoomSocket = (roomId?: string) => {
       toast.error(error.message || 'Lỗi kết nối phòng đọc');
     });
 
-    socket.on('new_highlight', (data) => {
+    socket.on(ReadingRoomServerEvent.NEW_HIGHLIGHT, (data) => {
       useReadingRoomStore.getState().addHighlight(data);
     });
 
-    socket.on('update_highlight_insight', (data) => {
+    socket.on(ReadingRoomServerEvent.UPDATE_HIGHLIGHT_INSIGHT, (data) => {
       useReadingRoomStore.getState().updateHighlightInsight(data.highlightId, data.insight);
     });
 
-    socket.on('new_chat_message', (message) => {
+    socket.on(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, (message) => {
       useReadingRoomStore.getState().addChatMessage(message);
     });
 
@@ -157,7 +157,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
 
     socket.on(ReadingRoomServerEvent.REACTION_ADDED, (data) => {
       const store = useReadingRoomStore;
-      store.getState().updateReaction(data.paragraphId, data.reactionType, data.userId, data.displayName, true);
+      store.getState().updateReaction(data.paragraphId, data.reactionType, data.userId, true);
     });
 
     socket.on(ReadingRoomServerEvent.QUOTE_ADDED, (data) => {
@@ -194,8 +194,8 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.HOST_CHANGED);
       socket.off(ReadingRoomServerEvent.CHAPTER_CHANGED);
       socket.off(ReadingRoomServerEvent.MODE_CHANGED);
-    socket.off(ReadingRoomServerEvent.ROOM_ENDED);
-    socket.off(ReadingRoomServerEvent.ROOM_DELETED);
+      socket.off(ReadingRoomServerEvent.ROOM_ENDED);
+      socket.off(ReadingRoomServerEvent.ROOM_DELETED);
       socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
       socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
       socket.off(ReadingRoomServerEvent.NEW_HIGHLIGHT);
@@ -309,7 +309,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
   const notifyCommented = useCallback((paragraphId: string, chapterId: string, commentId: string) => {
     const store = useReadingRoomStore.getState();
     if (socket?.connected && store.room) {
-      socket.emit('paragraph_commented', { 
+      socket.emit(ReadingRoomClientEvent.PARAGRAPH_COMMENTED, { 
         roomId: store.room.roomId,
         paragraphId,
         chapterId,
@@ -330,7 +330,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
           // Only emit join_room if not already in this room to prevent redundant join events on remount
           const currentStoreRoomId = useReadingRoomStore.getState().room?.roomId;
           if (s.connected && user && currentStoreRoomId !== roomId) {
-            s.emit('join_room', {
+            s.emit(ReadingRoomClientEvent.JOIN_ROOM, {
               roomCode: roomId,
               displayName: user.name || user.username || user.email?.split('@')[0] || 'Người dùng',
               avatarUrl: user.image || '',

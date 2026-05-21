@@ -45,8 +45,7 @@ export function usePostComments({ postId, createComment }: UsePostCommentsOption
             setCommentText('');
             toast.success('Bình luận đã được gửi!');
             setTimeout(() => commentInputRef.current?.focus(), 0);
-        } catch (e: any) {
-            console.error('Create comment failed:', e);
+        } catch (e) {
             toast.error(getErrorMessage(e));
         } finally {
             setIsSubmitting(false);

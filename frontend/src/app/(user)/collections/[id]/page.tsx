@@ -21,6 +21,7 @@ import {
 } from '@/features/library/api/libraryApi';
 import { LibraryItem } from '@/features/library/types/library.interface';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 import { useModalStore } from '@/store/useModalStore';
 
 export default function CollectionDetailPage() {
@@ -73,8 +74,7 @@ export default function CollectionDetailPage() {
       }).unwrap();
       toast.success('Đã gỡ sách khỏi bộ sưu tập');
     } catch (error) {
-      console.error('Failed to remove book', error);
-      toast.error('Không thể gỡ sách khỏi danh sách');
+      toast.error(getErrorMessage(error));
     }
   };
 

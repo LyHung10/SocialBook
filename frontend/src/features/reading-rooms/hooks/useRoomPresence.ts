@@ -1,15 +1,12 @@
 import { useEffect } from 'react';
-import { useReadingRoomSocket } from './useReadingRoomSocket';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 
 export const useRoomPresence = (
   chapterSlug: string,
+  sendHeartbeat: (slug: string, paraId?: string, progress?: number) => void,
   activeParagraphId?: string | null,
-  sendHeartbeat?: (slug: string, paraId?: string, progress?: number) => void,
   readingProgress?: number,
 ) => {
-  const { sendHeartbeat: hookHeartbeat } = useReadingRoomSocket();
-  const actualSendHeartbeat = sendHeartbeat || hookHeartbeat;
   const room = useReadingRoomStore((state) => state.room);
 
   // Send heartbeat every 10 seconds. Redis presence TTL is 30s, so this
@@ -18,12 +15,12 @@ export const useRoomPresence = (
     if (!room) return;
 
     const interval = setInterval(() => {
-      actualSendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
+      sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
     }, 10_000);
 
     // Send immediate heartbeat on change
-    actualSendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
+    sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
 
     return () => clearInterval(interval);
-  }, [room?.roomId, chapterSlug, activeParagraphId, actualSendHeartbeat, readingProgress]);
+  }, [room?.roomId, chapterSlug, activeParagraphId, sendHeartbeat, readingProgress]);
 };

@@ -1,4 +1,5 @@
-import { User } from '../../auth/slice/authSlice';
+import { User } from "@/features/users/types/user.types";
+
 
 export interface GetCommentsRequest {
     targetId: string;
@@ -75,7 +76,7 @@ export interface EditCommentRequest {
 }
 
 export interface EditCommentResponse {
-    data: any;
+    data: Record<string, unknown>;
 }
 
 export interface DeleteCommentRequest {

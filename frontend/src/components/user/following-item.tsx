@@ -6,6 +6,7 @@ import {
     useToggleFollowMutation,
     useUnfollowMutation,
 } from "@/features/follows/api/followApi";
+import { toast } from "sonner";
 import { UserCheck, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -42,8 +43,8 @@ const FollowingItem = (props: FollowingUser) => {
                 await toggleFollow(props.targetId).unwrap();
             }
             setIsFollowing((prev) => !prev);
-        } catch (e: any) {
-            console.log("Toggle follow failed:", e);
+        } catch (e) {
+            toast.error("Không thể thay đổi trạng thái theo dõi");
         }
     };
 

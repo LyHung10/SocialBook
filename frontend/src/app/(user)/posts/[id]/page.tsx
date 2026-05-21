@@ -23,7 +23,6 @@ export default function PostModalOverlay() {
                     try {
                         await toggleLike({ targetId: postId, targetType: 'post' }).unwrap();
                     } catch (error) {
-                        console.error('Failed to like post:', error);
                     }
                 },
                 likeStatus: post.likedByCurrentUser,

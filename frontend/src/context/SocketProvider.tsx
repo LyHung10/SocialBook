@@ -60,7 +60,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const token = getAccessToken();
 
     if (!token) {
-      console.warn(`[SocketProvider] No token found for namespace ${namespace}`);
       return null;
     }
 

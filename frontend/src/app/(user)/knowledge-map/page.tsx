@@ -1,11 +1,8 @@
 'use client';
 
-import React from 'react';
 import { KnowledgeGraph } from '@/components/profile/KnowledgeGraph';
 import { useGetKnowledgeGraphQuery } from '@/features/library/api/libraryApi';
 import { motion } from 'framer-motion';
-import { Brain, Sparkles, Compass } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 
 export default function KnowledgeMapPage() {
   const { data, isLoading, error } = useGetKnowledgeGraphQuery();
@@ -67,16 +64,4 @@ export default function KnowledgeMapPage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <Card className="p-6 bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800 hover:border-primary/30 transition-all duration-300 rounded-3xl">
-      <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center text-primary mb-4">
-        {icon}
-      </div>
-      <h3 className="text-lg font-bold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        {description}
-      </p>
-    </Card>
-  );
-}
+

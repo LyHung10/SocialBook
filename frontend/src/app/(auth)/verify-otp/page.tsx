@@ -77,7 +77,7 @@ export default function VerifyOtpPage() {
       await verifyOtp({ email, otp: otpCode }).unwrap();
       setSuccess(true);
       setTimeout(() => router.push('/login'), 2000);
-    } catch (err: any) {
+    } catch (err) {
       setErrorMsg(getErrorMessage(err));
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
@@ -91,7 +91,7 @@ export default function VerifyOtpPage() {
       const result = await resendOtp({ email }).unwrap();
       setResendMsg('Đã gửi lại mã OTP mới!');
       setCountdown(result.data?.resendCooldown || 60);
-    } catch (err: any) {
+    } catch (err) {
       setErrorMsg(getErrorMessage(err));
     }
   };

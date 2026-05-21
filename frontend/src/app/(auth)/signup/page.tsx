@@ -10,6 +10,7 @@ import {
   SignupFormValues,
   signupSchema,
 } from '@/features/auth/types/auth.type';
+import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -50,8 +51,8 @@ export default function SignupPage() {
     try {
       await signup(data).unwrap();
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
-    } catch (err: any) {
-      console.error('Signup failed:', err);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     }
   };
 

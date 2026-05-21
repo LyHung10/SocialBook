@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';

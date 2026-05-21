@@ -69,7 +69,7 @@ interface ReadingRoomState {
   setRoomComments: (comments: RoomComment[]) => void;
   addRoomComment: (comment: RoomComment) => void;
   removeRoomComment: (commentId: string, paragraphId: string) => void;
-  updateReaction: (paragraphId: string, type: ReactionType, userId: string, displayName: string, add: boolean) => void;
+  updateReaction: (paragraphId: string, type: ReactionType, userId: string, add: boolean) => void;
   updateMemberProgress: (userId: string, progress: number) => void;
   setParagraphActivity: (activities: ParagraphReactionSummary[]) => void;
   setQuotes: (quotes: RoomQuote[]) => void;
@@ -180,7 +180,7 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
       },
     };
   }),
-  updateReaction: (paragraphId, type, userId, displayName, add) => set((state) => {
+  updateReaction: (paragraphId, type, userId, add) => set((state) => {
     const paraReactions = state.reactions[paragraphId] || {} as Record<ReactionType, string[]>;
     const typeUsers = paraReactions[type] || [];
     const newTypeUsers = add
@@ -202,8 +202,8 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
       ? { ...state.presences, [userId]: { ...state.presences[userId], progress } }
       : state.presences,
   })),
-  setParagraphActivity: (activities) => set((state) => {
-    const paraActivities: Record<string, any> = {};
+  setParagraphActivity: (activities: ParagraphReactionSummary[]) => set((state) => {
+    const paraActivities: Record<string, { commentCount: number; reactions: Record<string, number>; totalInteractions: number }> = {};
     activities.forEach(a => {
       paraActivities[a.paragraphId] = {
         commentCount: 0,

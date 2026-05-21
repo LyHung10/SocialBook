@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketProvider';
 
 export interface NotificationItem {
@@ -52,7 +53,6 @@ export function useNotificationSocket(
             if (!s) return;
 
             s.on('connect', () => {
-                console.log('--- [Socket] Notifications connected! ---');
                 s.emit('notification:list', (data: NotificationItem[]) => {
                     onNotificationList(data);
                 });
@@ -67,7 +67,7 @@ export function useNotificationSocket(
             });
 
             s.on('connect_error', (err) => {
-                console.error('--- [Socket] Notifications connect error: ---', err.message);
+                toast.error('Kết nối thông báo thất bại');
             });
 
             // Nếu đã connected rồi (multiplexing), chủ động lấy list
@@ -91,9 +91,7 @@ export function useNotificationSocket(
     const markAsRead = useCallback((id: string) => {
         if (!socket?.connected) return;
 
-        socket.emit('notification:markRead', { id }, (res: any) => {
-            console.log('Mark read response:', res);
-        });
+        socket.emit('notification:markRead', { id });
     }, [socket]);
 
     const refetch = useCallback(() => {
@@ -107,9 +105,7 @@ export function useNotificationSocket(
     const createNotification = useCallback((dto: NotificationItem) => {
         if (!socket?.connected) return;
 
-        socket.emit('createNotification', dto, (res: any) => {
-            console.log('Notification created:', res);
-        });
+        socket.emit('createNotification', dto);
     }, [socket]);
 
     return {

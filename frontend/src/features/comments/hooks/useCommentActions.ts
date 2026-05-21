@@ -158,7 +158,6 @@ export function useCommentActions({
                 setOptimisticReplyCount((prev) => prev + 1);
             }
         } catch (error: unknown) {
-            console.log('Create reply failed:', error);
             toast.error(getErrorMessage(error));
         }
     }, [replyText, targetType, targetId, comment.id, hasReplyCount, createComment]);
@@ -180,7 +179,6 @@ export function useCommentActions({
             setOptimisticIsLiked(comment.isLiked ?? false);
             setOptimisticLikeCount(comment.likesCount ?? 0);
 
-            console.error('Like comment failed:', error);
         }
     }, [optimisticIsLiked, comment.id, comment.isLiked, comment.likesCount, postToggleLike]);
 

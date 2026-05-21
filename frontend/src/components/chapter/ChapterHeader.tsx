@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Eye, BookOpen, Clock } from 'lucide-react';
+import { Eye, BookOpen } from 'lucide-react';
 
 interface ChapterHeaderProps {
   bookTitle: string;

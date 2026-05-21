@@ -403,10 +403,10 @@ export const KnowledgeGraph = ({ entities, relationships, isOpen = true }: Knowl
       </AnimatePresence>
 
       <div className="absolute top-4 right-4 flex flex-col gap-1">
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => d3.select(svgRef.current).transition().call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 1.2)}>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const t = d3.select(svgRef.current).transition(); d3.zoom<SVGSVGElement, unknown>().scaleBy(t as any, 1.2); }}>
           <ZoomIn className="w-4 h-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => d3.select(svgRef.current).transition().call(d3.zoom<SVGSVGElement, unknown>().scaleBy as any, 0.8)}>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const t = d3.select(svgRef.current).transition(); d3.zoom<SVGSVGElement, unknown>().scaleBy(t as any, 0.8); }}>
           <ZoomOut className="w-4 h-4" />
         </Button>
       </div>

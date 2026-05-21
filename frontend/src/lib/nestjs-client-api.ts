@@ -105,7 +105,7 @@ export const axiosBaseQuery =
           } else {
             // Refresh token không thành công (vd: refresh token cũng hết hạn)
             await signOut({ redirect: false });
-            window.location.href = '/login?error=SessionExpired';
+            typeof window !== 'undefined' && (window.location.href = '/login?error=SessionExpired');
             toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
           }
         }

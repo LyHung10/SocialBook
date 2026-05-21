@@ -33,8 +33,9 @@ export default function CreateCollectionModal() {
       setName('');
       createCollectionData?.onSuccess?.();
       closeCreateCollection();
-    } catch (error: any) {
-      if (error?.status !== 401) {
+    } catch (error) {
+      const apiError = error as { status?: number } | null;
+      if (apiError?.status !== 401) {
         toast.error('Không thể tạo bộ sưu tập. Vui lòng thử lại.');
       }
     }

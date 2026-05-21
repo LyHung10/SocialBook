@@ -61,7 +61,6 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const room = storeRoom || initialRoom;
   const isHost = room?.hostId === user?.id;
   const presences = useReadingRoomStore(state => state.presences);
-  const members = useReadingRoomStore(state => state.members);
 
   const currentChapterSlug = room?.mode === 'sync' 
     ? room?.currentChapterSlug || ''
@@ -85,7 +84,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     }
   }, [quotesData]);
 
-  useRoomPresence(currentChapterSlug || 'unknown', null, sendHeartbeat, readingProgress);
+  useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, null, readingProgress);
 
   if (isLoadingRoom) {
     return (

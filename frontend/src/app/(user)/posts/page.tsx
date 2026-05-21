@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import {useState} from 'react';
+import {useCallback} from 'react';
 import PostList from '@/components/post/PostList';
 import { useAppAuth } from '@/features/auth/hooks';
 import {BookOpen, Users, Library, Quote, ImageIcon, PenSquare} from 'lucide-react';
@@ -35,9 +35,15 @@ export default function Post() {
     const { openCreatePost } = useModalStore();
     const {user} = useAppAuth();
     const currentUserId = user?.id;
-    const route = useRouter();
+    const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
     const currentUserImage = user?.image || '/abstract-book-pattern.png';
+
+    const goToFollowing = useCallback(() => {
+        if (currentUserId) {
+            router.push(`users/${currentUserId}/following`);
+        }
+    }, [router, currentUserId]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">
@@ -53,9 +59,7 @@ export default function Post() {
 
                         {/* USER BOX */}
                         <div
-                            onClick={() => {
-                                route.push(`users/${currentUserId}/following`)
-                            }}
+                            onClick={goToFollowing}
                             className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-border p-4 cursor-pointer">
 
                             <div className="flex items-center gap-3 mb-3">
@@ -97,7 +101,7 @@ export default function Post() {
                                 <button
                                     className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
                                     <BookOpen size={16}/>
-                                    <span onClick={() => route.push(`/`)}
+                                    <span onClick={() => router.push(`/`)}
                                     >Trang chủ</span>
                                 </button>
 
@@ -106,7 +110,7 @@ export default function Post() {
                                         <button
                                             className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
                                             <Users size={16}/>
-                                            <span onClick={() => route.push(`users/${currentUserId}/following`)}>Bạn bè & theo dõi</span>
+                                            <span onClick={goToFollowing}>Bạn bè & theo dõi</span>
                                         </button>
                                     )
                                 }
@@ -115,7 +119,7 @@ export default function Post() {
                                     className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
                                     <Library size={16}/>
                                     <span
-                                        onClick={() => route.push(`/library`)}
+                                        onClick={() => router.push(`/library`)}
                                     >Thư viện cá nhân</span>
                                 </button>
                             </nav>
@@ -139,7 +143,7 @@ export default function Post() {
                                 width={36}
                                 height={36}
                                 onClick={() => {
-                                    route.push(`users/${currentUserId}/following`)
+                                    router.push(`/users/${currentUserId}`)
                                 }}
                                 className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700"
                             />

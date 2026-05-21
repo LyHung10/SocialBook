@@ -35,7 +35,6 @@ export default function ChapterSummaryModal() {
             await summarize({ chapterId, userId: user?.id }).unwrap();
             setHasFetched(true);
         } catch (err) {
-            console.error('Summarize failed', err);
             toast.error('Không thể tạo tóm tắt. Vui lòng thử lại.');
         }
     };

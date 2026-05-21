@@ -4,23 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
-import { useReadingRoomStore } from '@/store/useReadingRoomStore';
+import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
 import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
 import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
-import { Highlighter, Sparkles, User, MessageCircle, QuoteIcon } from 'lucide-react';
+import { Highlighter, Sparkles, User, QuoteIcon } from 'lucide-react';
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
-import { useAppAuth } from '@/features/auth/hooks';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
 import { useState, useRef, useEffect } from 'react';
 import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
 import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
-import { Sparkles as SparklesIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
-import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Paragraph {
     id: string;
@@ -51,7 +49,6 @@ export function ChapterContent({
         activeParagraph,
         handleToggleComments,
         handleCloseDrawer,
-        handleOpenPostModal,
     } = useChapterComments({ bookId, bookTitle });
 
     const { data } = useGetChapterKnowledgeQuery(
@@ -63,7 +60,6 @@ export function ChapterContent({
     const room = useReadingRoomStore((state) => state.room);
     const highlights = useReadingRoomStore((state) => state.highlights);
     const { addHighlight, addQuote } = useReadingRoomSocket();
-    const { user } = useAppAuth();
 
     const [openCommentParaId, setOpenCommentParaId] = useState<string | null>(null);
 
@@ -174,7 +170,7 @@ export function ChapterContent({
                 question: prompts[type]
             }).unwrap();
 
-            const answer = (response as any).data?.answer || response.answer;
+            const answer = response.answer;
             setAiAnalysis({ type, content: answer, isLoading: false });
         } catch (err) {
             toast.error('AI không thể xử lý lúc này.');
@@ -229,15 +225,15 @@ export function ChapterContent({
                             >
                                 <p
                                     className={`transition-colors duration-300 w-full relative ${activeParagraphId === para.id
-                                            ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
-                                            : ''
+                                        ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
+                                        : ''
                                         }`}
                                     style={{
                                         fontSize: `${settings.fontSize}px`,
                                         fontFamily: settings.fontFamily,
                                         lineHeight: settings.lineHeight,
                                         letterSpacing: `${settings.letterSpacing}px`,
-                                        textAlign: settings.textAlign as any,
+                                        textAlign: settings.textAlign,
                                     }}
                                 >
                                     <ChapterTextRenderer
@@ -293,7 +289,7 @@ export function ChapterContent({
                                             className="h-9 w-9 rounded-full p-0 hover:bg-primary/10 hover:text-primary"
                                             onClick={() => handleAIAction('explain')}
                                         >
-                                            <SparklesIcon className="w-4 h-4" />
+                                            <Sparkles className="w-4 h-4" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
@@ -334,7 +330,7 @@ export function ChapterContent({
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                                                    <SparklesIcon className="w-3.5 h-3.5 text-primary" />
+                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">
                                                     AI {aiAnalysis.type === 'explain' ? 'Giải thích' : aiAnalysis.type === 'summarize' ? 'Tóm tắt' : aiAnalysis.type === 'character' ? 'Nhân vật' : 'Dịch thuật'}
@@ -377,6 +373,7 @@ export function ChapterContent({
                 onClose={handleCloseDrawer}
                 paragraphId={activeParagraph?.id || null}
                 paragraphContent={activeParagraph?.content}
+                chapterId={chapterId}
             />
         </TooltipProvider>
     );
@@ -388,7 +385,7 @@ const ChapterTextRenderer = ({
     knowledge
 }: {
     content: string,
-    highlights: any[],
+    highlights: RoomHighlight[],
     knowledge: KnowledgeEntity[]
 }) => {
     // 1. Process Knowledge (Dotted Underline)

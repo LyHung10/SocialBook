@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Loader2, Upload, Check, X, Eye } from 'lucide-react';
 import { useImportChaptersPreviewMutation } from '@/features/chapters/api/chaptersApi';
+import { ChapterPreview } from '@/features/chapters/types/chapter.interface';
 import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -66,15 +67,7 @@ export function FileImportModal({
         formData.append('file', file);
 
         try {
-            const response = await importPreview({ bookSlug, formData }).unwrap();
-            console.log('FileImportModal response:', response);
-
-            // Backend returns { chapters: [...], totalChapters: N }
-            const chaptersArray: { title: string; content: string }[] =
-                Array.isArray(response)
-                    ? response
-                    : (response as { chapters?: { title: string; content: string }[] } | null)?.chapters ?? [];
-
+            const chaptersArray: ChapterPreview[] = await importPreview({ bookSlug, formData }).unwrap();
 
             if (chaptersArray.length === 0) {
                 throw new Error('Không tìm thấy chương nào trong file. Vui lòng thử file khác.');
@@ -91,7 +84,6 @@ export function FileImportModal({
                 errorObj?.data?.message ||
                 errorObj?.message ||
                 'Không thể đọc file. Vui lòng kiểm tra định dạng file (EPUB/MOBI).';
-            console.error('Error parsing file:', error);
             toast.error(message);
         }
     };
@@ -118,7 +110,7 @@ export function FileImportModal({
             .map(({ title, content }) => ({ title, content }));
 
         if (selectedChapters.length === 0) {
-            alert('Vui lòng chọn ít nhất một chương để nhập.');
+            toast.error('Vui lòng chọn ít nhất một chương để nhập.');
             return;
         }
 

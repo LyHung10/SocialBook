@@ -2,7 +2,7 @@ import { BookTagType, BOOK_TAGS } from "./api/bookApi";
 import { BookForAdmin, LikeResult } from "./types/book.interface";
 
 
-export function buildListTags<T extends Record<string, any>>(
+export function buildListTags<T extends object>(
     items: T[] | undefined,
     tagType: BookTagType,
     idField: keyof T = 'slug' as keyof T

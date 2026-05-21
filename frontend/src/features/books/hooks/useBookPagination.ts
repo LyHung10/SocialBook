@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
+import type { Book, BookOrderField } from '@/features/books/types/book.interface';
 
 interface UseBookPaginationProps {
     search?: string;
@@ -13,7 +14,7 @@ interface UseBookPaginationProps {
 
 export const useBookPagination = (params: UseBookPaginationProps) => {
     const [page, setPage] = useState(1);
-    const [allBooks, setAllBooks] = useState<any[]>([]);
+    const [allBooks, setAllBooks] = useState<Book[]>([]);
     const [hasMore, setHasMore] = useState(true);
 
     const queryKey = JSON.stringify({ ...params });
@@ -31,8 +32,8 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             search: params.search,
             genres: params.genres.join(','),
             tags: params.tags.join(','),
-            sortBy: params.sortBy as any,
-            order: params.order as any,
+            sortBy: params.sortBy as BookOrderField,
+            order: params.order as 'asc' | 'desc',
         },
         { refetchOnMountOrArgChange: true }
     );
@@ -44,7 +45,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             } else {
                 setAllBooks((prev) => {
                     const existingIds = new Set(prev.map((b) => b.id));
-                    const uniqueNewBooks = data.data.filter((b: any) => !existingIds.has(b.id));
+                    const uniqueNewBooks = data.data.filter((b: Book) => !existingIds.has(b.id));
                     return [...prev, ...uniqueNewBooks];
                 });
             }

@@ -18,7 +18,6 @@ export function formatDate(date: Date | string | null | undefined) {
   const d = date instanceof Date ? date : new Date(date);
 
   if (isNaN(d.getTime())) {
-    console.warn("Invalid date:", date);
     return "";
   }
 
@@ -36,18 +35,13 @@ export function formatNumber(num?: number): string {
   return num.toString();
 }
 
-export const getErrorMessage = (error: any): string => {
+export const getErrorMessage = (error: unknown): string => {
   if (typeof error === 'string') return error;
-
-  if (Array.isArray(error?.data?.message)) {
-    return error.data.message.join(', ');
+  const err = error as { data?: { message?: string | string[] }; message?: string } | undefined;
+  if (Array.isArray(err?.data?.message)) {
+    return err.data.message.join(', ');
   }
-
-  return (
-    error?.data?.message ||
-    error?.message ||
-    'Đã có lỗi xảy ra. Vui lòng thử lại.'
-  );
+  return err?.data?.message || err?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
 };
 
 export function timeAgo(dateString: string) {

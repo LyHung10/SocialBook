@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 
 import serverApi from '@/lib/server-api';
+import { getErrorMessage } from '@/lib/utils';
 import { jwtDecode } from 'jwt-decode';
 import { NextAuthOptions } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
@@ -33,8 +34,7 @@ async function refreshAccessToken(token: JWT) {
       // `exp` là timestamp tính bằng giây, cần nhân 1000 để thành mili giây
       accessTokenExpires: decodedAccessToken.exp * 1000,
     };
-  } catch (error) {
-    console.error('RefreshAccessTokenError', error);
+  } catch {
     // Nếu refresh thất bại, trả về token với một lỗi để client có thể xử lý
     return {
       ...token,
@@ -74,11 +74,8 @@ export const authOptions: NextAuthOptions = {
           }
 
           return null;
-        } catch (error: any) {
-          console.error('Authorize error:', error.response.data);
-          throw new Error(
-            error.response.data.message || 'Authentication failed'
-          );
+        } catch (error) {
+          throw new Error(getErrorMessage(error));
         }
       },
     }),
@@ -105,8 +102,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           return true; // Cho phép đăng nhập
-        } catch (error) {
-          console.error('Social login failed', error);
+        } catch {
           return false; // Chặn đăng nhập nếu có lỗi
         }
       }
@@ -143,7 +139,6 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      console.log('Access token has expired, refreshing...');
       return await refreshAccessToken(token);
     },
 

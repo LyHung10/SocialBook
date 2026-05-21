@@ -103,8 +103,8 @@ export function useUserProfile({
                 },
             });
             toast.success('Cập nhật hồ sơ thành công');
-        } catch (err: any) {
-            console.log(getErrorMessage(err));
+        } catch (err) {
+            toast.error(getErrorMessage(err));
         } finally {
             setIsSaving(false);
         }
@@ -142,8 +142,8 @@ export function useUserProfile({
             });
             toast.success('Thay đổi hình ảnh thành công');
             handleCancelAvatar();
-        } catch (err: any) {
-            console.log(getErrorMessage(err));
+        } catch (err) {
+            toast.error(getErrorMessage(err));
         } finally {
             setIsSavingAvatar(false);
         }

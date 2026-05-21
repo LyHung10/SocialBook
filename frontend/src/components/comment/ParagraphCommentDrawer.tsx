@@ -26,7 +26,7 @@ interface ParagraphCommentDrawerProps {
     onClose: () => void;
     paragraphId: string | null;
     paragraphContent?: string;
-    hasHeader?: boolean;
+    chapterId: string;
 }
 
 export default function ParagraphCommentDrawer({
@@ -34,7 +34,7 @@ export default function ParagraphCommentDrawer({
     onClose,
     paragraphId,
     paragraphContent,
-    hasHeader = false,
+    chapterId,
 }: ParagraphCommentDrawerProps) {
     const [commentText, setCommentText] = useState('');
 
@@ -62,7 +62,7 @@ export default function ParagraphCommentDrawer({
                 parentId: null,
             }).unwrap();
 
-            notifyCommented(paragraphId, 'chapterId', 'new_comment_id'); // We might need real chapterId, but for now socket handles it if present
+            notifyCommented(paragraphId, chapterId, 'new_comment_id');
 
             setCommentText('');
             toast.success('Bình luận đã được gửi!');

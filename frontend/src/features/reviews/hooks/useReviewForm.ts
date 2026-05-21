@@ -62,8 +62,9 @@ export function useReviewForm({
             dispatch(booksApi.util.invalidateTags([{ type: BOOK_TAGS.BOOK_DETAIL, id: bookSlug }]));
             resetForm();
             toast.success('Đánh giá thành công!');
-        } catch (err: any) {
-            if (err?.status !== 401) {
+        } catch (err) {
+            const apiError = err as { status?: number };
+            if (apiError.status !== 401) {
                 toast.error(getErrorMessage(err));
             }
         }
@@ -72,8 +73,9 @@ export function useReviewForm({
     const handleLike = useCallback(async (reviewId: string) => {
         try {
             await toggleLikeReview({ id: reviewId, bookId }).unwrap();
-        } catch (error: any) {
-            if (error?.status !== 401) {
+        } catch (error) {
+            const apiError = error as { status?: number };
+            if (apiError.status !== 401) {
                 toast.error('Lỗi khi thích đánh giá');
             }
         }

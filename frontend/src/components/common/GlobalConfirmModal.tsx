@@ -13,6 +13,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { useModalStore } from '@/store/useModalStore';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export default function GlobalConfirmModal() {
@@ -27,7 +28,7 @@ export default function GlobalConfirmModal() {
             await confirmData.onConfirm();
             closeConfirm();
         } catch (error) {
-            console.error('Confirm action failed:', error);
+            toast.error('Thao tác thất bại, vui lòng thử lại');
         } finally {
             setIsLoading(false);
         }

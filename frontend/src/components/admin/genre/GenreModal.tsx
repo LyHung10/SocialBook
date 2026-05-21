@@ -77,7 +77,6 @@ export default function GenreModal() {
             genreModalData?.onSuccess?.();
             closeGenreModal();
         } catch (error: unknown) {
-            console.error('Failed to save genre:', error);
             toast.error(getErrorMessage(error));
         }
     };

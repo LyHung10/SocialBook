@@ -1,5 +1,3 @@
-import { Book } from "../../books/types/book.interface";
-
 export interface Paragraph {
   id: string;
   content: string;
@@ -69,7 +67,18 @@ export interface ImportChaptersParams {
 }
 
 export interface ChapterDetailData {
-  book: Book;
+  book: {
+    id: string;
+    title: string;
+    slug: string;
+    authorId: {
+      id: string;
+      name: string;
+      bio: string;
+    };
+    description: string;
+    coverUrl: string;
+  };
   chapter: Chapter;
   navigation: {
     previous: ChapterNavigation | null;
@@ -85,7 +94,6 @@ export interface ChapterNavigation {
 }
 
 export interface ChaptersListData {
-  book: Partial<Book>;
   chapters: Chapter[];
   total: number;
 }

@@ -85,7 +85,7 @@ export function ReadingSidebar() {
     );
   }
 
-  const booksArray = Array.isArray(books) ? books : [];
+  const booksArray = books;
 
   // Không có sách đang đọc
   if (booksArray.length === 0) {
@@ -145,7 +145,7 @@ export function ReadingSidebar() {
 
           <CardContent className="space-y-4">
             {displayBooks.filter(item => item.bookId).map((item, index) => (
-              <div key={item.id || (item as any)._id || item.bookId?.slug || `book-${index}`} className="flex gap-3 group">
+              <div key={item.id || item.bookId?.slug || `book-${index}`} className="flex gap-3 group">
                 <Link
                   href={`/books/${item.bookId.slug}`}
                   className="relative w-16 h-24 rounded-lg overflow-hidden shadow-sm flex-shrink-0 hover:shadow-md transition-shadow"

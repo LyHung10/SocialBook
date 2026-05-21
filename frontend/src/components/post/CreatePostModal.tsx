@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useAppAuth } from '@/features/auth/hooks';
 import { Book, ImagePlus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useModalStore } from '@/store/useModalStore';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export default function CreatePostModal() {
     onSubmit: async (values) => {
       try {
         if (externalOnSubmit) {
-          await externalOnSubmit(values as any);
+          await externalOnSubmit(values);
         } else {
           const response = await createPost({
             bookId: values.bookId,

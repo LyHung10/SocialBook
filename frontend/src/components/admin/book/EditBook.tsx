@@ -184,7 +184,7 @@ export default function EditBook({ bookId }: EditBookProps) {
                 router.push('/admin/books');
             }, 1500);
 
-        } catch (err: any) {
+        } catch (err) {
             setMessage({ type: 'error', text: getErrorMessage(err) });
         }
     };

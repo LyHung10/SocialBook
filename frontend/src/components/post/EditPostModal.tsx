@@ -124,9 +124,9 @@ export default function EditPostModal() {
                 });
             }
             closeEditPost();
-        } catch (error: any) {
-            console.error('Failed to update post:', error);
-            if (error?.status !== 401) {
+        } catch (error) {
+            const apiError = error as { status?: number } | null;
+            if (apiError?.status !== 401) {
                 toast.error(getErrorMessage(error));
             }
         }

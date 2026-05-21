@@ -9,7 +9,6 @@ export async function userServerApi(){
                 const res = await serverApi.get<ResponseDto<boolean>>(`/users/${userId}/exist`);
                 return extractResponseDtoData(res.data) ?? false;
             } catch (err: unknown) {
-                console.log("getIsUserExist error:", err);
                 return false;
             }
         },

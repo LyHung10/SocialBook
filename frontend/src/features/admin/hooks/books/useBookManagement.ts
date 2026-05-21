@@ -33,8 +33,7 @@ export function useBookManagement() {
       await deleteBook(id).unwrap();
       toast.success('Xóa sách thành công');
       refetch();
-    } catch (error) {
-      console.error('Failed to delete book:', error);
+    } catch {
       toast.error('Xóa sách thất bại');
     }
   };

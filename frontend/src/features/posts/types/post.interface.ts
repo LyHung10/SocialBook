@@ -1,4 +1,4 @@
-import { User } from '../../auth/slice/authSlice';
+import { User } from '../../users/types/user.types';
 import { Book } from '../../books/types/book.interface';
 
 export interface Post {

@@ -40,8 +40,9 @@ export const useBookDetail = (bookSlug: string) => {
       // Immediately update UI from the API response
       setIsLiked(result.isLiked);
       setLikesCount(result.likes);
-    } catch (error: any) {
-      if (error?.status !== 401) {
+    } catch (error) {
+      const apiError = error as { status?: number };
+      if (apiError.status !== 401) {
         toast.error('Không thể thích sách này');
       }
     }
@@ -65,8 +66,9 @@ export const useBookDetail = (bookSlug: string) => {
         toast.success('Chia sẻ thành công!');
       }
       return true;
-    } catch (err: any) {
-      if (err?.status !== 401) {
+    } catch (err) {
+      const apiError = err as { status?: number };
+      if (apiError.status !== 401) {
         toast.error(getErrorMessage(err));
       }
       return false;
@@ -75,7 +77,7 @@ export const useBookDetail = (bookSlug: string) => {
 
   const defaultShareContent = useMemo(() => {
     if (!book || !book.title) return '';
-    const authorName = book.authorId?.name || 'Không rõ';
+    const authorName = book.authorId.name || 'Không rõ';
     const title = book.title || '';
     
     return `Mọi người ơi, mình vừa tìm thấy cuốn sách này hay cực: "${title}" của tác giả ${authorName}. 📖✨

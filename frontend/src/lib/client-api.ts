@@ -53,7 +53,14 @@ export const axiosNextJsBaseQuery =
           return {
             error: {
               status: responseData.statusCode,
-              data: responseData as any,
+              data: {
+                success: false,
+                statusCode: responseData.statusCode,
+                message: responseData.message,
+                error: 'Error',
+                timestamp: new Date().toISOString(),
+                path: responseData.path,
+              } as ErrorResponseDto,
             },
           };
         }
@@ -89,14 +96,14 @@ export const axiosNextJsBaseQuery =
           } else {
             // Refresh thất bại hoàn toàn
             await signOut({ redirect: false });
-            window.location.href = '/login?error=SessionExpired';
+            typeof window !== 'undefined' && (window.location.href = '/login?error=SessionExpired');
             toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
           }
         }
 
-        if (status === 403 && (err.response?.data as any)?.error === 'USER_BANNED') {
+        if (status === 403 && err.response?.data?.error === 'USER_BANNED') {
           toast.error('Tài khoản đã bị cấm', {
-            description: (err.response?.data as any)?.message || 'Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.',
+            description: err.response?.data?.message || 'Tài khoản của bạn đã bị cấm. Vui lòng liên hệ quản trị viên.',
             duration: 5000,
           });
 

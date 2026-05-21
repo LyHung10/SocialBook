@@ -18,7 +18,7 @@ export function usePostCard({ post }: UsePostCardOptions) {
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const { user } = useAppAuth();
 
-    const { likeCount, isLiked, isDeleting, toggleLike, deletePost } = usePostActions({
+    const { likeCount, isLiked, isDeleting, toggleLike, deletePost, deleteImage } = usePostActions({
         postId: post.id,
         initialLikeCount: post.totalLikes ?? 0,
         initialLikeStatus: post.likedByCurrentUser ?? false,
@@ -47,13 +47,13 @@ export function usePostCard({ post }: UsePostCardOptions) {
     const handleDeleteImage = useCallback(async () => {
         if (!imageToDelete) return;
         try {
-            toast.success('Xóa ảnh thành công!');
+            await deleteImage(imageToDelete);
             setShowDeleteImageConfirm(false);
             setImageToDelete(null);
         } catch {
-            // Error handled
+            // Error handled in hook
         }
-    }, [imageToDelete]);
+    }, [imageToDelete, deleteImage]);
 
     const handleOpenShare = useCallback(() => {
         openSharePost({ postUrl, shareTitle, shareMedia });

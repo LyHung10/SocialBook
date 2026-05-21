@@ -70,7 +70,7 @@ export default function SettingsPage() {
     const { user: authUser } = useAppAuth();
     const userId = authUser?.id || '';
 
-    const { data: overview, isLoading: isOverviewLoading, refetch } = useGetUserOverviewQuery(userId, {
+    const { data: overview, isLoading: isOverviewLoading } = useGetUserOverviewQuery(userId, {
         skip: !userId
     });
 
@@ -108,7 +108,6 @@ export default function SettingsPage() {
                 }
             }).unwrap();
             toast.success('Cập nhật hồ sơ thành công!');
-            refetch();
         } catch (error) {
             toast.error(getErrorMessage(error));
         }
@@ -126,7 +125,6 @@ export default function SettingsPage() {
         try {
             await updateAvatar({ file, userId }).unwrap();
             toast.success('Cập nhật ảnh đại diện thành công!');
-            refetch();
         } catch (error) {
             toast.error(getErrorMessage(error));
         }

@@ -26,7 +26,7 @@ export interface TrackEventData {
   chapterId?: string;
   durationSeconds?: number;
   progressPercent?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   sessionId?: string;
 }
 
@@ -34,8 +34,8 @@ export const useTracking = () => {
   const trackEvent = useCallback(async (data: TrackEventData) => {
     try {
       await clientApi.post('/analytics/events', data);
-    } catch (error) {
-      console.warn('Analytics tracking failed', error);
+    } catch {
+      // silently ignore analytics errors
     }
   }, []);
 

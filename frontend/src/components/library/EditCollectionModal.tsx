@@ -38,7 +38,7 @@ export default function EditCollectionModal() {
       toast.success('Đã cập nhật tên bộ sưu tập');
       editCollectionData.onSuccess?.();
       closeEditCollection();
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Lỗi khi cập nhật tên bộ sưu tập');
     }
   };

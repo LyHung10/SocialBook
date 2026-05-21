@@ -3,6 +3,7 @@ import { MessageSquare, Send, Bot, BookOpen, Users, MapPin, Lightbulb, ChevronDo
 
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 
 import { useReadingRoomStore, ChatMessage } from '@/store/useReadingRoomStore';
@@ -58,7 +59,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
         try {
           setLocalChatMessages(JSON.parse(savedMessages));
         } catch (e) {
-          console.error('Failed to parse saved messages', e);
+          toast.error('Không thể đọc tin nhắn đã lưu');
         }
       }
     }
@@ -112,7 +113,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
         };
         setLocalChatMessages(prev => [...prev, aiMsg]);
       } catch (err) {
-        console.error('AI error', err);
+        toast.error('AI không thể trả lời lúc này. Vui lòng thử lại!');
       }
     }
   };

@@ -1,5 +1,6 @@
 import type { PaginatedApiResult, PaginationMeta } from '@/lib/api-response';
 import { TabType } from "../books.constants";
+import { Chapter } from '@/features/chapters/types/chapter.interface';
 
 export interface Book {
   id: string;
@@ -40,17 +41,6 @@ export interface Genre {
   name: string;
   slug: string;
   description: string;
-}
-
-export interface Chapter {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  orderIndex: number;
-  viewsCount: number;
-  createdAt: string;
-  updatedAt?: string;
 }
 
 export interface Review {

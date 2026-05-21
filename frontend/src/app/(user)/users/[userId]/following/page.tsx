@@ -1,5 +1,5 @@
 "use client"
-import { FollowingUser, useGetFollowingListQuery } from "@/features/follows/api/followApi";
+import { useGetFollowingListQuery } from "@/features/follows/api/followApi";
 import { useParams } from "next/navigation";
 import FollowingItem from "@/components/user/following-item";
 

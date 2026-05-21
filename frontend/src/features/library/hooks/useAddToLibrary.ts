@@ -74,8 +74,9 @@ export function useAddToLibrary({
         setSelectedStatus(status);
         try {
             await updateStatus({ bookId, status }).unwrap();
-        } catch (error: any) {
-            if (error?.status !== 401) {
+        } catch (error) {
+            const apiError = error as { status?: number };
+            if (apiError.status !== 401) {
                 toast.error('Cập nhật trạng thái thất bại');
             }
         }
@@ -95,9 +96,10 @@ export function useAddToLibrary({
 
         try {
             await updateCollections({ bookId, collectionIds: newIds }).unwrap();
-        } catch (error: any) {
+        } catch (error) {
             setSelectedCollections(selectedCollections);
-            if (error?.status !== 401) {
+            const apiError = error as { status?: number };
+            if (apiError.status !== 401) {
                 toast.error('Cập nhật bộ sưu tập thất bại');
             }
         }
@@ -113,8 +115,9 @@ export function useAddToLibrary({
 
             setNewCollectionName('');
             setIsCreating(false);
-        } catch (error: any) {
-            if (error?.status !== 401) {
+        } catch (error) {
+            const apiError = error as { status?: number };
+            if (apiError.status !== 401) {
                 toast.error('Tạo danh sách thất bại');
             }
         }

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { use, useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 import {
   Bookmark,
   ChevronLeft,
@@ -135,9 +136,10 @@ ${book.description?.slice(0, 100)}...
           } else {
             toast.success('Chia sẻ thành công!');
           }
-        } catch (error: any) {
-          if (error?.status !== 401) {
-            toast.error(error?.data?.message || 'Không thể tạo bài viết');
+        } catch (error) {
+          const apiError = error as { status?: number };
+          if (apiError.status !== 401) {
+            toast.error(getErrorMessage(error));
           }
         }
       }
