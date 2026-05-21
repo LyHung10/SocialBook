@@ -8,15 +8,18 @@ import { NotificationEventHandler } from './notification-event.handler';
 import { PostsRepositoryModule } from '../database/repositories/posts/posts-repository.module';
 import { CommentsRepositoryModule } from '../database/repositories/comments/comments-repository.module';
 import { ReadingRoomsApplicationModule } from '@/application/reading-rooms/reading-rooms-application.module';
+import { ReadingRoomInteractionsApplicationModule } from '@/application/reading-room-interactions/reading-room-interactions-application.module';
 import { ReadingRoomGateway } from './reading-room.gateway';
-import { ReadingRoomPresenceService } from './reading-room-presence.service';
+import { ReadingRoomPresenceModule } from './reading-room-presence.module';
 
 @Module({
   imports: [
     NotificationsApplicationModule,
     ReadingRoomsApplicationModule,
+    ReadingRoomInteractionsApplicationModule,
     PostsRepositoryModule,
     CommentsRepositoryModule,
+    ReadingRoomPresenceModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -30,7 +33,6 @@ import { ReadingRoomPresenceService } from './reading-room-presence.service';
     NotificationsService,
     NotificationEventHandler,
     ReadingRoomGateway,
-    ReadingRoomPresenceService,
   ],
   exports: [NotificationsService],
 })

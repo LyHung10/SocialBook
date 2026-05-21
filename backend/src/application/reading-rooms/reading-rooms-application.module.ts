@@ -5,6 +5,7 @@ import { LeaveRoomUseCase } from './use-cases/leave-room/leave-room.use-case';
 import { ChangeChapterUseCase } from './use-cases/change-chapter/change-chapter.use-case';
 import { ChangeRoomModeUseCase } from './use-cases/change-room-mode/change-room-mode.use-case';
 import { EndRoomUseCase } from './use-cases/end-room/end-room.use-case';
+import { DeleteRoomUseCase } from './use-cases/delete-room/delete-room.use-case';
 import { GetMyActiveRoomsUseCase } from './use-cases/get-my-active-rooms/get-my-active-rooms.use-case';
 import { GetRoomByCodeUseCase } from './use-cases/get-room-by-code/get-room-by-code.use-case';
 import { ReadingRoomsRepositoryModule } from '@/infrastructure/database/repositories/reading-rooms/reading-rooms-repository.module';
@@ -14,6 +15,8 @@ import { AddHighlightUseCase } from './use-cases/add-highlight/add-highlight.use
 import { AskAIUseCase } from './use-cases/ask-ai/ask-ai.use-case';
 import { GeminiApplicationModule } from '../gemini/gemini-application.module';
 import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories/chapters/chapters-repository.module';
+import { ReadingRoomInteractionsSchemasModule } from '@/infrastructure/database/schemas/reading-room-interactions/reading-room-interactions-schemas.module';
+import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-room-presence.module';
 
 @Module({
   imports: [
@@ -21,6 +24,8 @@ import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories
     BooksRepositoryModule,
     ChaptersRepositoryModule,
     GeminiApplicationModule,
+    ReadingRoomInteractionsSchemasModule,
+    ReadingRoomPresenceModule,
   ],
   providers: [
     CreateRoomUseCase,
@@ -29,6 +34,7 @@ import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories
     ChangeChapterUseCase,
     ChangeRoomModeUseCase,
     EndRoomUseCase,
+    DeleteRoomUseCase,
     AddHighlightUseCase,
     AskAIUseCase,
     GetMyActiveRoomsUseCase,
@@ -41,6 +47,7 @@ import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories
     ChangeChapterUseCase,
     ChangeRoomModeUseCase,
     EndRoomUseCase,
+    DeleteRoomUseCase,
     AddHighlightUseCase,
     AskAIUseCase,
     GetMyActiveRoomsUseCase,

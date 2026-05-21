@@ -30,6 +30,7 @@ import {
 import { chatBotApi } from '../features/chatbot/api/chatBotApi';
 import { moderationApi } from '../features/admin/api/moderationApi';
 import { readingRoomsApi } from '../features/reading-rooms/api/readingRoomsApi';
+import { roomInteractionsApi } from '../features/reading-room-interactions/api/roomInteractionsApi';
 import { WebStorage } from 'redux-persist';
 
 const createNoopStorage = (): WebStorage => {
@@ -84,6 +85,7 @@ export const store = configureStore({
     [chatBotApi.reducerPath]: chatBotApi.reducer,
     [moderationApi.reducerPath]: moderationApi.reducer,
     [readingRoomsApi.reducerPath]: readingRoomsApi.reducer,
+    [roomInteractionsApi.reducerPath]: roomInteractionsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -112,6 +114,7 @@ export const store = configureStore({
       .concat(chatBotApi.middleware)
       .concat(moderationApi.middleware)
       .concat(readingRoomsApi.middleware)
+      .concat(roomInteractionsApi.middleware)
 });
 
 setupListeners(store.dispatch);

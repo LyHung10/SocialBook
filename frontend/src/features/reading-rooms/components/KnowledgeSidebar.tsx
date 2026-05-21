@@ -45,6 +45,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
 
   const [activeTab, setActiveTab] = useState('knowledge');
   const [question, setQuestion] = useState('');
+  const [graphOpen, setGraphOpen] = useState(false);
   const [localChatMessages, setLocalChatMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -251,25 +252,26 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
             </p>
           </div>
 
-          <Dialog>
+          <Dialog open={graphOpen} onOpenChange={setGraphOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="rounded-xl gap-2 px-6">
                 <Maximize2 className="w-3.5 h-3.5" />
                 Mở sơ đồ toàn màn hình
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[90vw] w-[1000px] h-[80vh] p-0 overflow-hidden border-none bg-background/95 backdrop-blur-xl">
-              <DialogHeader className="p-6 absolute top-0 left-0 z-10 bg-gradient-to-b from-background to-transparent w-full">
+            <DialogContent className="max-w-[90vw] w-[1000px] h-[80vh] p-0 overflow-hidden border-none bg-background/95 backdrop-blur-xl flex flex-col">
+              <DialogHeader className="p-6 shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Network className="w-5 h-5 text-primary" />
                   Sơ đồ tri thức AI - Chương {chapterId.slice(-4).toUpperCase()}
                 </DialogTitle>
               </DialogHeader>
-              <div className="w-full h-full pt-20">
+              <div className="flex-1 min-h-0 relative">
                 {data && (
                   <KnowledgeGraph 
                     entities={data.entities} 
                     relationships={data.relationships || []} 
+                    isOpen={graphOpen}
                   />
                 )}
               </div>

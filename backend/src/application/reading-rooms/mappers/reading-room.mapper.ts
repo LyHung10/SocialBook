@@ -15,6 +15,21 @@ export class ReadingRoomApplicationMapper {
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
       members: room.members.map(m => ({ userId: m.userId, role: m.role })),
+      highlights: room.highlights.map(h => ({
+        id: h.id!,
+        userId: h.userId,
+        chapterSlug: h.chapterSlug,
+        paragraphId: h.paragraphId,
+        content: h.content,
+        aiInsight: h.aiInsight,
+        createdAt: h.createdAt!,
+      })),
+      chatMessages: room.chatMessages.map(m => ({
+        userId: m.userId,
+        role: m.role,
+        content: m.content,
+        createdAt: m.createdAt,
+      })),
     };
   }
 

@@ -49,8 +49,8 @@ services:
     image: mongo:7
     container_name: socialbook-mongo
     restart: unless-stopped
-    expose:
-      - '27017'
+    ports:
+      - '27017:27017'
     volumes:
       - mongo_data:/data/db
     env_file:
@@ -60,23 +60,24 @@ services:
     image: redis:7-alpine
     container_name: socialbook-redis
     restart: unless-stopped
-    expose:
-      - '6379'
+    ports:
+      - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --save 60 1 --loglevel warning
 
   chroma:
-    image: chromadb/chroma:0.6.3
+    image: chromadb/chroma:latest
     container_name: socialbook-chroma
     restart: unless-stopped
-    expose:
-      - '8000'
+    ports:
+      - '8000:8000'
     volumes:
       - chroma_data:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ANONYMIZED_TELEMETRY=FALSE
+      - CHROMA_SERVER_CORS_ALLOW_ORIGINS=["*"]
 
 volumes:
   mongo_data:

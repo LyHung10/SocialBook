@@ -154,7 +154,7 @@ export class User extends Entity<UserId> {
     return this._props.hashedRt;
   }
   get favoriteGenres(): string[] {
-    return this._props.favoriteGenres;
+    return [...this._props.favoriteGenres];
   }
   get readingPreferences(): ReadingPreferences | undefined {
     return this._props.readingPreferences;

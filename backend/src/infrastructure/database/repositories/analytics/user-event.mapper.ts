@@ -4,23 +4,21 @@ import { Types } from 'mongoose';
 
 export class UserEventMapper {
   static toDomain(raw: any): UserEventEntity {
-    return UserEventEntity.reconstitute(
-      raw._id.toString(),
-      {
-        userId: raw.userId.toString(),
-        sessionId: raw.sessionId,
-        eventType: raw.eventType,
-        bookId: raw.bookId?.toString(),
-        chapterId: raw.chapterId?.toString(),
-        durationSeconds: raw.durationSeconds,
-        progressPercent: raw.progressPercent,
-        source: raw.source,
-        deviceType: raw.deviceType,
-        metadata: raw.metadata,
-      },
-      raw.createdAt,
-      raw.updatedAt,
-    );
+    return UserEventEntity.reconstitute({
+      id: raw._id.toString(),
+      userId: raw.userId.toString(),
+      sessionId: raw.sessionId,
+      eventType: raw.eventType,
+      bookId: raw.bookId?.toString(),
+      chapterId: raw.chapterId?.toString(),
+      durationSeconds: raw.durationSeconds,
+      progressPercent: raw.progressPercent,
+      source: raw.source,
+      deviceType: raw.deviceType,
+      metadata: raw.metadata,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
+    });
   }
 
   static toPersistence(entity: UserEventEntity): any {

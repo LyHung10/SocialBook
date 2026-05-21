@@ -43,6 +43,7 @@ import { RecommendationsApplicationModule } from '@/application/recommendations/
 import { NotificationsApplicationModule } from '@/application/notifications/notifications-application.module';
 import { InfrastructureModule } from '@/infrastructure/infrastructure.module';
 import { AnalyticsPresentationModule } from './analytics/analytics-presentation.module';
+import { ReadingRoomInteractionsPresentationModule } from './reading-room-interactions/reading-room-interactions-presentation.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AnalyticsPresentationModule } from './analytics/analytics-presentation.
     NotificationsApplicationModule,
     ReadingRoomsPresentationModule,
     AnalyticsPresentationModule,
+    ReadingRoomInteractionsPresentationModule,
     InfrastructureModule,
   ],
   controllers: [

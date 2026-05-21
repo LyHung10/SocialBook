@@ -2,10 +2,10 @@ import { Logger } from '@/shared/logger/logger.service';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { RedisIoAdapter } from './infrastructure/gateways/redis-io.adapter';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { configSwagger } from './config/swagger.config';
@@ -28,7 +28,6 @@ async function bootstrap() {
   const port = configService.get<number>('env.PORT', 5000);
 
   // Đặt tiền tố toàn cục 'api' cho tất cả các route trong ứng dụng
-  // Ví dụ: Các endpoint sẽ có dạng /api/resource thay vì /resource
   app.setGlobalPrefix('api');
 
   // Cấu hình ValidationPipe
@@ -53,7 +52,17 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useWebSocketAdapter(new IoAdapter(app));
+  // Use Redis-backed Socket.IO adapter for horizontal scaling
+  const redisHost = configService.get<string>('env.REDIS_HOST', 'localhost');
+  const redisPort = configService.get<number>('env.REDIS_PORT', 6379);
+  const redisPassword = configService.get<string>('env.REDIS_PASSWORD', '');
+  const redisUrl = redisPassword
+    ? `redis://:${redisPassword}@${redisHost}:${redisPort}`
+    : `redis://${redisHost}:${redisPort}`;
+
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis(redisUrl);
+  app.useWebSocketAdapter(redisIoAdapter);
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());

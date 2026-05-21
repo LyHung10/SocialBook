@@ -8,6 +8,7 @@ export interface PresenceData {
   avatarUrl: string;
   currentChapterSlug: string;
   paragraphId?: string;
+  progress?: number;
   lastSeen: number;
 }
 
@@ -81,6 +82,18 @@ export class ReadingRoomPresenceService {
     await Promise.all([
       this.redis.del(key),
       this.redis.srem(setKey, userId),
+    ]);
+  }
+
+  async removeRoomPresences(roomId: string): Promise<void> {
+    const setKey = this.getSetKey(roomId);
+    const userIds = await this.redis.smembers(setKey);
+    if (userIds.length === 0) return;
+
+    const keys = userIds.map(userId => this.getKey(roomId, userId));
+    await Promise.all([
+      this.redis.del(...keys),
+      this.redis.del(setKey),
     ]);
   }
 }

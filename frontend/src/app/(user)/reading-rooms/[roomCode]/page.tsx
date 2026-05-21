@@ -1,5 +1,5 @@
 'use client';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { useGetRoomQuery } from '@/features/reading-rooms/api/readingRoomsApi';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
@@ -9,15 +9,22 @@ import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { store } from '@/store/store';
+import { readingRoomsApi } from '@/features/reading-rooms/api/readingRoomsApi';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { KnowledgeSidebar } from '@/features/reading-rooms/components/KnowledgeSidebar';
+import { RoomChat } from '@/features/reading-room-interactions/components/RoomChat';
+import { ReadingProgress } from '@/features/reading-room-interactions/components/ReadingProgress';
+import { QuoteBoard } from '@/features/reading-room-interactions/components/QuoteBoard';
+import { useReadingRoomProgress } from '@/features/reading-room-interactions/hooks/useReadingRoomProgress';
+import { useGetRoomQuotesQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
@@ -47,7 +54,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   
   const { data: initialRoom, isLoading: isLoadingRoom, error } = useGetRoomQuery(roomCode);
   
-  const { endRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, askAI, sendChatMessage } = useReadingRoomSocket(roomCode);
+  const { endRoom, deleteRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, askAI, sendChatMessage } = useReadingRoomSocket(roomCode);
 
   const { user } = useAppAuth();
   const storeRoom = useReadingRoomStore(state => state.room);
@@ -69,8 +76,16 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   const chapter = chapterData?.chapter;
   const navigation = chapterData?.navigation;
+  const readingProgress = useReadingRoomProgress(!!room);
+  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room });
 
-  useRoomPresence(currentChapterSlug || 'unknown', null, sendHeartbeat);
+  useEffect(() => {
+    if (quotesData) {
+      useReadingRoomStore.getState().setQuotes(quotesData);
+    }
+  }, [quotesData]);
+
+  useRoomPresence(currentChapterSlug || 'unknown', null, sendHeartbeat, readingProgress);
 
   if (isLoadingRoom) {
     return (
@@ -133,9 +148,35 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span>{Object.keys(presences).length} online</span>
+                    <div className="flex items-center gap-1">
+                      <div className="flex -space-x-2 mr-1">
+                        {Object.values(presences).slice(0, 4).map(p =>
+                          p.avatarUrl ? (
+                            <img
+                              key={p.userId}
+                              src={p.avatarUrl}
+                              alt=""
+                              className="w-6 h-6 rounded-full border-2 border-background"
+                            />
+                          ) : (
+                            <div
+                              key={p.userId}
+                              className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold"
+                            >
+                              {p.displayName.charAt(0).toUpperCase()}
+                            </div>
+                          )
+                        )}
+                        {Object.keys(presences).length > 4 && (
+                          <div className="w-6 h-6 rounded-full border-2 border-background bg-muted text-[9px] font-bold flex items-center justify-center">
+                            +{Object.keys(presences).length - 4}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span>{Object.keys(presences).length} online</span>
+                      </div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="rounded-xl font-bold text-[10px]">Thành viên đang hiện diện</TooltipContent>
@@ -190,10 +231,44 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                             className="rounded-2xl bg-orange-500 hover:bg-orange-600 font-bold"
                             onClick={() => {
                               endRoom();
+                              store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
                               router.push('/reading-rooms');
                             }}
                           >
                             Xác nhận kết thúc
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          className="font-bold px-4 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white border-0 shadow-lg shadow-red-500/20 gap-2"
+                        >
+                          <Trash2 size={15} />
+                          <span className="text-xs">Xoá</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-xl font-bold">Xoá phòng đọc?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-sm">
+                            Hành động này sẽ xoá vĩnh viễn phòng đọc và tất cả dữ liệu liên quan (bình luận, phản hồi, trích dẫn, sự kiện). Không thể hoàn tác!
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-2xl font-bold">Hủy bỏ</AlertDialogCancel>
+                          <AlertDialogAction 
+                            className="rounded-2xl bg-red-500 hover:bg-red-600 font-bold"
+                            onClick={() => {
+                              deleteRoom();
+                              store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
+                              router.push('/reading-rooms');
+                            }}
+                          >
+                            Xác nhận xoá
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -279,21 +354,33 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             </div>
 
             <aside className="w-full lg:w-80 sticky top-24 shrink-0 space-y-6 hidden sm:block">
-              <Tabs defaultValue="members" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4 rounded-2xl h-12 p-1 bg-background/40 backdrop-blur-xl border border-border shadow-sm">
+              <Tabs defaultValue="activity" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 mb-4 rounded-2xl h-12 p-1 bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border shadow-sm">
+                  <TabsTrigger value="activity" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Info className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">HĐ</span>
+                  </TabsTrigger>
                   <TabsTrigger value="members" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <Users className="w-3.5 h-3.5" />
-                    Thành viên
+                    <span className="hidden lg:inline">TV</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="quotes" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <span className="text-sm leading-none">&ldquo;</span>
+                    <span className="hidden lg:inline">TD</span>
                   </TabsTrigger>
                   <TabsTrigger value="knowledge" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <BrainCircuit className="w-3.5 h-3.5" />
-                    Kiến thức
+                    <span className="hidden lg:inline">KT</span>
                   </TabsTrigger>
                 </TabsList>
 
+                <TabsContent value="activity" className="mt-0 outline-none">
+                  <RoomChat sendChatMessage={sendChatMessage} />
+                </TabsContent>
+
                 <TabsContent value="members" className="mt-0 outline-none">
-                  <div className="bg-background/40 backdrop-blur-xl border border-border rounded-3xl overflow-hidden shadow-xl">
-                    <div className="px-5 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                  <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
+                    <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30 flex items-center justify-between">
                       <h3 className="text-sm font-bold tracking-tight uppercase">Thành viên</h3>
                       <Badge variant="secondary" className="text-[10px] font-bold">
                         {Object.keys(presences).length}
@@ -310,18 +397,13 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           {Object.values(presences).map(p => (
                             <div 
                               key={p.userId} 
-                              className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-muted/50 transition-colors group"
+                              className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors group"
                             >
-                              <div className="relative shrink-0">
-                                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary overflow-hidden shadow-inner">
-                                  {p.avatarUrl ? (
-                                    <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
-                                  ) : (
-                                    p.displayName.charAt(0).toUpperCase()
-                                  )}
-                                </div>
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
-                              </div>
+                               <ReadingProgress
+                                 userId={p.userId}
+                                 displayName={p.displayName}
+                                 avatarUrl={p.avatarUrl}
+                               />
                               
                               <div className="flex-1 overflow-hidden">
                                 <p className="text-xs font-bold truncate group-hover:text-primary transition-colors">
@@ -339,6 +421,18 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   </div>
                 </TabsContent>
 
+                <TabsContent value="quotes" className="mt-0 outline-none">
+                  <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
+                    <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30 flex items-center gap-2">
+                      <span className="text-sm leading-none text-primary">&ldquo;</span>
+                      <h3 className="text-sm font-bold tracking-tight uppercase">Trích dẫn</h3>
+                    </div>
+                    <div className="p-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                      <QuoteBoard />
+                    </div>
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="knowledge" className="mt-0 outline-none">
                   {chapter?.id ? (
                     <KnowledgeSidebar 
@@ -350,7 +444,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
                   ) : (
 
-                    <div className="p-12 text-center bg-background/40 backdrop-blur-xl border border-border rounded-3xl">
+                    <div className="p-12 text-center bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl">
                       <p className="text-xs text-muted-foreground italic">Đang tải kiến thức...</p>
                     </div>
                   )}

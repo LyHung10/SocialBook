@@ -10,4 +10,19 @@ export interface ReadingRoomResult {
   createdAt: Date;
   updatedAt: Date;
   members: Array<{ userId: string; role: 'host' | 'member' }>;
+  highlights: Array<{
+    id: string;
+    userId: string;
+    chapterSlug: string;
+    paragraphId: string;
+    content: string;
+    aiInsight?: string;
+    createdAt: Date;
+  }>;
+  chatMessages: Array<{
+    userId: string;
+    role: string;
+    content: string;
+    createdAt: Date;
+  }>;
 }

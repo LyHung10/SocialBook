@@ -3,6 +3,7 @@ export enum TargetType {
   CHAPTER = 'chapter',
   POST = 'post',
   AUTHOR = 'author',
+  PARAGRAPH = 'paragraph',
 }
 
 export class CommentTargetType {
@@ -38,6 +39,10 @@ export class CommentTargetType {
     return new CommentTargetType(TargetType.AUTHOR);
   }
 
+  static paragraph(): CommentTargetType {
+    return new CommentTargetType(TargetType.PARAGRAPH);
+  }
+
   toString(): string {
     return this.value;
   }
@@ -56,6 +61,10 @@ export class CommentTargetType {
 
   isAuthor(): boolean {
     return this.value === TargetType.AUTHOR;
+  }
+
+  isParagraph(): boolean {
+    return this.value === TargetType.PARAGRAPH;
   }
 
   equals(other: CommentTargetType): boolean {

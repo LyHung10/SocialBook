@@ -2,7 +2,12 @@ import { useEffect } from 'react';
 import { useReadingRoomSocket } from './useReadingRoomSocket';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 
-export const useRoomPresence = (chapterSlug: string, activeParagraphId?: string | null, sendHeartbeat?: (slug: string, paraId?: string) => void) => {
+export const useRoomPresence = (
+  chapterSlug: string,
+  activeParagraphId?: string | null,
+  sendHeartbeat?: (slug: string, paraId?: string, progress?: number) => void,
+  readingProgress?: number,
+) => {
   const { sendHeartbeat: hookHeartbeat } = useReadingRoomSocket();
   const actualSendHeartbeat = sendHeartbeat || hookHeartbeat;
   const room = useReadingRoomStore((state) => state.room);
@@ -13,12 +18,12 @@ export const useRoomPresence = (chapterSlug: string, activeParagraphId?: string 
     if (!room) return;
 
     const interval = setInterval(() => {
-      actualSendHeartbeat(chapterSlug, activeParagraphId || undefined);
+      actualSendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
     }, 10_000);
 
     // Send immediate heartbeat on change
-    actualSendHeartbeat(chapterSlug, activeParagraphId || undefined);
+    actualSendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
 
     return () => clearInterval(interval);
-  }, [room?.roomId, chapterSlug, activeParagraphId, actualSendHeartbeat]);
+  }, [room?.roomId, chapterSlug, activeParagraphId, actualSendHeartbeat, readingProgress]);
 };

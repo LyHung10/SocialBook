@@ -75,24 +75,24 @@ export class Notification extends Entity<string> {
     this.markAsUpdated();
   }
 
-  public static create(
-    id: string,
-    userId: string,
-    title: string,
-    message: string,
-    type: NotificationType | string,
-    meta?: NotificationMeta,
-    actionUrl?: string,
-  ): Notification {
-    return new Notification(id, {
-      userId,
-      title,
-      message,
-      type,
+  public static create(props: {
+    id: string;
+    userId: string;
+    title: string;
+    message: string;
+    type: NotificationType | string;
+    meta?: NotificationMeta;
+    actionUrl?: string;
+  }): Notification {
+    return new Notification(props.id, {
+      userId: props.userId,
+      title: props.title,
+      message: props.message,
+      type: props.type,
       isRead: false,
       sentAt: new Date(),
-      actionUrl,
-      meta,
+      actionUrl: props.actionUrl,
+      meta: props.meta,
     });
   }
 

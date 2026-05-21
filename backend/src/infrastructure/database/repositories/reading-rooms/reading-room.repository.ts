@@ -72,4 +72,8 @@ export class ReadingRoomRepository implements IReadingRoomRepository {
   async updateStatus(id: RoomId, status: 'active' | 'ended'): Promise<void> {
     await this.roomModel.findByIdAndUpdate(id.toString(), { status }).exec();
   }
+
+  async delete(id: RoomId): Promise<void> {
+    await this.roomModel.findByIdAndDelete(id.toString()).exec();
+  }
 }

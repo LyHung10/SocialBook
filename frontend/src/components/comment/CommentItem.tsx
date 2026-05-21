@@ -54,8 +54,6 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
         isEditingComment,
         isDeletingComment,
         isPostingReply,
-        isResolvingParent,
-        resolvedData,
         effectiveParentId,
         setIsEditing,
         handleEditComment,
@@ -70,7 +68,6 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
         userId,
     });
 
-    const level = resolvedData?.level;
     const hasReplyCount = comment.repliesCount !== undefined;
     const displayedReplyCount = hasReplyCount ? optimisticReplyCount : null;
 
@@ -214,24 +211,12 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
                 <div className="mt-2">
                     {showReplies && (
                         <div className="ml-2 mb-2 mt-2 space-y-3 border-l-2 border-border pl-3">
-                            {isResolvingParent && !resolvedData && (
-                                <div className="flex items-center gap-2 px-2 text-xs text-muted-foreground">
-                                    <Loader2
-                                        size={12}
-                                        className="animate-spin"
-                                    />
-                                    Đang tải phản hồi...
-                                </div>
-                            )}
-
-                            {resolvedData && level !== 3 && (
-                                <ListComments
-                                    targetId={targetId}
-                                    isCommentOpen
-                                    parentId={effectiveParentId}
-                                    targetType={targetType}
-                                />
-                            )}
+                            <ListComments
+                                targetId={targetId}
+                                isCommentOpen
+                                parentId={effectiveParentId}
+                                targetType={targetType}
+                            />
 
                             {isReplying && (
                                 <div className="flex animate-in items-start gap-2 fade-in slide-in-from-top-2">

@@ -17,10 +17,6 @@ export class Role extends Entity<string> {
     this._props = props;
   }
 
-  get name(): string {
-    return this._props.name;
-  }
-
   static create(props: { id: string; name: string }): Role {
     return new Role(props.id, { name: props.name });
   }
@@ -37,6 +33,10 @@ export class Role extends Entity<string> {
       props.createdAt,
       props.updatedAt,
     );
+  }
+
+  get name(): string {
+    return this._props.name;
   }
 
   updateName(name: string): void {

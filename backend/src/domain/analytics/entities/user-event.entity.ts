@@ -35,13 +35,23 @@ export class UserEvent extends Entity<string> {
     });
   }
 
-  static reconstitute(
-    id: string,
-    props: UserEventProps,
-    createdAt: Date,
-    updatedAt: Date,
-  ): UserEvent {
-    return new UserEvent(id, props, createdAt, updatedAt);
+  static reconstitute(props: {
+    id: string;
+    userId: string;
+    sessionId?: string;
+    eventType: UserEventType;
+    bookId?: string;
+    chapterId?: string;
+    durationSeconds?: number;
+    progressPercent?: number;
+    source?: string;
+    deviceType?: string;
+    metadata?: Record<string, any>;
+    createdAt: Date;
+    updatedAt: Date;
+  }): UserEvent {
+    const { id, createdAt, updatedAt, ...rest } = props;
+    return new UserEvent(id, rest, createdAt, updatedAt);
   }
 
   get userId(): string {

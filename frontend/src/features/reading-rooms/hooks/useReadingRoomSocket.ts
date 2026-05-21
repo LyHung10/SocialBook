@@ -1,16 +1,16 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
+import { store } from '@/store/store';
+import { readingRoomsApi } from '@/features/reading-rooms/api/readingRoomsApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSocket } from '@/context/SocketProvider';
-import { useQueryClient } from '@tanstack/react-query';
 import { ReadingRoomServerEvent, ReadingRoomClientEvent } from '../types/reading-room.events';
 
 export const useReadingRoomSocket = (roomId?: string) => {
   const { user } = useAppAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { getSocket, connectSocket } = useSocket();
   const socket = getSocket('/reading-rooms');
   const listenersSetupRef = useRef(false);
@@ -30,6 +30,11 @@ export const useReadingRoomSocket = (roomId?: string) => {
     socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
     socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
     socket.off(ReadingRoomServerEvent.ERROR);
+    socket.off(ReadingRoomServerEvent.COMMENT_ADDED);
+    socket.off(ReadingRoomServerEvent.COMMENT_DELETED);
+    socket.off(ReadingRoomServerEvent.REACTION_ADDED);
+    socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
+    socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
 
     socket.on('connect', () => {
       if (roomId) {
@@ -89,11 +94,21 @@ export const useReadingRoomSocket = (roomId?: string) => {
       }
     });
 
+    const invalidateMyRooms = () => {
+      store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
+    };
+
     socket.on(ReadingRoomServerEvent.ROOM_ENDED, () => {
       toast.info('Phòng đọc đã kết thúc');
       useReadingRoomStore.getState().clearRoom();
-      // Invalidate the myActiveRooms query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['myActiveRooms'] });
+      invalidateMyRooms();
+      router.push('/reading-rooms');
+    });
+
+    socket.on(ReadingRoomServerEvent.ROOM_DELETED, () => {
+      toast.error('Phòng đọc đã bị xoá');
+      useReadingRoomStore.getState().clearRoom();
+      invalidateMyRooms();
       router.push('/reading-rooms');
     });
 
@@ -129,6 +144,46 @@ export const useReadingRoomSocket = (roomId?: string) => {
       useReadingRoomStore.getState().addChatMessage(message);
     });
 
+    // Room interaction listeners
+    socket.on(ReadingRoomServerEvent.COMMENT_ADDED, (data) => {
+      const store = useReadingRoomStore;
+      const displayName = data.displayName || data.userId.slice(0, 6);
+      store.getState().addRoomComment({ ...data, displayName });
+    });
+
+    socket.on(ReadingRoomServerEvent.COMMENT_DELETED, (data) => {
+      useReadingRoomStore.getState().removeRoomComment(data.commentId, data.paragraphId);
+    });
+
+    socket.on(ReadingRoomServerEvent.REACTION_ADDED, (data) => {
+      const store = useReadingRoomStore;
+      store.getState().updateReaction(data.paragraphId, data.reactionType, data.userId, data.displayName, true);
+    });
+
+    socket.on(ReadingRoomServerEvent.QUOTE_ADDED, (data) => {
+      const store = useReadingRoomStore.getState();
+      store.addQuote({
+        id: data.id,
+        content: data.content,
+        chapterSlug: data.chapterSlug,
+        paragraphId: data.paragraphId,
+        userId: data.userId,
+        displayName: data.displayName,
+        votes: [],
+        voteCount: data.voteCount,
+        createdAt: data.createdAt,
+      });
+    });
+
+    socket.on(ReadingRoomServerEvent.QUOTE_VOTED, (data) => {
+      useReadingRoomStore.getState().updateQuoteVote(
+        data.quoteId,
+        data.voteCount,
+        data.userId,
+        data.voteType,
+      );
+    });
+
     // Cleanup listeners
     return () => {
       socket.off('connect');
@@ -139,13 +194,19 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.HOST_CHANGED);
       socket.off(ReadingRoomServerEvent.CHAPTER_CHANGED);
       socket.off(ReadingRoomServerEvent.MODE_CHANGED);
-      socket.off(ReadingRoomServerEvent.ROOM_ENDED);
+    socket.off(ReadingRoomServerEvent.ROOM_ENDED);
+    socket.off(ReadingRoomServerEvent.ROOM_DELETED);
       socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
       socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
       socket.off(ReadingRoomServerEvent.NEW_HIGHLIGHT);
       socket.off(ReadingRoomServerEvent.UPDATE_HIGHLIGHT_INSIGHT);
       socket.off(ReadingRoomServerEvent.NEW_CHAT_MESSAGE);
       socket.off(ReadingRoomServerEvent.ERROR);
+      socket.off(ReadingRoomServerEvent.COMMENT_ADDED);
+      socket.off(ReadingRoomServerEvent.COMMENT_DELETED);
+      socket.off(ReadingRoomServerEvent.REACTION_ADDED);
+      socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
+      socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
     };
   }, [user, router, socket, roomId]);
 
@@ -196,6 +257,13 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
   }, [socket]);
 
+  const deleteRoom = useCallback(() => {
+    const store = useReadingRoomStore.getState();
+    if (socket && store.room) {
+      socket.emit(ReadingRoomClientEvent.DELETE_ROOM, { roomId: store.room.roomId });
+    }
+  }, [socket]);
+
   const leaveRoom = useCallback(() => {
     const store = useReadingRoomStore.getState();
     if (socket && store.room) {
@@ -203,13 +271,37 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
   }, [socket]);
 
-  const sendHeartbeat = useCallback((chapterSlug: string, paragraphId?: string) => {
+  const sendHeartbeat = useCallback((chapterSlug: string, paragraphId?: string, progress?: number) => {
     const store = useReadingRoomStore.getState();
     if (socket?.connected && store.room) {
       socket.emit(ReadingRoomClientEvent.HEARTBEAT, {
         roomId: store.room.roomId,
         chapterSlug,
         paragraphId,
+        progress,
+      });
+    }
+  }, [socket]);
+
+  const addQuote = useCallback((chapterSlug: string, paragraphId: string, content: string) => {
+    const store = useReadingRoomStore.getState();
+    if (socket?.connected && store.room) {
+      socket.emit(ReadingRoomClientEvent.ADD_QUOTE, {
+        roomId: store.room.roomId,
+        chapterSlug,
+        paragraphId,
+        content,
+      });
+    }
+  }, [socket]);
+
+  const voteQuote = useCallback((quoteId: string, voteType: 'up' | 'down') => {
+    const store = useReadingRoomStore.getState();
+    if (socket?.connected && store.room) {
+      socket.emit(ReadingRoomClientEvent.VOTE_QUOTE, {
+        roomId: store.room.roomId,
+        quoteId,
+        voteType,
       });
     }
   }, [socket]);
@@ -275,12 +367,15 @@ export const useReadingRoomSocket = (roomId?: string) => {
     changeChapter,
     changeMode,
     endRoom,
+    deleteRoom,
     leaveRoom,
     sendHeartbeat,
     notifyCommented,
     addHighlight,
     askAI,
     sendChatMessage,
+    addQuote,
+    voteQuote,
   };
 };
 

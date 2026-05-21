@@ -4,10 +4,9 @@ import { getErrorMessage } from '@/lib/utils';
 import {
     useDeleteCommentMutation,
     useEditCommentMutation,
-    useLazyGetResolveParentQuery,
     usePostCreateMutation,
 } from '@/features/comments/api/commentApi';
-import { CommentItem, ResolveParentResponse } from '@/features/comments/types/comment.interface';
+import { CommentItem } from '@/features/comments/types/comment.interface';
 import { usePostToggleLikeMutation } from '@/features/likes/api/likeApi';
 
 export interface UseCommentActionsOptions {
@@ -30,8 +29,6 @@ export interface UseCommentActionsResult {
     isEditingComment: boolean;
     isDeletingComment: boolean;
     isPostingReply: boolean;
-    isResolvingParent: boolean;
-    resolvedData: ResolveParentResponse | undefined;
     effectiveParentId: string;
     setIsEditing: (v: boolean) => void;
     setEditText: (v: string) => void;
@@ -76,21 +73,6 @@ export function useCommentActions({
     const [postToggleLike] = usePostToggleLikeMutation();
     const [createComment, { isLoading: isPostingReply }] =
         usePostCreateMutation();
-
-    const [
-        triggerResolveParent,
-        { data: resolvedData, isLoading: isResolvingParent },
-    ] = useLazyGetResolveParentQuery();
-
-    useEffect(() => {
-        if (!showReplies || resolvedData) return;
-
-        triggerResolveParent({
-            targetId,
-            parentId: comment.id,
-            targetType,
-        });
-    }, [showReplies, resolvedData, triggerResolveParent, targetId, comment.id, targetType]);
 
     useEffect(() => {
         setOptimisticLikeCount(comment.likesCount ?? 0);
@@ -165,7 +147,7 @@ export function useCommentActions({
                 targetType,
                 targetId,
                 content,
-                parentId: resolvedData?.parentId ?? comment.id,
+                parentId: comment.parentId ?? comment.id,
             }).unwrap();
 
             setReplyText('');
@@ -179,7 +161,7 @@ export function useCommentActions({
             console.log('Create reply failed:', error);
             toast.error(getErrorMessage(error));
         }
-    }, [replyText, targetType, targetId, resolvedData, comment.id, hasReplyCount, createComment]);
+    }, [replyText, targetType, targetId, comment.id, hasReplyCount, createComment]);
 
     const handleLikeComment = useCallback(async () => {
         try {
@@ -202,8 +184,7 @@ export function useCommentActions({
         }
     }, [optimisticIsLiked, comment.id, comment.isLiked, comment.likesCount, postToggleLike]);
 
-    const effectiveParentId = resolvedData?.parentId ?? comment.id;
-    const level = resolvedData?.level;
+    const effectiveParentId = comment.parentId ?? comment.id;
 
     return {
         isOwner,
@@ -218,8 +199,6 @@ export function useCommentActions({
         isEditingComment,
         isDeletingComment,
         isPostingReply,
-        isResolvingParent,
-        resolvedData,
         effectiveParentId,
         setIsEditing,
         setEditText,

@@ -15,6 +15,8 @@ import { LeaveRoomUseCase } from '@/application/reading-rooms/use-cases/leave-ro
 import { ChangeChapterUseCase } from '@/application/reading-rooms/use-cases/change-chapter/change-chapter.use-case';
 import { ChangeRoomModeUseCase } from '@/application/reading-rooms/use-cases/change-room-mode/change-room-mode.use-case';
 import { EndRoomUseCase } from '@/application/reading-rooms/use-cases/end-room/end-room.use-case';
+import { DeleteRoomUseCase } from '@/application/reading-rooms/use-cases/delete-room/delete-room.use-case';
+import { DeleteRoomCommand } from '@/application/reading-rooms/use-cases/delete-room/delete-room.command';
 import { JoinRoomCommand } from '@/application/reading-rooms/use-cases/join-room/join-room.command';
 import { LeaveRoomCommand } from '@/application/reading-rooms/use-cases/leave-room/leave-room.command';
 import { ChangeChapterCommand } from '@/application/reading-rooms/use-cases/change-chapter/change-chapter.command';
@@ -26,6 +28,16 @@ import { AskAIUseCase } from '@/application/reading-rooms/use-cases/ask-ai/ask-a
 import { AskAICommand } from '@/application/reading-rooms/use-cases/ask-ai/ask-ai.command';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ReadingRoomServerEvent, ReadingRoomClientEvent } from './reading-room.events';
+import { AddCommentUseCase } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.use-case';
+import { AddCommentCommand } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.command';
+import { DeleteCommentUseCase } from '@/application/reading-room-interactions/use-cases/delete-comment/delete-comment.use-case';
+import { DeleteCommentCommand } from '@/application/reading-room-interactions/use-cases/delete-comment/delete-comment.command';
+import { AddReactionUseCase } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.use-case';
+import { AddReactionCommand } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.command';
+import { AddQuoteUseCase } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.use-case';
+import { AddQuoteCommand } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.command';
+import { VoteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.use-case';
+import { VoteQuoteCommand } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.command';
 
 
 @WebSocketGateway({
@@ -44,8 +56,14 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
     private readonly changeChapterUseCase: ChangeChapterUseCase,
     private readonly changeRoomModeUseCase: ChangeRoomModeUseCase,
     private readonly endRoomUseCase: EndRoomUseCase,
+    private readonly deleteRoomUseCase: DeleteRoomUseCase,
     private readonly addHighlightUseCase: AddHighlightUseCase,
     private readonly askAIUseCase: AskAIUseCase,
+    private readonly addCommentUseCase: AddCommentUseCase,
+    private readonly deleteCommentUseCase: DeleteCommentUseCase,
+    private readonly addReactionUseCase: AddReactionUseCase,
+    private readonly addQuoteUseCase: AddQuoteUseCase,
+    private readonly voteQuoteUseCase: VoteQuoteUseCase,
   ) {}
 
   @OnEvent('reading-room.highlight_insight_updated')
@@ -166,6 +184,16 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
           mode: room.mode,
           currentChapterSlug: room.currentChapterSlug,
           status: room.status,
+          highlights: room.highlights.map(h => ({
+            id: h.id!,
+            userId: h.userId,
+            chapterSlug: h.chapterSlug,
+            paragraphId: h.paragraphId,
+            content: h.content,
+            aiInsight: h.aiInsight,
+            createdAt: h.createdAt!,
+          })),
+          chatMessages: room.chatMessages,
         },
         members: room.members.map(m => ({ userId: m.userId, role: m.role })),
         presences,
@@ -272,11 +300,27 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
     }
   }
 
+  @SubscribeMessage('delete_room')
+  async handleDeleteRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new DeleteRoomCommand(userId, body.roomId);
+      await this.deleteRoomUseCase.execute(command);
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.ROOM_DELETED, { deletedBy: userId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Delete room failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'DELETE_ROOM_FAILED', message });
+    }
+  }
+
 
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string; chapterSlug: string; paragraphId?: string },
+    @MessageBody() body: { roomId: string; chapterSlug: string; paragraphId?: string; progress?: number },
   ) {
     const userId = socket.data.userId as string;
     const { displayName, avatarUrl } = socket.data;
@@ -288,6 +332,7 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
         avatarUrl,
         currentChapterSlug: body.chapterSlug,
         paragraphId: body.paragraphId,
+        progress: body.progress,
       });
       
       const presences = await this.presenceService.getRoomPresences(body.roomId);
@@ -329,8 +374,12 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
     
     try {
       // Broadcast user message first for immediate feedback
+      const displayName = socket.data.displayName || 'User';
+      const avatarUrl = socket.data.avatarUrl || '';
       this.server.to(`room:${data.roomId}`).emit(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, {
         userId,
+        displayName,
+        avatarUrl,
         role: 'user',
         content: data.question,
         createdAt: new Date(),
@@ -351,12 +400,139 @@ export class ReadingRoomGateway implements OnGatewayConnection, OnGatewayDisconn
     @MessageBody() data: { roomId: string; content: string },
   ) {
     const userId = socket.data.userId as string;
+    const displayName = socket.data.displayName || 'User';
+    const avatarUrl = socket.data.avatarUrl || '';
     this.server.to(`room:${data.roomId}`).emit(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, {
       userId,
+      displayName,
+      avatarUrl,
       role: 'user',
       content: data.content,
       createdAt: new Date(),
     });
   }
+
+  @SubscribeMessage(ReadingRoomClientEvent.ADD_COMMENT)
+  async handleAddComment(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; chapterSlug: string; paragraphId: string; content: string; parentCommentId?: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new AddCommentCommand(
+        userId, body.roomId, body.chapterSlug, body.paragraphId, body.content, body.parentCommentId,
+      );
+      const comment = await this.addCommentUseCase.execute(command);
+      const displayName = socket.data.displayName || 'User';
+
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.COMMENT_ADDED, {
+        id: comment.id,
+        paragraphId: comment.paragraphId,
+        chapterSlug: comment.chapterSlug,
+        content: comment.content,
+        parentCommentId: comment.parentCommentId,
+        userId,
+        displayName,
+        createdAt: comment.createdAt,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Add comment failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'COMMENT_FAILED', message });
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.DELETE_COMMENT)
+  async handleDeleteComment(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; commentId: string; paragraphId: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new DeleteCommentCommand(userId, body.commentId, body.roomId, body.paragraphId);
+      await this.deleteCommentUseCase.execute(command);
+
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.COMMENT_DELETED, {
+        commentId: body.commentId,
+        paragraphId: body.paragraphId,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Delete comment failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'COMMENT_DELETE_FAILED', message });
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.ADD_REACTION)
+  async handleAddReaction(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; chapterSlug: string; paragraphId: string; reactionType: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new AddReactionCommand(userId, body.roomId, body.chapterSlug, body.paragraphId, body.reactionType);
+      const reaction = await this.addReactionUseCase.execute(command);
+      const displayName = socket.data.displayName || 'User';
+
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.REACTION_ADDED, {
+        id: reaction.id,
+        paragraphId: reaction.paragraphId,
+        reactionType: reaction.reactionType,
+        userId,
+        displayName,
+        createdAt: reaction.createdAt,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Add reaction failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'REACTION_FAILED', message });
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.ADD_QUOTE)
+  async handleAddQuote(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; chapterSlug: string; paragraphId: string; content: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new AddQuoteCommand(userId, body.roomId, body.chapterSlug, body.paragraphId, body.content);
+      const quote = await this.addQuoteUseCase.execute(command);
+
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.QUOTE_ADDED, {
+        id: quote.id,
+        content: quote.content,
+        chapterSlug: quote.chapterSlug,
+        paragraphId: quote.paragraphId,
+        userId,
+        displayName: socket.data.displayName,
+        voteCount: 0,
+        createdAt: quote.createdAt,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Add quote failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'QUOTE_FAILED', message });
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.VOTE_QUOTE)
+  async handleVoteQuote(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; quoteId: string; voteType: 'up' | 'down' },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new VoteQuoteCommand(userId, body.roomId, body.quoteId, body.voteType);
+      const result = await this.voteQuoteUseCase.execute(command);
+
+      this.server.to(`room:${body.roomId}`).emit(ReadingRoomServerEvent.QUOTE_VOTED, {
+        quoteId: body.quoteId,
+        voteCount: result.voteCount,
+        userId,
+        voteType: result.userVoteType,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Vote quote failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, { code: 'QUOTE_VOTE_FAILED', message });
+    }
+  }
+
 }
 

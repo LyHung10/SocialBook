@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -9,6 +10,8 @@ import {
 
 import { CreateRoomCommand } from '@/application/reading-rooms/use-cases/create-room/create-room.command';
 import { CreateRoomUseCase } from '@/application/reading-rooms/use-cases/create-room/create-room.use-case';
+import { DeleteRoomUseCase } from '@/application/reading-rooms/use-cases/delete-room/delete-room.use-case';
+import { DeleteRoomCommand } from '@/application/reading-rooms/use-cases/delete-room/delete-room.command';
 import { GetMyActiveRoomsUseCase } from '@/application/reading-rooms/use-cases/get-my-active-rooms/get-my-active-rooms.use-case';
 import { GetMyActiveRoomsQuery } from '@/application/reading-rooms/use-cases/get-my-active-rooms/get-my-active-rooms.query';
 import { GetRoomByCodeUseCase } from '@/application/reading-rooms/use-cases/get-room-by-code/get-room-by-code.use-case';
@@ -24,6 +27,7 @@ import { ReadingRoomResponseDto } from './dto/reading-room.response.dto';
 export class ReadingRoomsController {
   constructor(
     private readonly createRoomUseCase: CreateRoomUseCase,
+    private readonly deleteRoomUseCase: DeleteRoomUseCase,
     private readonly getMyActiveRoomsUseCase: GetMyActiveRoomsUseCase,
     private readonly getRoomByCodeUseCase: GetRoomByCodeUseCase,
   ) {}
@@ -56,6 +60,15 @@ export class ReadingRoomsController {
       message: 'Lấy danh sách phòng hoạt động thành công',
       data: ReadingRoomResponseDto.fromArray(results),
     };
+  }
+
+  @Delete(':code')
+  async deleteRoom(
+    @CurrentUser('id') userId: string,
+    @Param('code') code: string,
+  ) {
+    await this.deleteRoomUseCase.execute(new DeleteRoomCommand(userId, code));
+    return { message: 'Xoá phòng đọc thành công' };
   }
 
   @Get(':code')

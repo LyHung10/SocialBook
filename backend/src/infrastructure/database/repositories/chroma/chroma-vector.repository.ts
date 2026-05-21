@@ -58,7 +58,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       const chromaUrl = this.configService.get<string>('env.CHROMA_URL', 'http://localhost:8000');
       const collectionName = this.configService.get<string>(
         'env.CHROMA_COLLECTION',
-        'socialbook_vectors',
+        'socialbook_vectors_v2',
       );
 
       this.logger.log(`🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`);
@@ -66,7 +66,6 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       this.chromaClient = new ChromaClient({ path: chromaUrl });
       this.collection = await this.chromaClient.getOrCreateCollection({
         name: collectionName,
-        metadata: { 'hnsw:space': 'cosine' },
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
@@ -347,7 +346,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     try {
       const collectionName = this.configService.get<string>(
         'env.CHROMA_COLLECTION',
-        'socialbook_vectors',
+        'socialbook_vectors_v2',
       );
 
       this.logger.log(`🗑️ Permanently deleting collection: ${collectionName}`);

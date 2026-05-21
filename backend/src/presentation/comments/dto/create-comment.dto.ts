@@ -11,6 +11,7 @@ export enum TargetTypeEnum {
   CHAPTER = 'chapter',
   POST = 'post',
   AUTHOR = 'author',
+  PARAGRAPH = 'paragraph',
 }
 
 export class CreateCommentDto {

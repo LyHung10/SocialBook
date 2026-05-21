@@ -66,8 +66,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const socket = getSocket(namespace);
     
-    // Cập nhật auth token trước khi kết nối
-    socket.auth = { token };
+    // Dùng function để Socket.IO tự động lấy token mới nhất mỗi lần (re)connect
+    socket.auth = (cb: (data: Record<string, string>) => void) => {
+      cb({ token: getAccessToken() || '' });
+    };
     
     if (!socket.connected) {
       socket.connect();

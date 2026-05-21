@@ -8,4 +8,5 @@ export abstract class IReadingRoomRepository {
   abstract findHistoryByUser(userId: string, options?: { skip?: number; limit?: number }): Promise<{ items: ReadingRoom[]; total: number }>;
   abstract save(room: ReadingRoom): Promise<void>;
   abstract updateStatus(id: RoomId, status: 'active' | 'ended'): Promise<void>;
+  abstract delete(id: RoomId): Promise<void>;
 }

@@ -5,7 +5,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
-import { MessageSquarePlus, Share2, Highlighter, Sparkles, User, MessageCircle } from 'lucide-react';
+import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
+import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
+import { Highlighter, Sparkles, User, MessageCircle, QuoteIcon } from 'lucide-react';
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
@@ -13,7 +15,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
 import { useState, useRef, useEffect } from 'react';
 import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
-import { Languages, ScrollText, Sparkles as SparklesIcon } from 'lucide-react';
+import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
+import { Sparkles as SparklesIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
@@ -57,11 +60,12 @@ export function ChapterContent({
     );
 
 
-    const roomAnnotations = useReadingRoomStore((state) => state.annotations);
     const room = useReadingRoomStore((state) => state.room);
     const highlights = useReadingRoomStore((state) => state.highlights);
-    const { addHighlight } = useReadingRoomSocket();
+    const { addHighlight, addQuote } = useReadingRoomSocket();
     const { user } = useAppAuth();
+
+    const [openCommentParaId, setOpenCommentParaId] = useState<string | null>(null);
 
     const [selection, setSelection] = useState<{
         text: string;
@@ -94,6 +98,44 @@ export function ChapterContent({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const [fetchComments] = useLazyGetRoomCommentsQuery();
+    const [fetchReactions] = useLazyGetRoomReactionsQuery();
+
+    useEffect(() => {
+        if (!room?.roomId || !room?.currentChapterSlug || !chapterId) return;
+
+        let cancelled = false;
+        useReadingRoomStore.setState({ roomComments: [], reactions: {} });
+
+        const hydrate = async () => {
+            try {
+                const [comments, reactionsData] = await Promise.all([
+                    fetchComments({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
+                    fetchReactions({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
+                ]);
+                if (cancelled) return;
+
+                useReadingRoomStore.getState().setRoomComments(comments);
+
+                const reactions: Record<string, Record<string, string[]>> = {};
+                for (const r of reactionsData) {
+                    if (!reactions[r.paragraphId]) reactions[r.paragraphId] = {};
+                    if (!reactions[r.paragraphId][r.reactionType]) reactions[r.paragraphId][r.reactionType] = [];
+                    if (!reactions[r.paragraphId][r.reactionType].includes(r.userId)) {
+                        reactions[r.paragraphId][r.reactionType].push(r.userId);
+                    }
+                }
+                useReadingRoomStore.setState({ reactions });
+            } catch {
+                // Hydration errors are non-critical; real-time socket will still work
+            }
+        };
+
+        hydrate();
+
+        return () => { cancelled = true; };
+    }, [room?.roomId, chapterId, fetchComments, fetchReactions]);
+
     const handleMouseUp = (paraId: string) => {
 
         const sel = window.getSelection();
@@ -104,7 +146,7 @@ export function ChapterContent({
 
         const range = sel.getRangeAt(0);
         const rect = range.getBoundingClientRect();
-        
+
         setSelection({
             text: sel.toString(),
             paraId,
@@ -124,7 +166,7 @@ export function ChapterContent({
         };
 
         setAiAnalysis({ type, content: '', isLoading: true });
-        
+
         try {
             const response = await askAI({
                 bookSlug,
@@ -143,13 +185,22 @@ export function ChapterContent({
 
     const handleAddHighlight = () => {
         if (!selection || !room) return;
-        
+
         addHighlight({
             chapterSlug: room.currentChapterSlug,
             paragraphId: selection.paraId,
             content: selection.text,
         });
-        
+
+        setSelection(null);
+        window.getSelection()?.removeAllRanges();
+    };
+
+    const handleAddQuote = () => {
+        if (!selection || !room) return;
+
+        addQuote(room.currentChapterSlug, selection.paraId, selection.text);
+
         setSelection(null);
         window.getSelection()?.removeAllRanges();
     };
@@ -169,77 +220,49 @@ export function ChapterContent({
                 <article className="space-y-4">
                     {paragraphs.map((para) => {
                         const paraHighlights = highlights.filter(h => h.paragraphId === para.id);
-                        
+
                         return (
-                            <div 
-                                key={para.id} 
+                            <div
+                                key={para.id}
                                 className="group relative"
                                 onMouseUp={() => handleMouseUp(para.id)}
                             >
-                                <div className="flex items-start">
-                                    <p
-                                        className={`transition-colors duration-300 w-full relative ${
-                                            activeParagraphId === para.id
-                                                ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
-                                                : ''
+                                <p
+                                    className={`transition-colors duration-300 w-full relative ${activeParagraphId === para.id
+                                            ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
+                                            : ''
                                         }`}
-                                        style={{
-                                            fontSize: `${settings.fontSize}px`,
-                                            fontFamily: settings.fontFamily,
-                                            lineHeight: settings.lineHeight,
-                                            letterSpacing: `${settings.letterSpacing}px`,
-                                            textAlign: settings.textAlign as any,
-                                        }}
-                                    >
-                                        <ChapterTextRenderer 
-                                            content={para.content} 
-                                            highlights={paraHighlights} 
-                                            knowledge={data?.entities || []}
+                                    style={{
+                                        fontSize: `${settings.fontSize}px`,
+                                        fontFamily: settings.fontFamily,
+                                        lineHeight: settings.lineHeight,
+                                        letterSpacing: `${settings.letterSpacing}px`,
+                                        textAlign: settings.textAlign as any,
+                                    }}
+                                >
+                                    <ChapterTextRenderer
+                                        content={para.content}
+                                        highlights={paraHighlights}
+                                        knowledge={data?.entities || []}
+                                    />
+                                </p>
+
+                                {room && (
+                                    <div className={`flex items-center gap-3 mt-1 transition-opacity duration-200 ${openCommentParaId === para.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                        <ParagraphAnnotations
+                                            roomId={room.roomId}
+                                            chapterSlug={room.currentChapterSlug}
+                                            paragraphId={para.id}
+                                            isOpen={openCommentParaId === para.id}
+                                            onToggle={(open) => setOpenCommentParaId(open ? para.id : null)}
                                         />
-                                    </p>
-
-
-                                    <div className="absolute -right-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    onClick={() => handleToggleComments(para)}
-                                                    className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform relative"
-                                                    aria-label="Bình luận đoạn này"
-                                                >
-                                                    <MessageSquarePlus size={16} />
-                                                    {room && roomAnnotations[para.id] > 0 && (
-                                                        <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                                                            {roomAnnotations[para.id]}
-                                                        </span>
-                                                    )}
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="right">
-                                                <p>Bình luận</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    onClick={() => handleOpenPostModal(para)}
-                                                    className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform"
-                                                    aria-label="Chia sẻ trích dẫn"
-                                                >
-                                                    <Share2 size={16} />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="right">
-                                                <p>Chia sẻ</p>
-                                            </TooltipContent>
-                                        </Tooltip>
+                                        <ParagraphReactions
+                                            roomId={room.roomId}
+                                            chapterSlug={room.currentChapterSlug}
+                                            paragraphId={para.id}
+                                        />
                                     </div>
-                                </div>
+                                )}
                             </div>
                         );
                     })}
@@ -247,7 +270,7 @@ export function ChapterContent({
 
                 <AnimatePresence>
                     {selection && (
-                        <div 
+                        <div
                             ref={menuRef}
                             className="fixed z-50 pointer-events-none"
                             style={{
@@ -260,7 +283,7 @@ export function ChapterContent({
                                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                className="pointer-events-auto flex items-center gap-0.5 p-1 bg-background/95 backdrop-blur-xl border border-border rounded-full shadow-2xl shadow-primary/20 -translate-x-1/2 -translate-y-[120%]"
+                                className="pointer-events-auto flex items-center gap-0.5 p-1 bg-white dark:bg-black/80 backdrop-blur-xl border border-border/60 dark:border-border rounded-full shadow-2xl shadow-primary/20 -translate-x-1/2 -translate-y-[120%]"
                             >
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -276,48 +299,6 @@ export function ChapterContent({
                                     <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
                                 </Tooltip>
 
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-9 w-9 rounded-full p-0 hover:bg-primary/10 hover:text-primary"
-                                            onClick={() => handleAIAction('summarize')}
-                                        >
-                                            <ScrollText className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p className="text-[10px]">Tóm tắt</p></TooltipContent>
-                                </Tooltip>
-
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-9 w-9 rounded-full p-0 hover:bg-primary/10 hover:text-primary"
-                                            onClick={() => handleAIAction('character')}
-                                        >
-                                            <User className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p className="text-[10px]">Phân tích nhân vật</p></TooltipContent>
-                                </Tooltip>
-
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-9 w-9 rounded-full p-0 hover:bg-primary/10 hover:text-primary"
-                                            onClick={() => handleAIAction('translate')}
-                                        >
-                                            <Languages className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p className="text-[10px]">Dịch thuật</p></TooltipContent>
-                                </Tooltip>
-
                                 <div className="w-[1px] h-4 bg-border mx-1" />
 
                                 <Button
@@ -329,6 +310,16 @@ export function ChapterContent({
                                     <Highlighter className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold">Highlight</span>
                                 </Button>
+
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-9 rounded-full gap-2 px-3 hover:bg-primary/10 hover:text-primary"
+                                    onClick={handleAddQuote}
+                                >
+                                    <QuoteIcon className="w-3.5 h-3.5" />
+                                    <span className="text-[11px] font-bold">Trích dẫn</span>
+                                </Button>
                             </motion.div>
 
                             {/* AI Result Bubble */}
@@ -338,7 +329,7 @@ export function ChapterContent({
                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="pointer-events-auto absolute top-2 left-0 -translate-x-1/2 w-80 max-h-60 overflow-hidden rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-2xl p-4 flex flex-col gap-3"
+                                        className="pointer-events-auto absolute top-2 left-0 -translate-x-1/2 w-80 max-h-60 overflow-hidden rounded-2xl bg-white dark:bg-black/80 backdrop-blur-xl border border-border/60 dark:border-border shadow-2xl p-4 flex flex-col gap-3"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
@@ -349,10 +340,10 @@ export function ChapterContent({
                                                     AI {aiAnalysis.type === 'explain' ? 'Giải thích' : aiAnalysis.type === 'summarize' ? 'Tóm tắt' : aiAnalysis.type === 'character' ? 'Nhân vật' : 'Dịch thuật'}
                                                 </span>
                                             </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-6 w-6 rounded-full" 
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 rounded-full"
                                                 onClick={() => setAiAnalysis(null)}
                                             >
                                                 <span className="text-xs">×</span>
@@ -391,19 +382,19 @@ export function ChapterContent({
     );
 }
 
-const ChapterTextRenderer = ({ 
-    content, 
-    highlights, 
-    knowledge 
-}: { 
-    content: string, 
-    highlights: any[], 
-    knowledge: KnowledgeEntity[] 
+const ChapterTextRenderer = ({
+    content,
+    highlights,
+    knowledge
+}: {
+    content: string,
+    highlights: any[],
+    knowledge: KnowledgeEntity[]
 }) => {
     // 1. Process Knowledge (Dotted Underline)
     // Only show vocabulary and reference as underlines to avoid clutter
     const relevantKnowledge = knowledge.filter(k => ['vocabulary', 'reference', 'concept'].includes(k.type));
-    
+
     let parts: (string | React.ReactNode)[] = [content];
 
     // Simple replacement strategy
@@ -467,7 +458,7 @@ const ChapterTextRenderer = ({
                             </span>
                         </TooltipTrigger>
                         <TooltipContent className="p-0 border-none bg-transparent shadow-none" side="top" align="center">
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className="w-64 p-4 rounded-2xl bg-background/80 backdrop-blur-xl border border-border shadow-2xl space-y-3"
@@ -480,7 +471,7 @@ const ChapterTextRenderer = ({
                                         {h.user?.displayName || 'Thành viên'} highlight
                                     </span>
                                 </div>
-                                
+
                                 {h.aiInsight ? (
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary">

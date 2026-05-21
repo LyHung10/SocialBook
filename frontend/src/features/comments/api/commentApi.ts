@@ -68,7 +68,7 @@ export const commentApi = createApi({
             GetResolveParentRequest
         >({
             query: ({ targetId, parentId, targetType }) => ({
-                url: NESTJS_COMMENTS_ENDPOINTS.getCommentsByTarget,
+                url: NESTJS_COMMENTS_ENDPOINTS.getResolveParent,
                 method: 'GET',
                 params: { targetId, parentId, targetType },
             }),

@@ -106,10 +106,10 @@ export class Review extends Entity<string> {
     return this._props.moderationStatus;
   }
   get user(): { id: string; username: string; image: string } | undefined {
-    return this._props.user;
+    return this._props.user ? { ...this._props.user } : undefined;
   }
   get book(): { id: string; title: string; coverUrl: string } | undefined {
-    return this._props.book;
+    return this._props.book ? { ...this._props.book } : undefined;
   }
 
   update(content: string, rating: number): void {

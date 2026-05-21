@@ -23,6 +23,7 @@ import { TextToSpeechApplicationModule } from './text-to-speech/text-to-speech-a
 import { GeminiApplicationModule } from './gemini/gemini-application.module';
 import { RecommendationsApplicationModule } from './recommendations/recommendations-application.module';
 import { AnalyticsApplicationModule } from './analytics/analytics-application.module';
+import { ReadingRoomInteractionsApplicationModule } from './reading-room-interactions/reading-room-interactions-application.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AnalyticsApplicationModule } from './analytics/analytics-application.mo
     GeminiApplicationModule,
     RecommendationsApplicationModule,
     AnalyticsApplicationModule,
+    ReadingRoomInteractionsApplicationModule,
   ],
   exports: [
     UsersApplicationModule,
@@ -76,6 +78,7 @@ import { AnalyticsApplicationModule } from './analytics/analytics-application.mo
     GeminiApplicationModule,
     RecommendationsApplicationModule,
     AnalyticsApplicationModule,
+    ReadingRoomInteractionsApplicationModule,
   ],
 })
 export class ApplicationModule {}
