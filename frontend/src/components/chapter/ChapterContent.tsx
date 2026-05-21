@@ -2,14 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
 import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
 import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
 import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
-import { Highlighter, Sparkles, User, QuoteIcon } from 'lucide-react';
+import { Highlighter, Sparkles, User, QuoteIcon, Trash2 } from 'lucide-react';
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
+import { useAppAuth } from '@/features/auth/hooks';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
 import { useState, useRef, useEffect } from 'react';
@@ -59,7 +61,8 @@ export function ChapterContent({
 
     const room = useReadingRoomStore((state) => state.room);
     const highlights = useReadingRoomStore((state) => state.highlights);
-    const { addHighlight, addQuote } = useReadingRoomSocket();
+    const { addHighlight, removeHighlight, addQuote } = useReadingRoomSocket();
+    const { user } = useAppAuth();
 
     const [openCommentParaId, setOpenCommentParaId] = useState<string | null>(null);
 
@@ -240,6 +243,8 @@ export function ChapterContent({
                                         content={para.content}
                                         highlights={paraHighlights}
                                         knowledge={data?.entities || []}
+                                        currentUserId={user?.id}
+                                        onRemoveHighlight={removeHighlight}
                                     />
                                 </p>
 
@@ -295,27 +300,31 @@ export function ChapterContent({
                                     <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
                                 </Tooltip>
 
-                                <div className="w-[1px] h-4 bg-border mx-1" />
+                                {room && (
+                                    <>
+                                        <div className="w-[1px] h-4 bg-border mx-1" />
 
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-9 rounded-full gap-2 px-3 hover:bg-primary/10 hover:text-primary"
-                                    onClick={handleAddHighlight}
-                                >
-                                    <Highlighter className="w-3.5 h-3.5" />
-                                    <span className="text-[11px] font-bold">Highlight</span>
-                                </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-9 rounded-full gap-2 px-3 hover:bg-primary/10 hover:text-primary"
+                                            onClick={handleAddHighlight}
+                                        >
+                                            <Highlighter className="w-3.5 h-3.5" />
+                                            <span className="text-[11px] font-bold">Highlight</span>
+                                        </Button>
 
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-9 rounded-full gap-2 px-3 hover:bg-primary/10 hover:text-primary"
-                                    onClick={handleAddQuote}
-                                >
-                                    <QuoteIcon className="w-3.5 h-3.5" />
-                                    <span className="text-[11px] font-bold">Trích dẫn</span>
-                                </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-9 rounded-full gap-2 px-3 hover:bg-primary/10 hover:text-primary"
+                                            onClick={handleAddQuote}
+                                        >
+                                            <QuoteIcon className="w-3.5 h-3.5" />
+                                            <span className="text-[11px] font-bold">Trích dẫn</span>
+                                        </Button>
+                                    </>
+                                )}
                             </motion.div>
 
                             {/* AI Result Bubble */}
@@ -382,11 +391,15 @@ export function ChapterContent({
 const ChapterTextRenderer = ({
     content,
     highlights,
-    knowledge
+    knowledge,
+    currentUserId,
+    onRemoveHighlight,
 }: {
     content: string,
     highlights: RoomHighlight[],
-    knowledge: KnowledgeEntity[]
+    knowledge: KnowledgeEntity[],
+    currentUserId?: string,
+    onRemoveHighlight?: (highlightId: string) => void,
 }) => {
     // 1. Process Knowledge (Dotted Underline)
     // Only show vocabulary and reference as underlines to avoid clutter
@@ -448,25 +461,36 @@ const ChapterTextRenderer = ({
             } else {
                 newParts.push(part.substring(0, index));
                 newParts.push(
-                    <Tooltip key={`h-${h.id}-${index}`}>
-                        <TooltipTrigger asChild>
-                            <span className="bg-yellow-400/30 dark:bg-yellow-600/40 border-b-2 border-yellow-500/50 cursor-help transition-all hover:bg-yellow-400/50">
+                    <Popover key={`h-${h.id}-${index}`}>
+                        <PopoverTrigger asChild>
+                            <span className="bg-yellow-400/30 dark:bg-yellow-600/40 border-b-2 border-yellow-500/50 cursor-pointer transition-all hover:bg-yellow-400/50">
                                 {h.content}
                             </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="p-0 border-none bg-transparent shadow-none" side="top" align="center">
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 border-none bg-transparent shadow-none" side="top" align="center" sideOffset={10}>
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className="w-64 p-4 rounded-2xl bg-background/80 backdrop-blur-xl border border-border shadow-2xl space-y-3"
                             >
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <User className="w-3.5 h-3.5 text-primary" />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                                            <User className="w-3.5 h-3.5 text-primary" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground">
+                                            {h.user?.displayName || 'Thành viên'} highlight
+                                        </span>
                                     </div>
-                                    <span className="text-[10px] font-black uppercase text-muted-foreground">
-                                        {h.user?.displayName || 'Thành viên'} highlight
-                                    </span>
+                                    {currentUserId && h.userId === currentUserId && onRemoveHighlight && (
+                                        <button
+                                            className="p-1 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                            onClick={(e) => { e.stopPropagation(); onRemoveHighlight(h.id); }}
+                                            title="Xóa highlight"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    )}
                                 </div>
 
                                 {h.aiInsight ? (
@@ -486,8 +510,8 @@ const ChapterTextRenderer = ({
                                     </div>
                                 )}
                             </motion.div>
-                        </TooltipContent>
-                    </Tooltip>
+                        </PopoverContent>
+                    </Popover>
                 );
                 newParts.push(part.substring(index + h.content.length));
             }

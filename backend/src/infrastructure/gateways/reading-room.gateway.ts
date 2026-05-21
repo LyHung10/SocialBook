@@ -25,6 +25,8 @@ import { ChangeRoomModeCommand } from '@/application/reading-rooms/use-cases/cha
 import { EndRoomCommand } from '@/application/reading-rooms/use-cases/end-room/end-room.command';
 import { AddHighlightUseCase } from '@/application/reading-rooms/use-cases/add-highlight/add-highlight.use-case';
 import { AddHighlightCommand } from '@/application/reading-rooms/use-cases/add-highlight/add-highlight.command';
+import { RemoveHighlightUseCase } from '@/application/reading-rooms/use-cases/remove-highlight/remove-highlight.use-case';
+import { RemoveHighlightCommand } from '@/application/reading-rooms/use-cases/remove-highlight/remove-highlight.command';
 import { AskAIUseCase } from '@/application/reading-rooms/use-cases/ask-ai/ask-ai.use-case';
 import { AskAICommand } from '@/application/reading-rooms/use-cases/ask-ai/ask-ai.command';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -65,6 +67,7 @@ export class ReadingRoomGateway
     private readonly endRoomUseCase: EndRoomUseCase,
     private readonly deleteRoomUseCase: DeleteRoomUseCase,
     private readonly addHighlightUseCase: AddHighlightUseCase,
+    private readonly removeHighlightUseCase: RemoveHighlightUseCase,
     private readonly askAIUseCase: AskAIUseCase,
     private readonly addCommentUseCase: AddCommentUseCase,
     private readonly deleteCommentUseCase: DeleteCommentUseCase,
@@ -136,6 +139,36 @@ export class ReadingRoomGateway
         error instanceof Error ? error.message : 'Highlight failed';
       socket.emit(ReadingRoomServerEvent.ERROR, {
         code: 'HIGHLIGHT_FAILED',
+        message,
+      });
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.REMOVE_HIGHLIGHT)
+  async handleRemoveHighlight(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; highlightId: string },
+  ) {
+    const userId = socket.data.userId as string;
+    try {
+      const command = new RemoveHighlightCommand(
+        body.roomId,
+        userId,
+        body.highlightId,
+      );
+      await this.removeHighlightUseCase.execute(command);
+
+      this.server
+        .to(`room:${body.roomId}`)
+        .emit(ReadingRoomServerEvent.HIGHLIGHT_REMOVED, {
+          highlightId: body.highlightId,
+          removedBy: userId,
+        });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Remove highlight failed';
+      socket.emit(ReadingRoomServerEvent.ERROR, {
+        code: 'HIGHLIGHT_REMOVE_FAILED',
         message,
       });
     }

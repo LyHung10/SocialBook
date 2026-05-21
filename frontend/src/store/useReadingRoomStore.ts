@@ -54,6 +54,7 @@ interface ReadingRoomState {
   updateChapter: (chapterSlug: string) => void;
   setHighlights: (highlights: RoomHighlight[]) => void;
   addHighlight: (highlight: RoomHighlight) => void;
+  removeHighlight: (id: string) => void;
   updateHighlightInsight: (id: string, insight: string) => void;
   setChatMessages: (messages: ChatMessage[]) => void;
   addChatMessage: (message: ChatMessage) => void;
@@ -133,6 +134,9 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
   })),
   updateHighlightInsight: (id, insight) => set((state) => ({
     highlights: state.highlights.map(h => h.id === id ? { ...h, aiInsight: insight } : h),
+  })),
+  removeHighlight: (id) => set((state) => ({
+    highlights: state.highlights.filter(h => h.id !== id),
   })),
   setChatMessages: (messages) => set({ chatMessages: messages }),
   addChatMessage: (message) => set((state) => ({

@@ -182,6 +182,19 @@ export class ReadingRoom extends Entity<RoomId> {
     }
   }
 
+  removeHighlight(highlightId: string, userId: string): void {
+    const index = this._props.highlights.findIndex((h) => h.id === highlightId);
+    if (index === -1) {
+      throw new BadRequestDomainException('Highlight not found');
+    }
+    if (this._props.highlights[index].userId !== userId) {
+      throw new BadRequestDomainException('Only the highlight owner can remove it');
+    }
+    this._props.highlights.splice(index, 1);
+    this.markAsUpdated();
+  }
+
+
   addChatMessage(props: {
     userId: string;
     role: 'user' | 'ai';

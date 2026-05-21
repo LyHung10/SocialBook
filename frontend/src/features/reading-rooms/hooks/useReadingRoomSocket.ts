@@ -35,6 +35,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     socket.off(ReadingRoomServerEvent.REACTION_ADDED);
     socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
     socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
+    socket.off(ReadingRoomServerEvent.HIGHLIGHT_REMOVED);
 
     socket.on('connect', () => {
       if (roomId) {
@@ -140,6 +141,10 @@ export const useReadingRoomSocket = (roomId?: string) => {
       useReadingRoomStore.getState().updateHighlightInsight(data.highlightId, data.insight);
     });
 
+    socket.on(ReadingRoomServerEvent.HIGHLIGHT_REMOVED, (data) => {
+      useReadingRoomStore.getState().removeHighlight(data.highlightId);
+    });
+
     socket.on(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, (message) => {
       useReadingRoomStore.getState().addChatMessage(message);
     });
@@ -199,6 +204,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
       socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
       socket.off(ReadingRoomServerEvent.NEW_HIGHLIGHT);
+      socket.off(ReadingRoomServerEvent.HIGHLIGHT_REMOVED);
       socket.off(ReadingRoomServerEvent.UPDATE_HIGHLIGHT_INSIGHT);
       socket.off(ReadingRoomServerEvent.NEW_CHAT_MESSAGE);
       socket.off(ReadingRoomServerEvent.ERROR);
@@ -217,6 +223,16 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.emit(ReadingRoomClientEvent.ADD_HIGHLIGHT, { 
         roomId: store.room.roomId,
         ...data
+      });
+    }
+  }, [socket]);
+
+  const removeHighlight = useCallback((highlightId: string) => {
+    const store = useReadingRoomStore.getState();
+    if (socket?.connected && store.room) {
+      socket.emit(ReadingRoomClientEvent.REMOVE_HIGHLIGHT, {
+        roomId: store.room.roomId,
+        highlightId,
       });
     }
   }, [socket]);
@@ -240,8 +256,6 @@ export const useReadingRoomSocket = (roomId?: string) => {
       });
     }
   }, [socket]);
-
-
 
   const changeChapter = useCallback((chapterSlug: string) => {
     const store = useReadingRoomStore.getState();
@@ -372,11 +386,10 @@ export const useReadingRoomSocket = (roomId?: string) => {
     sendHeartbeat,
     notifyCommented,
     addHighlight,
+    removeHighlight,
     askAI,
     sendChatMessage,
     addQuote,
     voteQuote,
   };
 };
-
-
