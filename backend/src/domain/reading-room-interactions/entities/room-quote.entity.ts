@@ -49,18 +49,22 @@ export class RoomQuote extends Entity<string> {
     votes: QuoteVote[];
     createdAt: Date;
   }): RoomQuote {
-    return new RoomQuote(props.id, {
-      roomId: props.roomId,
-      content: props.content,
-      userId: props.userId,
-      chapterSlug: props.chapterSlug,
-      paragraphId: props.paragraphId,
-      votes: props.votes,
-    }, props.createdAt);
+    return new RoomQuote(
+      props.id,
+      {
+        roomId: props.roomId,
+        content: props.content,
+        userId: props.userId,
+        chapterSlug: props.chapterSlug,
+        paragraphId: props.paragraphId,
+        votes: props.votes,
+      },
+      props.createdAt,
+    );
   }
 
   addVote(userId: string, type: 'up' | 'down'): void {
-    const existing = this._props.votes.find(v => v.userId === userId);
+    const existing = this._props.votes.find((v) => v.userId === userId);
     if (existing) {
       existing.type = type;
     } else {
@@ -69,19 +73,31 @@ export class RoomQuote extends Entity<string> {
   }
 
   removeVote(userId: string): void {
-    this._props.votes = this._props.votes.filter(v => v.userId !== userId);
+    this._props.votes = this._props.votes.filter((v) => v.userId !== userId);
   }
 
   get voteCount(): number {
-    const ups = this._props.votes.filter(v => v.type === 'up').length;
-    const downs = this._props.votes.filter(v => v.type === 'down').length;
+    const ups = this._props.votes.filter((v) => v.type === 'up').length;
+    const downs = this._props.votes.filter((v) => v.type === 'down').length;
     return ups - downs;
   }
 
-  get roomId(): string { return this._props.roomId; }
-  get content(): string { return this._props.content; }
-  get userId(): string { return this._props.userId; }
-  get chapterSlug(): string { return this._props.chapterSlug; }
-  get paragraphId(): string { return this._props.paragraphId; }
-  get votes(): QuoteVote[] { return [...this._props.votes]; }
+  get roomId(): string {
+    return this._props.roomId;
+  }
+  get content(): string {
+    return this._props.content;
+  }
+  get userId(): string {
+    return this._props.userId;
+  }
+  get chapterSlug(): string {
+    return this._props.chapterSlug;
+  }
+  get paragraphId(): string {
+    return this._props.paragraphId;
+  }
+  get votes(): QuoteVote[] {
+    return [...this._props.votes];
+  }
 }

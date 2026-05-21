@@ -25,7 +25,10 @@ import {
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI', 'mongodb://localhost:27017/socialbook'),
+        uri: configService.get<string>(
+          'MONGO_URI',
+          'mongodb://localhost:27017/socialbook',
+        ),
       }),
       inject: [ConfigService],
     }),
@@ -40,11 +43,11 @@ class SeedModule {}
 
 async function seedReadingHistory() {
   const args = process.argv.slice(2);
-  const daysArg = args.find(arg => arg.startsWith('--days='));
+  const daysArg = args.find((arg) => arg.startsWith('--days='));
   const days = daysArg ? parseInt(daysArg.split('=')[1], 10) : 30;
 
   const app = await NestFactory.createApplicationContext(SeedModule);
-  
+
   const userModel = app.get<Model<any>>(`${User.name}Model`);
   const chapterModel = app.get<Model<any>>(`${Chapter.name}Model`);
   const progressModel = app.get<Model<any>>(`${Progress.name}Model`);
@@ -94,7 +97,9 @@ async function seedReadingHistory() {
     }
   }
 
-  console.log(`✅ Seeded ${createdCount} reading history records for ${days} days`);
+  console.log(
+    `✅ Seeded ${createdCount} reading history records for ${days} days`,
+  );
   await app.close();
   process.exit(0);
 }

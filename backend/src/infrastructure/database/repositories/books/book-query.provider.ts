@@ -8,19 +8,20 @@ import { BookListReadModel } from '@/domain/books/read-models/book-list.read-mod
 import { IBookQueryProvider } from '@/domain/books/repositories/book-query.provider.interface';
 import { BookFilter } from '@/domain/books/repositories/book.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
 import { Genre, GenreDocument } from '../../schemas/genre.schema';
-import { BookMapper } from './book.mapper';
-import { RawBookDocument } from './book.raw-types';
+import { BookMapper, RawBookDocument } from './book.mapper';
 import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { SearchQuery } from '@/domain/chroma/entities/search-query.entity';
 import { ContentType } from '@/domain/chroma/value-objects/content-type.vo';
 
 @Injectable()
 export class BookQueryProvider implements IBookQueryProvider {
+  private readonly logger = new Logger(BookQueryProvider.name);
+
   constructor(
     @InjectModel(Book.name) private readonly bookModel: Model<BookDocument>,
     @InjectModel(Genre.name) private readonly genreModel: Model<GenreDocument>,
@@ -86,7 +87,7 @@ export class BookQueryProvider implements IBookQueryProvider {
 
         const vectorResults = await this.vectorRepository.search(searchQuery);
         if (vectorResults.length > 0) {
-          orderedIds = vectorResults.map(r => r.document.contentId);
+          orderedIds = vectorResults.map((r) => r.document.contentId);
           isVectorSearch = true;
           // Clear standard search to avoid MongoDB text search interference
           delete filter.search;
@@ -94,7 +95,7 @@ export class BookQueryProvider implements IBookQueryProvider {
           filter.ids = orderedIds;
         }
       } catch (error) {
-        console.error('Vector search integration failed:', error);
+        this.logger.error('Vector search integration failed:', error);
         // Fallback to standard search
       }
     }
@@ -103,13 +104,13 @@ export class BookQueryProvider implements IBookQueryProvider {
     const skip = (pagination.page - 1) * pagination.limit;
 
     // Build sort stage
-    let sortStage: any;
+    let sortStage: PipelineStage.AddFields | PipelineStage.Sort | undefined;
     if (isVectorSearch && orderedIds.length > 0) {
       // Custom sort to maintain Chroma order
       sortStage = {
         $addFields: {
-          __searchOrder: { $indexOfArray: [orderedIds, { $toString: '$_id' }] }
-        }
+          __searchOrder: { $indexOfArray: [orderedIds, { $toString: '$_id' }] },
+        },
       };
     } else {
       sortStage = sort?.sortBy
@@ -117,13 +118,13 @@ export class BookQueryProvider implements IBookQueryProvider {
         : { $sort: { createdAt: -1 } };
     }
 
-    const pipeline: any[] = [{ $match: queryFilter }];
+    const pipeline: PipelineStage[] = [{ $match: queryFilter }];
 
     // If vector search, add the order field and sort by it
     if (isVectorSearch) {
       pipeline.push(sortStage);
       pipeline.push({ $sort: { __searchOrder: 1 } });
-    } else if (sortStage.$sort) {
+    } else if (sortStage && '$sort' in sortStage) {
       pipeline.push(sortStage);
     }
 
@@ -329,17 +330,17 @@ export class BookQueryProvider implements IBookQueryProvider {
         .sort({ score: { $meta: 'textScore' } }) // Sort by MongoDB text match score
         .limit(limit)
         .select('_id')
-        .lean()
+        .lean<Array<{ _id: Types.ObjectId; score: number }>>()
         .exec();
 
       for (const book of books) {
         results.push({
           id: BookId.create(book._id.toString()),
-          score: (book as any).score, // The textScore returned by projection
+          score: book.score, // The textScore returned by projection
         });
       }
-    } catch (error: any) {
-      console.error(`Text search error: ${error.message}`);
+    } catch (error) {
+      this.logger.error(`Text search error: ${(error as Error).message}`);
     }
 
     return results;

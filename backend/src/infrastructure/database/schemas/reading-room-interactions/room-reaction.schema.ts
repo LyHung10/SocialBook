@@ -27,10 +27,19 @@ export class RoomReactionSchema {
   updatedAt: Date;
 }
 
-export const RoomReactionSchemaFactory = SchemaFactory.createForClass(RoomReactionSchema);
+export const RoomReactionSchemaFactory =
+  SchemaFactory.createForClass(RoomReactionSchema);
 
-RoomReactionSchemaFactory.index({ roomId: 1, chapterSlug: 1, paragraphId: 1, reactionType: 1, userId: 1 }, { unique: true });
+RoomReactionSchemaFactory.index(
+  { roomId: 1, chapterSlug: 1, paragraphId: 1, reactionType: 1, userId: 1 },
+  { unique: true },
+);
 RoomReactionSchemaFactory.index({ roomId: 1, chapterSlug: 1, paragraphId: 1 });
 RoomReactionSchemaFactory.index({ roomId: 1, createdAt: -1 });
 // Index for findUserReaction query (without chapterSlug)
-RoomReactionSchemaFactory.index({ roomId: 1, paragraphId: 1, userId: 1, reactionType: 1 });
+RoomReactionSchemaFactory.index({
+  roomId: 1,
+  paragraphId: 1,
+  userId: 1,
+  reactionType: 1,
+});

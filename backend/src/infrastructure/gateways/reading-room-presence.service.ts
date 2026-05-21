@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 
@@ -14,6 +14,8 @@ export interface PresenceData {
 
 @Injectable()
 export class ReadingRoomPresenceService {
+  private readonly logger = new Logger(ReadingRoomPresenceService.name);
+
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   private getKey(roomId: string, userId: string): string {
@@ -24,15 +26,19 @@ export class ReadingRoomPresenceService {
     return `room:members:${roomId}`;
   }
 
-  async upsertPresence(roomId: string, userId: string, data: Omit<PresenceData, 'lastSeen'>): Promise<void> {
+  async upsertPresence(
+    roomId: string,
+    userId: string,
+    data: Omit<PresenceData, 'lastSeen'>,
+  ): Promise<void> {
     const key = this.getKey(roomId, userId);
     const setKey = this.getSetKey(roomId);
-    
+
     const presenceData: PresenceData = {
       ...data,
       lastSeen: Date.now(),
     };
-    
+
     await Promise.all([
       // Set individual presence with 30s TTL (safer margin than 15s)
       this.redis.setex(key, 30, JSON.stringify(presenceData)),
@@ -46,14 +52,14 @@ export class ReadingRoomPresenceService {
   async getRoomPresences(roomId: string): Promise<PresenceData[]> {
     const setKey = this.getSetKey(roomId);
     const userIds = await this.redis.smembers(setKey);
-    
+
     if (userIds.length === 0) {
       return [];
     }
 
-    const keys = userIds.map(userId => this.getKey(roomId, userId));
+    const keys = userIds.map((userId) => this.getKey(roomId, userId));
     const presencesJson = await this.redis.mget(...keys);
-    
+
     const activePresences: PresenceData[] = [];
     const expiredUserIds: string[] = [];
 
@@ -67,9 +73,11 @@ export class ReadingRoomPresenceService {
 
     // Cleanup expired users from the set in background
     if (expiredUserIds.length > 0) {
-      this.redis.srem(setKey, ...expiredUserIds).catch(err => 
-        console.error('Failed to cleanup expired presences:', err)
-      );
+      this.redis
+        .srem(setKey, ...expiredUserIds)
+        .catch((err) =>
+          this.logger.error('Failed to cleanup expired presences:', err),
+        );
     }
 
     return activePresences;
@@ -78,11 +86,8 @@ export class ReadingRoomPresenceService {
   async removePresence(roomId: string, userId: string): Promise<void> {
     const key = this.getKey(roomId, userId);
     const setKey = this.getSetKey(roomId);
-    
-    await Promise.all([
-      this.redis.del(key),
-      this.redis.srem(setKey, userId),
-    ]);
+
+    await Promise.all([this.redis.del(key), this.redis.srem(setKey, userId)]);
   }
 
   async removeRoomPresences(roomId: string): Promise<void> {
@@ -90,10 +95,7 @@ export class ReadingRoomPresenceService {
     const userIds = await this.redis.smembers(setKey);
     if (userIds.length === 0) return;
 
-    const keys = userIds.map(userId => this.getKey(roomId, userId));
-    await Promise.all([
-      this.redis.del(...keys),
-      this.redis.del(setKey),
-    ]);
+    const keys = userIds.map((userId) => this.getKey(roomId, userId));
+    await Promise.all([this.redis.del(...keys), this.redis.del(setKey)]);
   }
 }

@@ -39,7 +39,6 @@ export class ChapterKnowledgeResponseDto {
     this.updatedAt = entity.updatedAt;
   }
 
-
   static fromEntity(entity: ChapterKnowledge): ChapterKnowledgeResponseDto {
     return new ChapterKnowledgeResponseDto(entity);
   }

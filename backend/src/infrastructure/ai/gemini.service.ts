@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { IGeminiService } from '@/domain/gemini/services/gemini.service.interface';
 
 @Injectable()
 export class GeminiService implements IGeminiService {
   private readonly logger = new Logger(GeminiService.name);
   private readonly genAI: GoogleGenerativeAI;
-  private readonly model: any;
+  private readonly model: GenerativeModel;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('env.GOOGLE_API_KEY');
@@ -49,12 +49,16 @@ export class GeminiService implements IGeminiService {
             throw new Error(`Parse matched JSON failed: ${e.message}`);
           }
         }
-        this.logger.error(`JSON Parse Error: ${parseError.message}. Content: ${text}`);
+        this.logger.error(
+          `JSON Parse Error: ${parseError.message}. Content: ${text}`,
+        );
         throw new Error('Could not parse JSON response');
       }
     } catch (error) {
       if (error.message.includes('404')) {
-        this.logger.error('LỖI 404: Model không tồn tại hoặc API Key không có quyền. Hãy thử dùng model "gemini-pro" hoặc kiểm tra lại Key trên Google AI Studio.');
+        this.logger.error(
+          'LỖI 404: Model không tồn tại hoặc API Key không có quyền. Hãy thử dùng model "gemini-pro" hoặc kiểm tra lại Key trên Google AI Studio.',
+        );
       }
       throw new Error(`Failed to generate JSON: ${error.message}`);
     }

@@ -37,8 +37,6 @@ export interface ReadingRoomProps {
   endedAt?: Date;
 }
 
-
-
 export class ReadingRoom extends Entity<RoomId> {
   private _props: ReadingRoomProps;
 
@@ -62,8 +60,11 @@ export class ReadingRoom extends Entity<RoomId> {
     const roomId = RoomId.create();
     const mode = RoomMode.create(props.mode);
     const maxMembers = props.maxMembers || DEFAULT_MAX_MEMBERS;
-    
-    const hostMember = RoomMember.create({ userId: props.hostId, role: 'host' });
+
+    const hostMember = RoomMember.create({
+      userId: props.hostId,
+      role: 'host',
+    });
 
     return new ReadingRoom(roomId, {
       bookId: BookId.create(props.bookId),
@@ -78,7 +79,6 @@ export class ReadingRoom extends Entity<RoomId> {
     });
   }
 
-
   static reconstitute(props: {
     id: string;
     bookId: string;
@@ -87,7 +87,12 @@ export class ReadingRoom extends Entity<RoomId> {
     status: 'active' | 'ended';
     currentChapterSlug: string;
     maxMembers: number;
-    members: Array<{ userId: string; role: 'host' | 'member'; joinedAt: Date; leftAt?: Date }>;
+    members: Array<{
+      userId: string;
+      role: 'host' | 'member';
+      joinedAt: Date;
+      leftAt?: Date;
+    }>;
     highlights: RoomHighlightProps[];
     chatMessages: ChatMessageProps[];
     createdAt: Date;
@@ -103,7 +108,7 @@ export class ReadingRoom extends Entity<RoomId> {
         status: props.status,
         currentChapterSlug: props.currentChapterSlug,
         maxMembers: props.maxMembers,
-        members: props.members.map(m => RoomMember.reconstitute(m)),
+        members: props.members.map((m) => RoomMember.reconstitute(m)),
         highlights: props.highlights,
         chatMessages: props.chatMessages,
         endedAt: props.endedAt,
@@ -112,8 +117,6 @@ export class ReadingRoom extends Entity<RoomId> {
       props.updatedAt,
     );
   }
-
-
 
   // Getters
   get roomId(): string {
@@ -141,7 +144,7 @@ export class ReadingRoom extends Entity<RoomId> {
     return [...this._props.members];
   }
   get activeMembers(): RoomMember[] {
-    return this._props.members.filter(m => m.isActive);
+    return this._props.members.filter((m) => m.isActive);
   }
   get highlights(): RoomHighlightProps[] {
     return [...this._props.highlights];
@@ -150,7 +153,6 @@ export class ReadingRoom extends Entity<RoomId> {
     return [...this._props.chatMessages];
   }
   get endedAt(): Date | undefined {
-
     return this._props.endedAt;
   }
 
@@ -164,7 +166,7 @@ export class ReadingRoom extends Entity<RoomId> {
     if (this._props.status === 'ended') {
       throw new BadRequestDomainException('Cannot highlight in ended room');
     }
-    
+
     this._props.highlights.push({
       id: crypto.randomUUID(),
       ...props,
@@ -192,17 +194,19 @@ export class ReadingRoom extends Entity<RoomId> {
     this.markAsUpdated();
   }
 
-
   addMember(userId: string): void {
     if (this._props.status === 'ended') {
       throw new BadRequestDomainException('Cannot join ended room');
     }
-    
-    if (this.activeMembers.length >= this._props.maxMembers && !this.isMember(userId)) {
+
+    if (
+      this.activeMembers.length >= this._props.maxMembers &&
+      !this.isMember(userId)
+    ) {
       throw new BadRequestDomainException('Room is full');
     }
 
-    const existingMember = this._props.members.find(m => m.userId === userId);
+    const existingMember = this._props.members.find((m) => m.userId === userId);
     if (existingMember) {
       if (!existingMember.isActive) {
         existingMember.rejoin();
@@ -216,22 +220,24 @@ export class ReadingRoom extends Entity<RoomId> {
   }
 
   removeMember(userId: string): void {
-    const member = this._props.members.find(m => m.userId === userId);
+    const member = this._props.members.find((m) => m.userId === userId);
     if (member && member.isActive) {
       member.markAsLeft();
-      
+
       // If host leaves, try to transfer host
       if (member.role === 'host') {
         this.transferHost();
       }
-      
+
       this.markAsUpdated();
     }
   }
 
   changeChapter(userId: string, newChapterSlug: string): void {
     if (this._props.status === 'ended') {
-      throw new BadRequestDomainException('Cannot change chapter in ended room');
+      throw new BadRequestDomainException(
+        'Cannot change chapter in ended room',
+      );
     }
 
     if (!this.isMember(userId)) {
@@ -240,7 +246,9 @@ export class ReadingRoom extends Entity<RoomId> {
 
     // Only host can change chapter in sync mode
     if (this._props.mode.toString() === 'sync' && userId !== this.hostId) {
-      throw new BadRequestDomainException('Only host can change chapter in sync mode');
+      throw new BadRequestDomainException(
+        'Only host can change chapter in sync mode',
+      );
     }
 
     this._props.currentChapterSlug = newChapterSlug;
@@ -267,10 +275,10 @@ export class ReadingRoom extends Entity<RoomId> {
       const newHost = activeMembers[0];
       newHost.makeHost();
       this._props.hostId = UserId.create(newHost.userId);
-      
-      this._props.members.forEach(m => {
+
+      this._props.members.forEach((m) => {
         if (m.userId !== newHost.userId && m.role === 'host') {
-           m.makeMember();
+          m.makeMember();
         }
       });
     }
@@ -285,9 +293,9 @@ export class ReadingRoom extends Entity<RoomId> {
   }
 
   isMember(userId: string): boolean {
-    return this._props.members.some(m => m.userId === userId && m.isActive);
+    return this._props.members.some((m) => m.userId === userId && m.isActive);
   }
-  
+
   isHost(userId: string): boolean {
     return this.hostId === userId && this.isMember(userId);
   }

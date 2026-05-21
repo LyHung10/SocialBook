@@ -14,7 +14,10 @@ export class RoomMember {
     this._props = props;
   }
 
-  static create(props: { userId: string; role?: 'host' | 'member' }): RoomMember {
+  static create(props: {
+    userId: string;
+    role?: 'host' | 'member';
+  }): RoomMember {
     return new RoomMember({
       userId: UserId.create(props.userId),
       role: props.role || 'member',
@@ -22,7 +25,12 @@ export class RoomMember {
     });
   }
 
-  static reconstitute(props: { userId: string; role: 'host' | 'member'; joinedAt: Date; leftAt?: Date }): RoomMember {
+  static reconstitute(props: {
+    userId: string;
+    role: 'host' | 'member';
+    joinedAt: Date;
+    leftAt?: Date;
+  }): RoomMember {
     return new RoomMember({
       userId: UserId.create(props.userId),
       role: props.role,
@@ -65,7 +73,7 @@ export class RoomMember {
   makeHost(): void {
     this._props.role = 'host';
   }
-  
+
   makeMember(): void {
     this._props.role = 'member';
   }

@@ -15,7 +15,8 @@ export class UserPreference extends BaseSchema {
 }
 
 export type UserPreferenceDocument = HydratedDocument<UserPreference>;
-export const UserPreferenceSchema = SchemaFactory.createForClass(UserPreference);
+export const UserPreferenceSchema =
+  SchemaFactory.createForClass(UserPreference);
 
 UserPreferenceSchema.index({ userId: 1, genreId: 1 }, { unique: true });
 UserPreferenceSchema.index({ userId: 1, score: -1 });

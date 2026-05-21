@@ -21,7 +21,7 @@ import { CreatePostDto } from '@/presentation/posts/dto/create-post.dto';
 import { PaginationUserDto } from '@/presentation/posts/dto/pagination.dto';
 import { UpdatePostDto } from '@/presentation/posts/dto/update-post.dto';
 
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -141,8 +141,10 @@ export class PostsController {
     files?: Express.Multer.File[],
   ) {
     const command = new CreatePostCommand(userId, dto.bookId, dto.content);
-    const { post, moderationMessage } =
-      await this.createPostUseCase.execute(command, files);
+    const { post, moderationMessage } = await this.createPostUseCase.execute(
+      command,
+      files,
+    );
 
     const responseDto = new PostResponseDto(post);
     return {
@@ -176,8 +178,10 @@ export class PostsController {
       dto.bookId,
       dto.imageUrls,
     );
-    const { post, moderationMessage } =
-      await this.updatePostUseCase.execute(command, files);
+    const { post, moderationMessage } = await this.updatePostUseCase.execute(
+      command,
+      files,
+    );
     return {
       message: moderationMessage ? undefined : 'Cập nhật bài viết thành công',
       data: new PostResponseDto(post),

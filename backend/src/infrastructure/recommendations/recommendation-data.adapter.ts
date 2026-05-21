@@ -27,6 +27,32 @@ import {
 } from '@/domain/recommendations/interfaces/recommendation-data.port';
 import { UserProfile } from '@/domain/recommendations/interfaces/recommendation-strategy.interface';
 
+// Lean document types with populated references
+type LeanedReadingList = {
+  _id: Types.ObjectId;
+  bookId: PopulatedBook | null;
+  status: string;
+};
+type LeanedProgress = {
+  _id: Types.ObjectId;
+  bookId: PopulatedBook | null;
+  timeSpent: number;
+  lastReadAt: Date;
+  status: string;
+};
+type LeanedReview = {
+  _id: Types.ObjectId;
+  bookId: PopulatedBook | null;
+  rating: number;
+  content: string;
+};
+type LeanedPreference = {
+  _id: Types.ObjectId;
+  genreId: { _id: Types.ObjectId; name: string } | null;
+  score: number;
+};
+type LeanedReadingListId = { _id: Types.ObjectId; bookId: Types.ObjectId };
+
 @Injectable()
 export class RecommendationDataAdapter implements IRecommendationDataPort {
   constructor(
@@ -55,44 +81,45 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
   async buildUserProfile(userId: string): Promise<UserProfile> {
     const userObjectId = new Types.ObjectId(userId);
 
-    const [readingLists, progresses, reviews, likedBooks, preferences] = await Promise.all([
-      this.readingListModel
-        .find({ userId: userObjectId })
-        .populate({ path: 'bookId', populate: { path: 'genres authorId' } })
-        .lean<any[]>(),
-      this.progressModel
-        .find({ userId: userObjectId })
-        .sort({ lastReadAt: -1 })
-        .limit(20)
-        .populate({ path: 'bookId', populate: { path: 'genres' } })
-        .lean<any[]>(),
-      this.reviewModel
-        .find({ userId: userObjectId })
-        .populate({ path: 'bookId', populate: { path: 'genres' } })
-        .lean<any[]>(),
-      this.bookModel.find({ likedBy: userObjectId }).populate('genres'),
-      this.preferenceModel
-        .find({ userId: userObjectId })
-        .populate('genreId')
-        .sort({ score: -1 })
-        .limit(10)
-        .lean<any[]>(),
-    ]);
+    const [readingLists, progresses, reviews, likedBooks, preferences] =
+      await Promise.all([
+        this.readingListModel
+          .find({ userId: userObjectId })
+          .populate({ path: 'bookId', populate: { path: 'genres authorId' } })
+          .lean<LeanedReadingList[]>(),
+        this.progressModel
+          .find({ userId: userObjectId })
+          .sort({ lastReadAt: -1 })
+          .limit(20)
+          .populate({ path: 'bookId', populate: { path: 'genres' } })
+          .lean<any[]>(),
+        this.reviewModel
+          .find({ userId: userObjectId })
+          .populate({ path: 'bookId', populate: { path: 'genres' } })
+          .lean<any[]>(),
+        this.bookModel.find({ likedBy: userObjectId }).populate('genres'),
+        this.preferenceModel
+          .find({ userId: userObjectId })
+          .populate('genreId')
+          .sort({ score: -1 })
+          .limit(10)
+          .lean<any[]>(),
+      ]);
 
     const validReadingLists = readingLists.filter((rl) => rl.bookId != null);
     const validProgresses = progresses.filter((p) => p.bookId != null);
     const validReviews = reviews.filter((r) => r.bookId != null);
 
     const completedBooks = validReadingLists
-      .filter((rl) => rl.status === 'COMPLETED')
-      .map((rl) => ({ book: rl.bookId }));
+      .filter((rl) => rl.status === 'COMPLETED' && rl.bookId)
+      .map((rl) => ({ book: rl.bookId! }));
 
     const currentlyReading = validReadingLists
-      .filter((rl) => rl.status === 'READING')
+      .filter((rl) => rl.status === 'READING' && rl.bookId)
       .map((rl) => ({
-        book: rl.bookId,
+        book: rl.bookId!,
         progress: this._calculateBookProgress(
-          rl.bookId._id.toString(),
+          rl.bookId!._id.toString(),
           validProgresses,
         ),
       }));
@@ -113,7 +140,7 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
 
     // Use the scores from user_preferences as the primary source for favorite genres
     const preferenceGenreCounts = new Map<string, number>();
-    preferences.forEach(p => {
+    preferences.forEach((p) => {
       if (p.genreId && p.genreId.name) {
         preferenceGenreCounts.set(p.genreId.name, p.score);
       }
@@ -138,16 +165,21 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
         if (book?.genres) {
           book.genres.forEach((genre: any) => {
             if (genre && genre.name) {
-              genreCounts.set(genre.name, (genreCounts.get(genre.name) || 0) + 1);
+              genreCounts.set(
+                genre.name,
+                (genreCounts.get(genre.name) || 0) + 1,
+              );
             }
           });
         }
       });
 
-      favoriteGenres.push(...Array.from(genreCounts.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map((entry) => entry[0]));
+      favoriteGenres.push(
+        ...Array.from(genreCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map((entry) => entry[0]),
+      );
     }
 
     const totalReadingTime = validProgresses.reduce(

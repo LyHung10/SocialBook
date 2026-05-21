@@ -14,10 +14,6 @@ import { IQuoteRepository } from '@/domain/reading-room-interactions/repositorie
     { provide: IReactionRepository, useClass: ReactionRepository },
     { provide: IQuoteRepository, useClass: QuoteRepository },
   ],
-  exports: [
-    ICommentRepository,
-    IReactionRepository,
-    IQuoteRepository,
-  ],
+  exports: [ICommentRepository, IReactionRepository, IQuoteRepository],
 })
 export class ReadingRoomInteractionsRepositoryModule {}

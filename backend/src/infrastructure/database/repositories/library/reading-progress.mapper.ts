@@ -5,8 +5,7 @@ import {
 import { ProgressDocument } from '@/infrastructure/database/schemas/progress.schema';
 import { ReadingStatus } from '@/infrastructure/database/schemas/reading-list.schema';
 import { Types } from 'mongoose';
-
-interface ReadingProgressPersistence {
+export interface ReadingProgressPersistence {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
   bookId: Types.ObjectId;
@@ -32,8 +31,8 @@ export class ReadingProgressMapper {
       status,
       timeSpent: doc.timeSpent,
       lastReadAt: doc.lastReadAt,
-      createdAt: doc.createdAt as Date,
-      updatedAt: doc.updatedAt as Date,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
     });
   }
 

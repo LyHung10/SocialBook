@@ -30,58 +30,101 @@ export class AnalyticsListener {
   @OnEvent('user-event.tracked')
   async handleUserEventTracked(payload: { userId: string; event: UserEvent }) {
     const { userId, event } = payload;
-    
+
     if (event.bookId) {
-      const book = await this.bookRepository.findById(BookId.create(event.bookId));
+      const book = await this.bookRepository.findById(
+        BookId.create(event.bookId),
+      );
       if (book && book.genres) {
-        const genreIds = book.genres.map(g => typeof g === 'string' ? g : (g as any).id?.toString() || (g as any)._id?.toString() || (g as any).toString());
-        await this.scoringService.calculateScore(userId, event.eventType, genreIds);
+        const genreIds = book.genres.map((g) =>
+          typeof g === 'string' ? g : g.toString(),
+        );
+        await this.scoringService.calculateScore(
+          userId,
+          event.eventType,
+          genreIds,
+        );
       }
     }
 
     if (event.eventType === UserEventType.SEARCH && event.metadata?.keyword) {
       const keyword = event.metadata.keyword.toLowerCase();
       const allGenres = await this.genreRepository.findAllSimple();
-      
+
       const matchedGenreIds = allGenres
-        .filter(genre => {
+        .filter((genre) => {
           const name = genre.name.getValue().toLowerCase();
           return name.includes(keyword) || keyword.includes(name);
         })
-        .map(genre => genre.id.toString());
+        .map((genre) => genre.id.toString());
 
       if (matchedGenreIds.length > 0) {
-        await this.scoringService.calculateScore(userId, UserEventType.SEARCH, matchedGenreIds);
+        await this.scoringService.calculateScore(
+          userId,
+          UserEventType.SEARCH,
+          matchedGenreIds,
+        );
       }
     }
   }
 
   @OnEvent('like.toggled')
-  async handleLikeToggled(payload: { userId: string; targetId: string; targetType: string; isLiked: boolean }) {
+  async handleLikeToggled(payload: {
+    userId: string;
+    targetId: string;
+    targetType: string;
+    isLiked: boolean;
+  }) {
     if (!payload.isLiked) return;
 
-    const bookId = await this.resolveBookId(payload.targetId, payload.targetType);
+    const bookId = await this.resolveBookId(
+      payload.targetId,
+      payload.targetType,
+    );
     if (bookId) {
-      await this.logInternalEvent(payload.userId, UserEventType.LIKE_BOOK, bookId);
+      await this.logInternalEvent(
+        payload.userId,
+        UserEventType.LIKE_BOOK,
+        bookId,
+      );
     }
   }
 
   @OnEvent('comment.created')
-  async handleCommentCreated(payload: { userId: string; targetId: string; targetType: string }) {
-    const bookId = await this.resolveBookId(payload.targetId, payload.targetType);
+  async handleCommentCreated(payload: {
+    userId: string;
+    targetId: string;
+    targetType: string;
+  }) {
+    const bookId = await this.resolveBookId(
+      payload.targetId,
+      payload.targetType,
+    );
     if (bookId) {
-      await this.logInternalEvent(payload.userId, UserEventType.COMMENT_BOOK, bookId);
+      await this.logInternalEvent(
+        payload.userId,
+        UserEventType.COMMENT_BOOK,
+        bookId,
+      );
     }
   }
 
   @OnEvent('post.created')
   async handlePostCreated(payload: { userId: string; bookId?: string }) {
     if (payload.bookId) {
-      await this.logInternalEvent(payload.userId, UserEventType.OPEN_BOOK, payload.bookId);
+      await this.logInternalEvent(
+        payload.userId,
+        UserEventType.OPEN_BOOK,
+        payload.bookId,
+      );
     }
   }
 
-  private async logInternalEvent(userId: string, eventType: UserEventType, bookId: string) {
+  private async logInternalEvent(
+    userId: string,
+    eventType: UserEventType,
+    bookId: string,
+  ) {
     const event = UserEvent.create({
       id: this.idGenerator.generate(),
       userId,
@@ -91,27 +134,34 @@ export class AnalyticsListener {
     });
 
     await this.analyticsRepository.saveEvent(event);
-    
+
     const book = await this.bookRepository.findById(BookId.create(bookId));
     if (book && book.genres) {
-      const genreIds = book.genres.map(g => typeof g === 'string' ? g : (g as any).id?.toString() || (g as any)._id?.toString() || (g as any).toString());
+      const genreIds = book.genres.map((g) =>
+        typeof g === 'string' ? g : g.toString(),
+      );
       await this.scoringService.calculateScore(userId, eventType, genreIds);
     }
   }
 
-  private async resolveBookId(targetId: string, targetType: string): Promise<string | null> {
+  private async resolveBookId(
+    targetId: string,
+    targetType: string,
+  ): Promise<string | null> {
     if (targetType === 'book') return targetId;
-    
+
     if (targetType === 'chapter') {
-      const chapter = await this.chapterRepository.findById(ChapterId.create(targetId));
+      const chapter = await this.chapterRepository.findById(
+        ChapterId.create(targetId),
+      );
       return chapter?.bookId?.toString() || null;
     }
-    
+
     if (targetType === 'post') {
       const post = await this.postRepository.findById(targetId);
       return post?.bookId || null;
     }
-    
+
     return null;
   }
 }

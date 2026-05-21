@@ -31,7 +31,9 @@ export class AskAIUseCase {
   ) {}
 
   async execute(command: AskAICommand) {
-    const room = await this.readingRoomRepository.findById(RoomId.create(command.roomId));
+    const room = await this.readingRoomRepository.findById(
+      RoomId.create(command.roomId),
+    );
     if (!room) {
       throw new NotFoundDomainException('Reading room not found');
     }
@@ -114,7 +116,9 @@ export class AskAIUseCase {
     const aiResponse = await this.geminiService.generateText(prompt);
 
     // Fetch fresh room to safely append AI response
-    const updatedRoom = await this.readingRoomRepository.findById(RoomId.create(ctx.roomId));
+    const updatedRoom = await this.readingRoomRepository.findById(
+      RoomId.create(ctx.roomId),
+    );
     if (updatedRoom) {
       updatedRoom.addChatMessage({
         userId: 'gemini-ai',

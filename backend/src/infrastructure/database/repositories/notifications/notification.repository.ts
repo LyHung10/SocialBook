@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { INotificationRepository } from '@/domain/notifications/repositories/notification.repository.interface';
 import { Notification } from '@/domain/notifications/entities/notification.entity';
 import {
@@ -43,7 +43,9 @@ export class NotificationRepository implements INotificationRepository {
     offset = 0,
     isRead?: boolean,
   ): Promise<Notification[]> {
-    const query: any = { userId: new Types.ObjectId(userId) };
+    const query: FilterQuery<NotificationDocument> = {
+      userId: new Types.ObjectId(userId),
+    };
     if (isRead !== undefined) {
       query.isRead = isRead;
     }
@@ -78,11 +80,13 @@ export class NotificationRepository implements INotificationRepository {
       .exec();
   }
 
-  private mapToDomain(doc: any): Notification {
+  private mapToDomain(doc: NotificationDocument): Notification {
     return NotificationMapper.toDomain(doc);
   }
 
-  private mapToPersistence(entity: Notification): any {
+  private mapToPersistence(
+    entity: Notification,
+  ): ReturnType<typeof NotificationMapper.toPersistence> {
     return NotificationMapper.toPersistence(entity);
   }
 }

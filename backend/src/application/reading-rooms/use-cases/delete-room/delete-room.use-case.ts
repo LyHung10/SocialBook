@@ -29,7 +29,9 @@ export class DeleteRoomUseCase {
   ) {}
 
   async execute(command: DeleteRoomCommand): Promise<void> {
-    const room = await this.roomRepository.findById(RoomId.create(command.roomId));
+    const room = await this.roomRepository.findById(
+      RoomId.create(command.roomId),
+    );
     if (!room) {
       throw new NotFoundDomainException('Reading room not found');
     }

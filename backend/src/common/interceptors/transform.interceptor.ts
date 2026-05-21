@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ResponseDto } from '../../common/dto/response.dto';
+import { ResponseDto } from '@/common/dto/response.dto';
 
 @Injectable()
 export class TransformInterceptor<T>
@@ -28,7 +28,8 @@ export class TransformInterceptor<T>
         return new ResponseDto({
           success: true,
           statusCode,
-          message: data?.message || (data?.warning ? undefined : 'Request successful'),
+          message:
+            data?.message || (data?.warning ? undefined : 'Request successful'),
           warning: data?.warning,
           data: data?.data !== undefined ? data.data : null,
           meta: data?.meta || data?.metaData,

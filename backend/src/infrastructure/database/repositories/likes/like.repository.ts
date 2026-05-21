@@ -8,16 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { LikeDocument } from '../../schemas/like.schema';
 import { LikeMapper } from './like.mapper';
-
-interface LikePersistence {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
-  targetId: Types.ObjectId;
-  targetType: string;
-  status: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { LikePersistence } from './like.mapper';
 
 @Injectable()
 export class LikeRepository implements ILikeRepository {

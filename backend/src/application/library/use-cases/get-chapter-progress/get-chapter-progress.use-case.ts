@@ -3,7 +3,7 @@ import { IReadingProgressRepository } from '@/domain/library/repositories/readin
 import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { ChapterId } from '@/domain/library/value-objects/chapter-id.vo';
 import { GetChapterProgressQuery } from './get-chapter-progress.query';
-import { ReadingProgressResult } from '../../mappers/library.results';
+import { ReadingProgressResult } from '../../mappers/library.result.dto';
 import { LibraryApplicationMapper } from '../../mappers/library.mapper';
 
 @Injectable()

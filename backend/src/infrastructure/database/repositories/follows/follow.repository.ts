@@ -1,8 +1,11 @@
 import {
   PaginatedResult,
+  PaginationMeta,
   PaginationOptions,
   SortOptions,
 } from '@/common/interfaces/pagination.interface';
+
+import { FollowWithUserInfo } from './follow.mapper';
 import { Follow as FollowEntity } from '@/domain/follows/entities/follow.entity';
 import {
   FollowFilter,
@@ -63,7 +66,7 @@ export class FollowRepository
     userId: string,
     page = 1,
     limit = 100,
-  ): Promise<{ data: any[]; meta: any }> {
+  ): Promise<{ data: FollowWithUserInfo[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
     const [rows, total] = await Promise.all([
@@ -158,7 +161,7 @@ export class FollowRepository
     targetId: string,
     page = 1,
     limit = 100,
-  ): Promise<{ data: any[]; meta: any }> {
+  ): Promise<{ data: FollowWithUserInfo[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
     const [rows, total] = await Promise.all([
@@ -319,7 +322,9 @@ export class FollowRepository
     return FollowMapper.toDomain(doc);
   }
 
-  protected toPersistence(entity: FollowEntity): any {
+  protected toPersistence(
+    entity: FollowEntity,
+  ): ReturnType<typeof FollowMapper.toPersistence> {
     return FollowMapper.toPersistence(entity);
   }
 

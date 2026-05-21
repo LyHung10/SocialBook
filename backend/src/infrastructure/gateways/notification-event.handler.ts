@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '@/infrastructure/notifications/notifications.service';
 import { IPostRepository } from '@/domain/posts/repositories/post.repository.interface';
 import { ICommentRepository } from '@/domain/comments/repositories/comment.repository.interface';
 import { CommentId } from '@/domain/comments/value-objects/comment-id.vo';
@@ -23,10 +23,9 @@ export class NotificationEventHandler {
     targetType: string;
     isLiked: boolean;
   }) {
-
     try {
       let ownerId: string | null = null;
-      let title = 'Lượt thích mới';
+      const title = 'Lượt thích mới';
       let message = 'Ai đó đã thích nội dung của bạn';
 
       if (payload.targetType === 'post') {
@@ -36,13 +35,15 @@ export class NotificationEventHandler {
           message = `Đã thích bài viết của bạn: "${post.content.substring(0, 30)}..."`;
         }
       } else if (payload.targetType === 'comment') {
-        const comment = await this.commentRepository.findById(CommentId.create(payload.targetId));
+        const comment = await this.commentRepository.findById(
+          CommentId.create(payload.targetId),
+        );
         if (comment) {
           ownerId = comment.userId.toString();
           message = `Đã thích bình luận của bạn: "${comment.content.toString().substring(0, 30)}..."`;
         }
       }
-     
+
       if (ownerId && ownerId !== payload.userId) {
         const notificationDto = new CreateNotificationDto(
           ownerId,
@@ -55,7 +56,9 @@ export class NotificationEventHandler {
             image: '',
             targetId: payload.targetId,
           },
-          payload.targetType === 'post' ? `/posts/${payload.targetId}` : undefined,
+          payload.targetType === 'post'
+            ? `/posts/${payload.targetId}`
+            : undefined,
         );
         await this.notificationsService.create(notificationDto);
       }
@@ -78,7 +81,9 @@ export class NotificationEventHandler {
       let message = 'Ai đó đã bình luận về nội dung của bạn';
 
       if (payload.parentId) {
-        const parentComment = await this.commentRepository.findById(CommentId.create(payload.parentId));
+        const parentComment = await this.commentRepository.findById(
+          CommentId.create(payload.parentId),
+        );
         if (parentComment) {
           ownerId = parentComment.userId.toString();
           title = 'Phản hồi bình luận';
@@ -104,7 +109,9 @@ export class NotificationEventHandler {
             image: '',
             targetId: payload.targetId,
           },
-          payload.targetType === 'post' ? `/posts/${payload.targetId}` : undefined,
+          payload.targetType === 'post'
+            ? `/posts/${payload.targetId}`
+            : undefined,
         );
         await this.notificationsService.create(notificationDto);
       }

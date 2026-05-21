@@ -1,10 +1,12 @@
+import { PopulatedBook } from './recommendation-data.port';
+
 export interface EnrichedRecommendation {
   bookId: string;
   title: string;
   reason: string;
   matchScore: number;
   slug: string;
-  book: any; // PopulatedBook
+  book: PopulatedBook;
 }
 
 export interface RecommendationResult extends EnrichedRecommendation {}

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { GenerateTextUseCase } from '@/application/gemini/use-cases/generate-text/generate-text.use-case';
 import { SummarizeChapterUseCase } from '@/application/gemini/use-cases/summarize-chapter/summarize-chapter.use-case';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 
 @Controller('gemini')
 export class GeminiController {

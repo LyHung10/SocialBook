@@ -6,7 +6,6 @@ import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/services/gemini.service.interface';
 
-
 import { AddHighlightCommand } from './add-highlight.command';
 
 @Injectable()
@@ -20,9 +19,10 @@ export class AddHighlightUseCase {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-
   async execute(command: AddHighlightCommand) {
-    const room = await this.readingRoomRepository.findById(RoomId.create(command.roomId));
+    const room = await this.readingRoomRepository.findById(
+      RoomId.create(command.roomId),
+    );
 
     if (!room) {
       throw new NotFoundDomainException('Reading room not found');
@@ -39,14 +39,22 @@ export class AddHighlightUseCase {
     await this.readingRoomRepository.save(room);
 
     // Asynchronously generate AI Insight
-    this.generateAIInsight(command.roomId, highlightIndex, command.content).catch(err => {
+    this.generateAIInsight(
+      command.roomId,
+      highlightIndex,
+      command.content,
+    ).catch((err) => {
       this.logger.error(`Failed to generate AI insight: ${err.message}`);
     });
 
     return room;
   }
 
-  private async generateAIInsight(roomId: string, highlightIndex: number, content: string) {
+  private async generateAIInsight(
+    roomId: string,
+    highlightIndex: number,
+    content: string,
+  ) {
     const prompt = `
       Phân tích đoạn văn sau từ một cuốn sách và cung cấp một nhận xét ngắn gọn (AI Insight).
       Nội dung có thể là một câu nói hay, một ẩn dụ, một sự kiện lịch sử hoặc một khái niệm khó hiểu.
@@ -59,13 +67,15 @@ export class AddHighlightUseCase {
     `;
 
     const insight = await this.geminiService.generateText(prompt);
-    
-    const room = await this.readingRoomRepository.findById(RoomId.create(roomId));
+
+    const room = await this.readingRoomRepository.findById(
+      RoomId.create(roomId),
+    );
 
     if (room) {
       room.updateHighlightInsight(highlightIndex, insight);
       await this.readingRoomRepository.save(room);
-      
+
       // Notify gateway via local event
       const highlight = room.highlights[highlightIndex];
       this.eventEmitter.emit('reading-room.highlight_insight_updated', {
@@ -74,6 +84,5 @@ export class AddHighlightUseCase {
         insight,
       });
     }
-
   }
 }

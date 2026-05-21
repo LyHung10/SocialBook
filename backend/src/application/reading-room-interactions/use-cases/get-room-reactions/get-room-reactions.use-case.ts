@@ -5,14 +5,9 @@ import { GetRoomReactionsQuery } from './get-room-reactions.query';
 
 @Injectable()
 export class GetRoomReactionsUseCase {
-  constructor(
-    private readonly reactionRepository: IReactionRepository,
-  ) {}
+  constructor(private readonly reactionRepository: IReactionRepository) {}
 
   async execute(query: GetRoomReactionsQuery): Promise<RoomReaction[]> {
-    return this.reactionRepository.findByRoom(
-      query.roomId,
-      query.chapterSlug,
-    );
+    return this.reactionRepository.findByRoom(query.roomId, query.chapterSlug);
   }
 }

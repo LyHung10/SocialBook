@@ -63,7 +63,7 @@ export class GetOverviewStatsUseCase {
       previousMonthUsers > 0
         ? ((activeUsers - previousMonthUsers) / previousMonthUsers) * 100
         : 100;
-    
+
     return {
       users: {
         total: totalUsers,

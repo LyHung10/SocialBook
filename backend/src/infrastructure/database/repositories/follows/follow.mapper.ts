@@ -2,6 +2,20 @@ import { Follow as FollowEntity } from '@/domain/follows/entities/follow.entity'
 import { FollowDocument } from '@/infrastructure/database/schemas/follow.schema';
 import { Types } from 'mongoose';
 
+export interface FollowWithUserInfo {
+  id: string;
+  userId: string;
+  targetId: string;
+  status: boolean;
+  username: string;
+  image: string;
+  postCount: number;
+  readingListCount: number;
+  followersCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface FollowPersistence {
   userId: Types.ObjectId;
   targetId: Types.ObjectId;

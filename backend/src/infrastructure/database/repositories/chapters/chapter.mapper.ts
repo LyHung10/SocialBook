@@ -1,15 +1,14 @@
 import { Chapter as ChapterEntity } from '@/domain/chapters/entities/chapter.entity';
 import { Types } from 'mongoose';
-import { RawParagraph } from '../books/book.raw-types';
+import { RawParagraph } from '../books/book.mapper';
 
-export type RawParagraphDocument = RawParagraph;
 
 export interface RawChapterDocument {
   _id: Types.ObjectId;
   bookId: Types.ObjectId;
   title: string;
   slug: string;
-  paragraphs: RawParagraphDocument[];
+  paragraphs: RawParagraph[];
   viewsCount: number;
   orderIndex: number;
   createdAt: Date;

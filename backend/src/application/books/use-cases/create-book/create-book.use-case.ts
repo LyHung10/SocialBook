@@ -22,14 +22,13 @@ import { GenreName } from '@/domain/genres/value-objects/genre-name.vo';
 
 @Injectable()
 export class CreateBookUseCase {
-
   constructor(
     private readonly bookRepository: IBookRepository,
     private readonly authorRepository: IAuthorRepository,
     private readonly genreRepository: IGenreRepository,
     private readonly idGenerator: IIdGenerator,
     @Inject(BOOK_CACHE_SERVICE) private readonly bookCache: IBookCacheService,
-  ) { }
+  ) {}
 
   async execute(command: CreateBookCommand): Promise<Book> {
     const title = BookTitle.create(command.title);
@@ -53,7 +52,10 @@ export class CreateBookUseCase {
     let finalAuthorId = command.authorId;
 
     // Handle automatic author creation if authorId is a new name or is explicitly requested
-    if (command.authorName && (!finalAuthorId || finalAuthorId.startsWith('new:'))) {
+    if (
+      command.authorName &&
+      (!finalAuthorId || finalAuthorId.startsWith('new:'))
+    ) {
       const authorName = AuthorName.create(command.authorName);
       const existingAuthor = await this.authorRepository.findByName(authorName);
 
@@ -114,5 +116,3 @@ export class CreateBookUseCase {
     return book;
   }
 }
-
-

@@ -1,5 +1,3 @@
 export class GetRoomQuotesQuery {
-  constructor(
-    public readonly roomId: string,
-  ) {}
+  constructor(public readonly roomId: string) {}
 }

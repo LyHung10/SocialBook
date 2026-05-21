@@ -11,13 +11,13 @@ export class ReadingRoomMapper {
       status: doc.status as 'active' | 'ended',
       currentChapterSlug: doc.currentChapterSlug,
       maxMembers: doc.maxMembers,
-      members: doc.members.map(m => ({
+      members: doc.members.map((m) => ({
         userId: m.userId,
         role: m.role as 'host' | 'member',
         joinedAt: m.joinedAt,
         leftAt: m.leftAt,
       })),
-      highlights: (doc.highlights || []).map(h => ({
+      highlights: (doc.highlights || []).map((h) => ({
         id: h.id,
         userId: h.userId,
         chapterSlug: h.chapterSlug,
@@ -26,9 +26,9 @@ export class ReadingRoomMapper {
         aiInsight: h.aiInsight,
         createdAt: h.createdAt,
       })),
-      chatMessages: (doc.chatMessages || []).map(m => ({
+      chatMessages: (doc.chatMessages || []).map((m) => ({
         userId: m.userId,
-        role: m.role as 'user' | 'ai',
+        role: m.role,
         content: m.content,
         createdAt: m.createdAt,
       })),
@@ -38,8 +38,9 @@ export class ReadingRoomMapper {
     });
   }
 
-  static toPersistence(domain: DomainReadingRoom): Partial<ReadingRoomDocument> {
-
+  static toPersistence(
+    domain: DomainReadingRoom,
+  ): Partial<ReadingRoomDocument> {
     return {
       _id: domain.roomId,
       bookId: domain.bookId,
@@ -48,13 +49,13 @@ export class ReadingRoomMapper {
       status: domain.status,
       currentChapterSlug: domain.currentChapterSlug,
       maxMembers: domain.maxMembers,
-      members: domain.members.map(m => ({
+      members: domain.members.map((m) => ({
         userId: m.userId,
         role: m.role,
         joinedAt: m.joinedAt,
         leftAt: m.leftAt,
       })),
-      highlights: domain.highlights.map(h => ({
+      highlights: domain.highlights.map((h) => ({
         id: h.id!,
         userId: h.userId,
         chapterSlug: h.chapterSlug,
@@ -64,15 +65,13 @@ export class ReadingRoomMapper {
         createdAt: h.createdAt || new Date(),
       })),
 
-      chatMessages: domain.chatMessages.map(m => ({
+      chatMessages: domain.chatMessages.map((m) => ({
         userId: m.userId,
         role: m.role,
         content: m.content,
         createdAt: m.createdAt,
       })),
       endedAt: domain.endedAt,
-
     };
   }
-
 }

@@ -20,8 +20,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
-import { BookMapper } from './book.mapper';
-import { RawBookDocument, BookPersistence } from './book.raw-types';
+import { BookMapper, RawBookDocument, BookPersistence } from './book.mapper';
 import { TextSimilarityService } from '@/shared/domain/text-similarity.service';
 
 @Injectable()
@@ -85,7 +84,9 @@ export class BookRepository
       queryFilter.title = { $regex: filter.title, $options: 'i' };
     }
     if (filter.authorIds && filter.authorIds.length > 0) {
-      queryFilter.authorId = { $in: filter.authorIds.map(id => new Types.ObjectId(id)) };
+      queryFilter.authorId = {
+        $in: filter.authorIds.map((id) => new Types.ObjectId(id)),
+      };
     } else if (filter.authorId) {
       queryFilter.authorId = new Types.ObjectId(filter.authorId);
     }
@@ -411,7 +412,6 @@ export class BookRepository
       .populate('genres', 'name slug')
       .lean()
       .exec()) as unknown as RawBookDocument[];
-
 
     return documents.map((doc) => BookMapper.toDomain(doc));
   }

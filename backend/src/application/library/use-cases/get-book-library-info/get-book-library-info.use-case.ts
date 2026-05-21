@@ -4,7 +4,7 @@ import { BookId } from '@/domain/library/value-objects/book-id.vo';
 import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { Injectable } from '@nestjs/common';
 import { GetBookLibraryInfoQuery } from './get-book-library-info.query';
-import { ReadingListResult } from '../../mappers/library.results';
+import { ReadingListResult } from '../../mappers/library.result.dto';
 import { LibraryApplicationMapper } from '../../mappers/library.mapper';
 import { IReadingProgressRepository } from '@/domain/library/repositories/reading-progress.repository.interface';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
@@ -58,15 +58,16 @@ export class GetBookLibraryInfoUseCase {
       );
     }
 
-    const readProgresses = await this.readingProgressRepository.findByUserIdAndBookId(
-      userId,
-      bookId,
-    );
-    
+    const readProgresses =
+      await this.readingProgressRepository.findByUserIdAndBookId(
+        userId,
+        bookId,
+      );
+
     const completedChaptersCount = readProgresses.filter(
       (p) => p.status === ChapterStatus.COMPLETED,
     ).length;
-    
+
     const totalChapters = await this.chapterRepository.countByBook(
       ChapterBookId.create(query.bookId),
     );

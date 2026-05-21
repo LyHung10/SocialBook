@@ -1,4 +1,3 @@
-
 export interface LanguageDetectionResult {
   code: string;
   voice: string;

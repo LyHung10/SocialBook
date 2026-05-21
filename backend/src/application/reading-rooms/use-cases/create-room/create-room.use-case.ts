@@ -5,7 +5,7 @@ import { ReadingRoom } from '@/domain/reading-rooms/entities/reading-room.entity
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { CreateRoomCommand } from './create-room.command';
-import { ReadingRoomResult } from '../reading-room.result';
+import { ReadingRoomResult } from '../reading-room.result.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
 
 @Injectable()
@@ -16,7 +16,9 @@ export class CreateRoomUseCase {
   ) {}
 
   async execute(command: CreateRoomCommand): Promise<ReadingRoomResult> {
-    const book = await this.bookRepository.findById(BookId.create(command.bookId));
+    const book = await this.bookRepository.findById(
+      BookId.create(command.bookId),
+    );
     if (!book) {
       throw new NotFoundDomainException('Book not found');
     }

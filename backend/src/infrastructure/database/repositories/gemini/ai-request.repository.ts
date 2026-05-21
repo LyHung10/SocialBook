@@ -19,17 +19,7 @@ import {
   AIRequestDocument,
   AIRequest as AIRequestModelClass,
 } from '../../schemas/ai-request.schema';
-
-interface AIRequestPersistence {
-  _id: Types.ObjectId;
-  prompt: string;
-  response: string | null;
-  type: AIRequestType;
-  userId: string;
-  metadata: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { AIRequestPersistence } from './ai-request.mapper';
 
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
 

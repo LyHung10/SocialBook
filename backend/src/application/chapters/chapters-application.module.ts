@@ -15,9 +15,13 @@ import { AskChapterAIUseCase } from './use-cases/ask-ai/ask-chapter-ai.use-case'
 import { GeminiApplicationModule } from '../gemini/gemini-application.module';
 import { BooksRepositoryModule } from '@/infrastructure/database/repositories/books/books-repository.module';
 
-
 @Module({
-  imports: [ChaptersRepositoryModule, IdGeneratorModule, GeminiApplicationModule, BooksRepositoryModule],
+  imports: [
+    ChaptersRepositoryModule,
+    IdGeneratorModule,
+    GeminiApplicationModule,
+    BooksRepositoryModule,
+  ],
 
   providers: [
     CreateChapterUseCase,
@@ -44,7 +48,5 @@ import { BooksRepositoryModule } from '@/infrastructure/database/repositories/bo
     GetChapterKnowledgeUseCase,
     AskChapterAIUseCase,
   ],
-
 })
-
 export class ChaptersApplicationModule {}

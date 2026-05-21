@@ -15,7 +15,10 @@ export class PostModerationService {
     const moderationResult = await this.checkContentUseCase.execute(content);
 
     if (moderationResult.action === 'BLOCK') {
-      throw new BadRequestDomainException(moderationResult.reason || 'Nội dung vi phạm tiêu chuẩn cộng đồng và đã bị chặn.');
+      throw new BadRequestDomainException(
+        moderationResult.reason ||
+          'Nội dung vi phạm tiêu chuẩn cộng đồng và đã bị chặn.',
+      );
     }
 
     if (moderationResult.action === 'REVIEW') {
@@ -33,7 +36,7 @@ export class PostModerationService {
       }
       post.flag(moderationMessage);
       return moderationMessage;
-    } 
+    }
 
     // ALLOW case
     post.approve();

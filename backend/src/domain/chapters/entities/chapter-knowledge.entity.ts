@@ -1,8 +1,13 @@
 import { Entity } from '@/shared/domain/entity.base';
 import { ChapterId } from '../value-objects/chapter-id.vo';
 
-export type KnowledgeEntityType = 'character' | 'location' | 'concept' | 'event' | 'vocabulary' | 'reference';
-
+export type KnowledgeEntityType =
+  | 'character'
+  | 'location'
+  | 'concept'
+  | 'event'
+  | 'vocabulary'
+  | 'reference';
 
 export interface KnowledgeEntityProps {
   name: string;
@@ -28,7 +33,12 @@ export interface ChapterKnowledgeProps {
 export class ChapterKnowledge extends Entity<string> {
   private _props: ChapterKnowledgeProps;
 
-  private constructor(id: string, props: ChapterKnowledgeProps, createdAt?: Date, updatedAt?: Date) {
+  private constructor(
+    id: string,
+    props: ChapterKnowledgeProps,
+    createdAt?: Date,
+    updatedAt?: Date,
+  ) {
     super(id, createdAt, updatedAt);
     this._props = props;
   }
@@ -86,4 +96,3 @@ export class ChapterKnowledge extends Entity<string> {
     return this._props.summary;
   }
 }
-

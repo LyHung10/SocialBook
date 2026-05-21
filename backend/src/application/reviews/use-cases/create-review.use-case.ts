@@ -29,16 +29,17 @@ export class CreateReviewUseCase {
   async execute(userId: string, dto: CreateReviewDto): Promise<Review> {
     const userIdVo = UserId.create(userId);
     const bookIdVo = BookId.create(dto.bookId);
-    
-    const readProgresses = await this.readingProgressRepository.findByUserIdAndBookId(
-      userIdVo,
-      bookIdVo,
-    );
-    
+
+    const readProgresses =
+      await this.readingProgressRepository.findByUserIdAndBookId(
+        userIdVo,
+        bookIdVo,
+      );
+
     const completedChaptersCount = readProgresses.filter(
       (p) => p.status === ChapterStatus.COMPLETED,
     ).length;
-    
+
     const totalChapters = await this.chapterRepository.countByBook(
       ChapterBookId.create(dto.bookId),
     );

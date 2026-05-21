@@ -12,7 +12,7 @@ import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 import { Injectable } from '@nestjs/common';
 import { UpdateProgressCommand } from './update-progress.command';
-import { ReadingProgressResult } from '../../mappers/library.results';
+import { ReadingProgressResult } from '../../mappers/library.result.dto';
 import { LibraryApplicationMapper } from '../../mappers/library.mapper';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { BookId as DomainBookId } from '@/domain/books/value-objects/book-id.vo';

@@ -24,7 +24,9 @@ export class ChaptersImportProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<ImportChaptersJobData>): Promise<ImportChaptersJobResult> {
+  async process(
+    job: Job<ImportChaptersJobData>,
+  ): Promise<ImportChaptersJobResult> {
     if (job.name !== JOB_NAME) {
       return {
         total: 0,

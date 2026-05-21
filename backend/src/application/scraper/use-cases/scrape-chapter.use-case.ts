@@ -61,7 +61,8 @@ export class ScrapeChapterUseCase {
       const u = new URL(url);
       const parts = u.pathname.split('/').filter((p) => !!p);
       return parts[parts.length - 1];
-    } catch {
+    } catch (error) {
+      this.logger.error('Failed to extract slug from URL', error);
       return '';
     }
   }

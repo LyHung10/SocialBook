@@ -5,9 +5,7 @@ import { GetRoomQuotesQuery } from './get-room-quotes.query';
 
 @Injectable()
 export class GetRoomQuotesUseCase {
-  constructor(
-    private readonly quoteRepository: IQuoteRepository,
-  ) {}
+  constructor(private readonly quoteRepository: IQuoteRepository) {}
 
   async execute(query: GetRoomQuotesQuery): Promise<RoomQuote[]> {
     return this.quoteRepository.findByRoom(query.roomId);

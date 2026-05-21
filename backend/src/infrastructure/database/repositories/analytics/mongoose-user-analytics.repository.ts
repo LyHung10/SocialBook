@@ -5,12 +5,17 @@ import { IUserAnalyticsRepository } from '@/domain/analytics/repositories/user-a
 import { UserEvent as UserEventEntity } from '@/domain/analytics/entities/user-event.entity';
 import { UserPreference as UserPreferenceEntity } from '@/domain/analytics/entities/user-preference.entity';
 import { UserEvent, UserEventDocument } from '../../schemas/user-event.schema';
-import { UserPreference, UserPreferenceDocument } from '../../schemas/user-preference.schema';
+import {
+  UserPreference,
+  UserPreferenceDocument,
+} from '../../schemas/user-preference.schema';
 import { UserEventMapper } from './user-event.mapper';
 import { UserPreferenceMapper } from './user-preference.mapper';
 
 @Injectable()
-export class MongooseUserAnalyticsRepository implements IUserAnalyticsRepository {
+export class MongooseUserAnalyticsRepository
+  implements IUserAnalyticsRepository
+{
   constructor(
     @InjectModel(UserEvent.name)
     private readonly eventModel: Model<UserEventDocument>,
@@ -75,7 +80,12 @@ export class MongooseUserAnalyticsRepository implements IUserAnalyticsRepository
     return document ? UserPreferenceMapper.toDomain(document) : null;
   }
 
-  async getTrendingBooks(days = 1, limit = 5): Promise<{ bookId: string; title: string; coverImage?: string; score: number }[]> {
+  async getTrendingBooks(
+    days = 1,
+    limit = 5,
+  ): Promise<
+    { bookId: string; title: string; coverImage?: string; score: number }[]
+  > {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - days);
 
@@ -114,7 +124,12 @@ export class MongooseUserAnalyticsRepository implements IUserAnalyticsRepository
     }));
   }
 
-  async getTopActiveReaders(days = 7, limit = 5): Promise<{ userId: string; username: string; avatar?: string; score: number }[]> {
+  async getTopActiveReaders(
+    days = 7,
+    limit = 5,
+  ): Promise<
+    { userId: string; username: string; avatar?: string; score: number }[]
+  > {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - days);
 

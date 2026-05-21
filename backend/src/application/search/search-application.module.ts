@@ -29,4 +29,4 @@ import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.mod
   ],
   exports: [IntelligentSearchUseCase],
 })
-export class SearchApplicationModule { }
+export class SearchApplicationModule {}

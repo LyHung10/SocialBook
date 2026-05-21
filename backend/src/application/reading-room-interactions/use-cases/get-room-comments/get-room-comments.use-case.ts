@@ -5,14 +5,9 @@ import { GetRoomCommentsQuery } from './get-room-comments.query';
 
 @Injectable()
 export class GetRoomCommentsUseCase {
-  constructor(
-    private readonly commentRepository: ICommentRepository,
-  ) {}
+  constructor(private readonly commentRepository: ICommentRepository) {}
 
   async execute(query: GetRoomCommentsQuery): Promise<RoomComment[]> {
-    return this.commentRepository.findByRoom(
-      query.roomId,
-      query.chapterSlug,
-    );
+    return this.commentRepository.findByRoom(query.roomId, query.chapterSlug);
   }
 }

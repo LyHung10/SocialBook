@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Logger, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  Inject,
+} from '@nestjs/common';
 import { IOtpRepository } from '@/domain/otp/repositories/otp.repository.interface';
 import { Otp } from '@/domain/otp/entities/otp.entity';
 import type { ICacheService } from '@/domain/shared/cache/cache.service.interface';
@@ -13,7 +18,9 @@ export class OtpRepository implements IOtpRepository {
   private readonly RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
   private readonly logger = new Logger(OtpRepository.name);
 
-  constructor(@Inject(CACHE_SERVICE) private readonly cacheService: ICacheService) { }
+  constructor(
+    @Inject(CACHE_SERVICE) private readonly cacheService: ICacheService,
+  ) {}
 
   async save(otp: Otp): Promise<void> {
     // Store OTP code with TTL
@@ -51,7 +58,9 @@ export class OtpRepository implements IOtpRepository {
 
     if (count !== null && count >= this.MAX_OTP_ATTEMPTS) {
       this.logger.warn(`[OTP] Rate limit exceeded for ${email}`);
-      throw new BadRequestException(`Too many OTP requests. Please try again later.`);
+      throw new BadRequestException(
+        `Too many OTP requests. Please try again later.`,
+      );
     }
   }
 

@@ -1,4 +1,4 @@
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { JwtRefreshAuthGuard } from '@/common/guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from '@/common/guards/local-auth.guard';
 import { User } from '@/domain/users/entities/user.entity';

@@ -1,4 +1,5 @@
 // notifications/notifications.gateway.ts
+import { Logger } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -9,7 +10,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '@/infrastructure/notifications/notifications.service';
 import { CreateNotificationDto } from '@/application/notifications/dto/create-notification.dto';
 import { JwtService } from '@nestjs/jwt';
 
@@ -19,13 +20,16 @@ import { JwtService } from '@nestjs/jwt';
   maxHttpBufferSize: 1e6,
 })
 export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly logger = new Logger(NotificationsGateway.name);
+
   @WebSocketServer() server: Server;
 
   constructor(
     private readonly notificationsService: NotificationsService,
     private readonly jwt: JwtService,
-  ) { }
+  ) {}
 
   afterInit() {
     this.notificationsService.setServer(this.server);
@@ -42,7 +46,7 @@ export class NotificationsGateway
       }
 
       if (!token || typeof token !== 'string') {
-        console.log('No token, disconnect');
+        this.logger.warn('No token, disconnect');
         socket.disconnect(true);
         return;
       }
@@ -56,7 +60,7 @@ export class NotificationsGateway
       socket.data.userId = userId;
       socket.join(`user:${userId}`);
     } catch (e) {
-      console.error('WS error in handleConnection:', e);
+      this.logger.error('WS error in handleConnection:', e);
       socket.disconnect(true);
     }
   }

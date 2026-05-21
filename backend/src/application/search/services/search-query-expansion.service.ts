@@ -21,7 +21,7 @@ export class SearchQueryExpansionService {
     private readonly geminiService: IGeminiService,
     @Inject(CACHE_SERVICE)
     private readonly cacheService: ICacheService,
-  ) { }
+  ) {}
 
   /**
    * Mở rộng câu query bằng Gemini (Chain-of-Thought).
@@ -64,14 +64,21 @@ Trả về JSON (chỉ JSON):
   "intent": "mô tả ngắn gọn người dùng muốn tìm gì"
 }`;
 
-      const result = await this.geminiService.generateJSON<QueryAnalysis>(prompt);
+      const result =
+        await this.geminiService.generateJSON<QueryAnalysis>(prompt);
       if (result) {
-        await this.cacheService.set(cacheKey, result, SearchQueryExpansionService.CACHE_TTL_SECONDS);
+        await this.cacheService.set(
+          cacheKey,
+          result,
+          SearchQueryExpansionService.CACHE_TTL_SECONDS,
+        );
         this.logger.debug(`[RAG] Cache SET: "${query}"`);
       }
       return result;
     } catch (e) {
-      this.logger.warn(`[RAG] Expansion failed: ${e instanceof Error ? e.message : String(e)}`);
+      this.logger.warn(
+        `[RAG] Expansion failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
       return null;
     }
   }

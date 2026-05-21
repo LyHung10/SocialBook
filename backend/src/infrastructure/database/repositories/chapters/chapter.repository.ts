@@ -26,7 +26,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
 import { BookMapper } from '../books/book.mapper';
-import { RawBookDocument } from '../books/book.raw-types';
+import { RawBookDocument } from '../books/book.mapper';
 import { RawChapterDocument, RawChapterPersistence } from './chapter.mapper';
 
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
@@ -50,7 +50,7 @@ export class ChapterRepository
     return this.mapToEntity(doc as unknown as RawChapterDocument);
   }
 
-  protected toPersistence(entity: ChapterEntity): any {
+  protected toPersistence(entity: ChapterEntity): RawChapterPersistence {
     return this.mapToDocument(entity);
   }
 

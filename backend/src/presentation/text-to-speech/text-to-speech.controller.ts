@@ -13,7 +13,7 @@ import {
   GenerateChapterAudioDto,
   GenerateBookAudioDto,
 } from '@/presentation/text-to-speech/dto/textToSpeech.dto';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';

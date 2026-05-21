@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ReadingRoom, ReadingRoomSchema } from '../../schemas/reading-room.schema';
+import {
+  ReadingRoom,
+  ReadingRoomSchema,
+} from '../../schemas/reading-room.schema';
 import { ReadingRoomRepository } from './reading-room.repository';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 

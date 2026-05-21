@@ -1,6 +1,7 @@
 import { GetPersonalizedRecommendationsUseCase } from '@/application/recommendations/use-cases/get-personalized-recommendations.use-case';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import type { Request } from 'express';
 import { GetRecommendationsDto } from './dto/get-recommendations.dto';
 
 @Controller('recommendations')
@@ -12,10 +13,10 @@ export class RecommendationsController {
 
   @Get('personalized')
   async getPersonalizedRecommendations(
-    @Req() req: any,
+    @Req() req: Request,
     @Query() filter: GetRecommendationsDto,
   ) {
-    const userId = req.user.id;
+    const userId = (req as unknown as { user: { id: string } }).user.id;
     const result = await this.getPersonalizedRecommendationsUseCase.execute(
       userId,
       filter.page,

@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IReadingListRepository } from '@/domain/library/repositories/reading-list.repository.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
@@ -34,6 +34,8 @@ export interface KnowledgeGraphResult {
 
 @Injectable()
 export class GetKnowledgeGraphUseCase {
+  private readonly logger = new Logger(GetKnowledgeGraphUseCase.name);
+
   constructor(
     private readonly readingListRepository: IReadingListRepository,
     private readonly bookRepository: IBookRepository,
@@ -42,7 +44,6 @@ export class GetKnowledgeGraphUseCase {
     @Inject(GEMINI_TOKENS.GEMINI_SERVICE)
     private readonly geminiService: IGeminiService,
   ) {}
-
 
   async execute(query: GetKnowledgeGraphQuery): Promise<KnowledgeGraphResult> {
     const userId = UserId.create(query.userId);
@@ -53,14 +54,22 @@ export class GetKnowledgeGraphUseCase {
     }
 
     // 1. Fetch completed reading list
-    const completedItems = await this.readingListRepository.findAllDetailByUserId(
-      userId,
-      ReadingStatus.COMPLETED,
-    );
+    const completedItems =
+      await this.readingListRepository.findAllDetailByUserId(
+        userId,
+        ReadingStatus.COMPLETED,
+      );
 
     if (completedItems.length === 0) {
       return {
-        nodes: [{ id: user.id.getValue(), label: user.username, type: 'user', val: 20 }],
+        nodes: [
+          {
+            id: user.id.getValue(),
+            label: user.username,
+            type: 'user',
+            val: 20,
+          },
+        ],
         links: [],
       };
     }
@@ -171,8 +180,12 @@ export class GetKnowledgeGraphUseCase {
       const availableGenres = allGenres.map((g) => g.name.getValue());
       const uniqueUserGenres = Array.from(new Set(userGenres));
 
-      console.log(`[KnowledgeGraph] User read genres: ${uniqueUserGenres.join(', ')}`);
-      console.log(`[KnowledgeGraph] Available genres: ${availableGenres.length}`);
+      this.logger.log(
+        `[KnowledgeGraph] User read genres: ${uniqueUserGenres.join(', ')}`,
+      );
+      this.logger.log(
+        `[KnowledgeGraph] Available genres: ${availableGenres.length}`,
+      );
 
       const prompt = `You are a professional librarian and knowledge curator. 
             The user has read books in these genres: [${uniqueUserGenres.join(', ')}]. 
@@ -193,22 +206,38 @@ export class GetKnowledgeGraphUseCase {
               ]
             }`;
 
-      let aiResult: any;
+      let aiResult:
+        | {
+            gaps: Array<{
+              genre: string;
+              reason: string;
+              suggestedBook: string;
+            }>;
+          }
+        | undefined;
       try {
         aiResult = await this.geminiService.generateJSON<{
           gaps: Array<{ genre: string; reason: string; suggestedBook: string }>;
         }>(prompt);
-        console.log(`[KnowledgeGraph] AI generated ${aiResult?.gaps?.length || 0} gaps`);
+        this.logger.log(
+          `[KnowledgeGraph] AI generated ${aiResult?.gaps?.length || 0} gaps`,
+        );
       } catch (aiErr) {
-        console.error('[KnowledgeGraph] AI Analysis failed, using fallback.', aiErr.message);
+        this.logger.error(
+          '[KnowledgeGraph] AI Analysis failed, using fallback.',
+          aiErr.message,
+        );
         // Fallback: Pick 2 genres the user hasn't read
-        const missingGenres = availableGenres.filter(g => !uniqueUserGenres.includes(g)).slice(0, 2);
+        const missingGenres = availableGenres
+          .filter((g) => !uniqueUserGenres.includes(g))
+          .slice(0, 2);
         aiResult = {
-          gaps: missingGenres.map(g => ({
+          gaps: missingGenres.map((g) => ({
             genre: g,
-            reason: "Chúng tôi nhận thấy bạn chưa khám phá mảng này. Hãy thử để mở rộng góc nhìn nhé!",
-            suggestedBook: "Tác phẩm tiêu biểu"
-          }))
+            reason:
+              'Chúng tôi nhận thấy bạn chưa khám phá mảng này. Hãy thử để mở rộng góc nhìn nhé!',
+            suggestedBook: 'Tác phẩm tiêu biểu',
+          })),
         };
       }
 
@@ -253,11 +282,9 @@ export class GetKnowledgeGraphUseCase {
         });
       }
     } catch (error) {
-      console.error('[KnowledgeGraph] Global analysis error:', error);
+      this.logger.error('[KnowledgeGraph] Global analysis error:', error);
     }
 
     return { nodes, links };
   }
 }
-
-

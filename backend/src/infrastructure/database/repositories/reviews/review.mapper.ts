@@ -15,11 +15,21 @@ interface PopulatedBook {
 }
 
 function isPopulatedUser(field: unknown): field is PopulatedUser {
-  return typeof field === 'object' && field !== null && '_id' in field && 'username' in field;
+  return (
+    typeof field === 'object' &&
+    field !== null &&
+    '_id' in field &&
+    'username' in field
+  );
 }
 
 function isPopulatedBook(field: unknown): field is PopulatedBook {
-  return typeof field === 'object' && field !== null && '_id' in field && 'title' in field;
+  return (
+    typeof field === 'object' &&
+    field !== null &&
+    '_id' in field &&
+    'title' in field
+  );
 }
 
 interface ReviewPersistence {

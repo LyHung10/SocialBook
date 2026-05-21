@@ -2,8 +2,20 @@ import {
   ReadingListResult,
   ReadingProgressResult,
   ReadingStatusResult,
-} from '@/application/library/mappers/library.results';
+} from '@/application/library/mappers/library.result.dto';
 import { CollectionResult } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.use-case';
+import { LibraryItemReadModel } from '@/domain/library/read-models/library-item.read-model';
+
+/** Accepts either domain Collection entity (userId: UserId) or CollectionResult (userId: string) */
+type CollectionInput = {
+  id: string;
+  name: string;
+  description: string;
+  isPublic: boolean;
+  userId: { toString(): string };
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export class BookLibraryInfoResponseDto {
   status: ReadingStatusResult | null;
@@ -19,7 +31,7 @@ export class BookLibraryInfoResponseDto {
 
   static fromResult(result: {
     readingList: ReadingListResult | null;
-    collections: any[];
+    collections: CollectionInput[];
   }): BookLibraryInfoResponseDto {
     const collectionDtos = result.collections.map((c) =>
       CollectionResponseDto.fromResult(c),
@@ -86,7 +98,10 @@ export class CollectionResponseDto {
     this.updatedAt = props.updatedAt;
   }
 
-  static fromResult(entity: any, bookCount?: number): CollectionResponseDto {
+  static fromResult(
+    entity: CollectionInput,
+    bookCount?: number,
+  ): CollectionResponseDto {
     return new CollectionResponseDto({
       id: entity.id,
       name: entity.name,
@@ -101,7 +116,7 @@ export class CollectionResponseDto {
 }
 
 export class CollectionDetailResponseDto extends CollectionResponseDto {
-  books: any[];
+  books: LibraryItemReadModel[];
 
   constructor(props: {
     id: string;
@@ -109,7 +124,7 @@ export class CollectionDetailResponseDto extends CollectionResponseDto {
     description: string;
     isPublic: boolean;
     userId: string;
-    books: any[];
+    books: LibraryItemReadModel[];
     createdAt: Date;
     updatedAt: Date;
   }) {
@@ -118,8 +133,8 @@ export class CollectionDetailResponseDto extends CollectionResponseDto {
   }
 
   static fromResultDetail(
-    collection: any,
-    books: any[],
+    collection: CollectionInput,
+    books: LibraryItemReadModel[],
   ): CollectionDetailResponseDto {
     return new CollectionDetailResponseDto({
       id: collection.id,
@@ -155,18 +170,20 @@ export class LibraryItemResponseDto {
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(readModel: any) {
+  constructor(readModel: LibraryItemReadModel) {
     this.id = readModel.id;
     this.userId = readModel.userId;
     this.bookId = readModel.bookId;
-    this.status = readModel.status;
+    this.status = readModel.status as ReadingStatusResult;
     this.lastReadChapterId = readModel.lastReadChapterId;
     this.collectionIds = readModel.collectionIds;
     this.createdAt = readModel.createdAt;
     this.updatedAt = readModel.updatedAt;
   }
 
-  static fromReadModel(readModel: any): LibraryItemResponseDto {
+  static fromReadModel(
+    readModel: LibraryItemReadModel,
+  ): LibraryItemResponseDto {
     return new LibraryItemResponseDto(readModel);
   }
 }

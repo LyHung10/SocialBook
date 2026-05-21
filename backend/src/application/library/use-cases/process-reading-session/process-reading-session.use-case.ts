@@ -28,7 +28,6 @@ export class ProcessReadingSessionUseCase {
         durationInSeconds: command.durationInSeconds,
       } as any);
 
-
       this.logger.log(
         `Processed reading session for user ${command.userId}: ${result.timeSpentMinutes} minutes`,
       );

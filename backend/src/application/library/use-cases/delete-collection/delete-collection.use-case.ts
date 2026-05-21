@@ -1,5 +1,9 @@
 import { ICollectionRepository } from '@/domain/library/repositories/collection.repository.interface';
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
 export class DeleteCollectionUseCase {
@@ -13,7 +17,9 @@ export class DeleteCollectionUseCase {
     }
 
     if (collection.userId.getValue() !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this collection');
+      throw new ForbiddenException(
+        'You do not have permission to delete this collection',
+      );
     }
 
     await this.collectionRepository.delete(id);

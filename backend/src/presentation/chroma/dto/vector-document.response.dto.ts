@@ -6,7 +6,7 @@ export class VectorDocumentResponseDto {
   contentId: string;
   contentType: string;
   content: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   embedding: number[];
   createdAt: Date;
   updatedAt: Date;

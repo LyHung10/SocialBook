@@ -17,6 +17,7 @@ import {
   RecommendationResponse,
   RecommendationResult,
 } from '@/domain/recommendations/interfaces/recommendation.interface';
+import { PopulatedBook } from '@/domain/recommendations/interfaces/recommendation-data.port';
 
 @Injectable()
 export class FallbackRecommendationStrategy implements IRecommendationStrategy {
@@ -28,7 +29,7 @@ export class FallbackRecommendationStrategy implements IRecommendationStrategy {
   async generate(
     userId: string,
     userProfile: UserProfile,
-    availableBooks: any[], // PopulatedBook[]
+    availableBooks: PopulatedBook[],
     limit: number,
   ): Promise<RecommendationResponse> {
     let recommendations: RecommendationResult[] = [];
@@ -52,12 +53,12 @@ export class FallbackRecommendationStrategy implements IRecommendationStrategy {
           .sort({ views: -1, likes: -1 })
           .limit(limit)
           .populate('genres authorId')
-          .lean<any[]>();
+          .lean<PopulatedBook[]>();
 
         recommendations = matchedBooks.map((book) => ({
           bookId: book._id.toString(),
           title: book.title,
-          reason: `Phù hợp với sở thích: ${book.genres?.find((g: any) => favoriteGenreNames.includes(g.name))?.name || 'Thể loại yêu thích'}`,
+          reason: `Phù hợp với sở thích: ${book.genres?.find((g: { _id: string; name: string; slug: string }) => favoriteGenreNames.includes(g.name))?.name || 'Thể loại yêu thích'}`,
           matchScore: 80,
           slug: book.slug,
           book: book,

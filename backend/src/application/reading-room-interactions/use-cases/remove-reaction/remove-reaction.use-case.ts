@@ -5,9 +5,7 @@ import { RemoveReactionCommand } from './remove-reaction.command';
 
 @Injectable()
 export class RemoveReactionUseCase {
-  constructor(
-    private readonly reactionRepository: IReactionRepository,
-  ) {}
+  constructor(private readonly reactionRepository: IReactionRepository) {}
 
   async execute(command: RemoveReactionCommand): Promise<void> {
     const existing = await this.reactionRepository.findUserReaction(

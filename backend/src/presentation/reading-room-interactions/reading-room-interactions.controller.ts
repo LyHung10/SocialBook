@@ -54,7 +54,7 @@ export class ReadingRoomInteractionsController {
       new GetRoomCommentsQuery(code, chapterSlug),
     );
     return {
-      data: result.map(c => ({
+      data: result.map((c) => ({
         id: c.id,
         paragraphId: c.paragraphId,
         chapterSlug: c.chapterSlug,
@@ -75,7 +75,7 @@ export class ReadingRoomInteractionsController {
       new GetRoomReactionsQuery(code, chapterSlug),
     );
     return {
-      data: result.map(r => ({
+      data: result.map((r) => ({
         id: r.id,
         paragraphId: r.paragraphId,
         reactionType: r.reactionType,
@@ -125,14 +125,12 @@ export class ReadingRoomInteractionsController {
   }
 
   @Get('quotes')
-  async getQuotes(
-    @Param('code') code: string,
-  ) {
+  async getQuotes(@Param('code') code: string) {
     const result = await this.getRoomQuotesUseCase.execute(
       new GetRoomQuotesQuery(code),
     );
     return {
-      data: result.map(q => ({
+      data: result.map((q) => ({
         id: q.id,
         content: q.content,
         userId: q.userId,
@@ -146,10 +144,7 @@ export class ReadingRoomInteractionsController {
   }
 
   @Post('quotes')
-  async addQuote(
-    @CurrentUser('id') userId: string,
-    @Body() dto: AddQuoteDto,
-  ) {
+  async addQuote(@CurrentUser('id') userId: string, @Body() dto: AddQuoteDto) {
     const result = await this.addQuoteUseCase.execute(
       new AddQuoteCommand(
         userId,

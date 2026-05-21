@@ -41,7 +41,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     try {
       const hfKey = this.configService.get<string>('env.HUGGINGFACE_API_KEY');
       if (!hfKey) {
-        this.logger.error('❌ HUGGINGFACE_API_KEY is missing in configuration!');
+        this.logger.error(
+          '❌ HUGGINGFACE_API_KEY is missing in configuration!',
+        );
         return;
       }
 
@@ -55,13 +57,18 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         model: 'keepitreal/vietnamese-sbert',
       });
 
-      const chromaUrl = this.configService.get<string>('env.CHROMA_URL', 'http://localhost:8000');
+      const chromaUrl = this.configService.get<string>(
+        'env.CHROMA_URL',
+        'http://localhost:8000',
+      );
       const collectionName = this.configService.get<string>(
         'env.CHROMA_COLLECTION',
         'socialbook_vectors_v2',
       );
 
-      this.logger.log(`🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`);
+      this.logger.log(
+        `🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`,
+      );
 
       this.chromaClient = new ChromaClient({ path: chromaUrl });
       this.collection = await this.chromaClient.getOrCreateCollection({
@@ -110,7 +117,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     }
 
     try {
-      const langchainDocs = documents.map((doc) => this.toLangchainDocument(doc));
+      const langchainDocs = documents.map((doc) =>
+        this.toLangchainDocument(doc),
+      );
       await this.vectorStore.addDocuments(langchainDocs);
 
       return {
@@ -120,8 +129,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         errors: [],
       };
     } catch (error) {
-      this.logger.warn(`Batch save failed for ${documents.length} docs, attempting split-and-retry. Error: ${error.message}`);
-      
+      this.logger.warn(
+        `Batch save failed for ${documents.length} docs, attempting split-and-retry. Error: ${error.message}`,
+      );
+
       // Granular Error Handling: Split and retry if batch is large
       if (documents.length > 1) {
         const mid = Math.floor(documents.length / 2);
@@ -134,7 +145,8 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         ]);
 
         return {
-          totalProcessed: leftResult.totalProcessed + rightResult.totalProcessed,
+          totalProcessed:
+            leftResult.totalProcessed + rightResult.totalProcessed,
           successful: leftResult.successful + rightResult.successful,
           failed: leftResult.failed + rightResult.failed,
           errors: [...leftResult.errors, ...rightResult.errors],
@@ -170,7 +182,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         result.metadatas[0] as unknown as ChromaMetadata,
       );
     } catch (error) {
-      this.logger.error(`Failed to find document by ID: ${id.toString()}`, error);
+      this.logger.error(
+        `Failed to find document by ID: ${id.toString()}`,
+        error,
+      );
       return null;
     }
   }
@@ -203,7 +218,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         });
       });
     } catch (error) {
-      this.logger.error(`Failed to find documents by content ID: ${contentId}`, error);
+      this.logger.error(
+        `Failed to find documents by content ID: ${contentId}`,
+        error,
+      );
       return [];
     }
   }
@@ -214,12 +232,18 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     try {
       await this.collection.delete({ where: { id: id.toString() } });
     } catch (error) {
-      this.logger.error(`Failed to delete document by ID: ${id.toString()}`, error);
+      this.logger.error(
+        `Failed to delete document by ID: ${id.toString()}`,
+        error,
+      );
       throw error;
     }
   }
 
-  async deleteByContentId(contentId: string, contentType?: ContentType): Promise<void> {
+  async deleteByContentId(
+    contentId: string,
+    contentType?: ContentType,
+  ): Promise<void> {
     this.ensureInitialized();
 
     try {
@@ -230,7 +254,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       await this.collection.delete({ where });
     } catch (error) {
-      this.logger.error(`Failed to delete documents by content ID: ${contentId}`, error);
+      this.logger.error(
+        `Failed to delete documents by content ID: ${contentId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -256,11 +283,16 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         Object.keys(filter).length > 0 ? filter : undefined,
       );
 
-      this.logger.debug(`Raw search results for "${query.query}": ${results.length}`);
+      this.logger.debug(
+        `Raw search results for "${query.query}": ${results.length}`,
+      );
 
       return results
         .map(([doc, distance]) => ({
-          document: this.mapToVectorDocument(doc.pageContent, doc.metadata as ChromaMetadata),
+          document: this.mapToVectorDocument(
+            doc.pageContent,
+            doc.metadata as ChromaMetadata,
+          ),
           score: this.calculateSimilarityScore(distance),
         }))
         .filter((result) => result.score >= query.threshold)
@@ -291,7 +323,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       );
 
       return results.map(([doc, distance]) => ({
-        document: this.mapToVectorDocument(doc.pageContent, doc.metadata as ChromaMetadata),
+        document: this.mapToVectorDocument(
+          doc.pageContent,
+          doc.metadata as ChromaMetadata,
+        ),
         score: this.calculateSimilarityScore(distance),
       }));
     } catch (error) {
@@ -325,7 +360,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       return results
         .map(([doc, distance]) => ({
-          document: this.mapToVectorDocument(doc.pageContent, doc.metadata as ChromaMetadata),
+          document: this.mapToVectorDocument(
+            doc.pageContent,
+            doc.metadata as ChromaMetadata,
+          ),
           score: this.calculateSimilarityScore(distance),
         }))
         .filter((result) => result.score >= (threshold || 0.7));
@@ -353,8 +391,11 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       try {
         await this.chromaClient.deleteCollection({ name: collectionName });
-      } catch {
-        this.logger.warn(`Collection ${collectionName} does not exist, skipping delete`);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to delete collection ${collectionName}`,
+          error,
+        );
       }
 
       this.collection = await this.chromaClient.createCollection({
@@ -364,7 +405,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       this.vectorStore = new Chroma(this.embeddings, {
         collectionName,
-        url: this.configService.get<string>('env.CHROMA_URL', 'http://localhost:8000'),
+        url: this.configService.get<string>(
+          'env.CHROMA_URL',
+          'http://localhost:8000',
+        ),
       });
 
       this.isInitialized = true;
@@ -413,7 +457,10 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   /**
    * Unified mapping from Chroma raw data to VectorDocument domain entity.
    */
-  private mapToVectorDocument(pageContent: string, metadata: ChromaMetadata): VectorDocument {
+  private mapToVectorDocument(
+    pageContent: string,
+    metadata: ChromaMetadata,
+  ): VectorDocument {
     const contentType = this.parseContentType(metadata?.contentType);
     return VectorDocument.reconstitute({
       id: metadata?.id || '',
@@ -458,7 +505,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     if (value && valid.includes(value as ContentTypeValue)) {
       return value as ContentTypeValue;
     }
-    this.logger.warn(`⚠️ Unknown contentType: "${value}", defaulting to 'book'`);
+    this.logger.warn(
+      `⚠️ Unknown contentType: "${value}", defaulting to 'book'`,
+    );
     return 'book';
   }
 }

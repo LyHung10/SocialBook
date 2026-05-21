@@ -1,5 +1,5 @@
 import { RequireAuth } from '@/common/decorators/auth-swagger.decorator';
-import { ApiFileUpload, Public } from '@/common/decorators/customize';
+import { ApiFileUpload, Public } from '@/common/decorators/custom.decorator';
 import {
   Body,
   Controller,

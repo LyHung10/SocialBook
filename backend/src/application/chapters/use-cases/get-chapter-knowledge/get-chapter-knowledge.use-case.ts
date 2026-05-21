@@ -23,18 +23,21 @@ export class GetChapterKnowledgeUseCase {
   ) {}
 
   async execute(query: GetChapterKnowledgeQuery) {
-
-    const existing = await this.knowledgeRepository.findByChapterId(query.chapterId);
+    const existing = await this.knowledgeRepository.findByChapterId(
+      query.chapterId,
+    );
     if (!query.force && existing) {
       return existing;
     }
 
     // 2. Fetch chapter
-    const chapter = await this.chapterRepository.findById(ChapterId.create(query.chapterId));
+    const chapter = await this.chapterRepository.findById(
+      ChapterId.create(query.chapterId),
+    );
     if (!chapter) throw new NotFoundException('Chapter not found');
 
     // 3. Prepare prompt
-    const content = chapter.paragraphs.map(p => p.content).join('\n');
+    const content = chapter.paragraphs.map((p) => p.content).join('\n');
     const prompt = `
       Hãy phân tích nội dung chương sách sau đây và trích xuất các thực thể quan trọng theo định dạng JSON.
       Định dạng trả về:
@@ -81,11 +84,7 @@ export class GetChapterKnowledgeUseCase {
       summary: result.summary,
     });
 
-
-
-
     await this.knowledgeRepository.save(knowledge);
     return knowledge;
   }
 }
-

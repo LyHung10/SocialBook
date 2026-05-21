@@ -3,7 +3,7 @@ import { CacheModule } from '@/shared/cache/redis.module';
 import { LoggerModule } from '@/shared/logger/logger.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -73,7 +73,7 @@ import { PresentationModule } from './presentation/presentation.module';
             maxRetriesPerRequest: 5,
             retryStrategy: (times: number) => {
               if (times > 5) {
-                console.error(
+                new Logger(AppModule.name).error(
                   '[Redis] Connection failed after 5 retries. Redis features will be disabled.',
                 );
                 return null;
@@ -82,11 +82,7 @@ import { PresentationModule } from './presentation/presentation.module';
             },
             reconnectOnError: (err) => {
               const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT'];
-              if (
-                targetErrors.some((e) =>
-                  err.message.includes(e),
-                )
-              ) {
+              if (targetErrors.some((e) => err.message.includes(e))) {
                 return true;
               }
               return false;

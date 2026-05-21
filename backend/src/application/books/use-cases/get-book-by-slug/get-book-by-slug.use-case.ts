@@ -14,7 +14,6 @@ import { GetBookBySlugQuery } from './get-book-by-slug.query';
 
 @Injectable()
 export class GetBookBySlugUseCase {
-
   constructor(
     private readonly bookQueryProvider: IBookQueryProvider,
     private readonly eventEmitter: EventEmitter2,

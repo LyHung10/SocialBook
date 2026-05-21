@@ -1,5 +1,9 @@
 import { ICollectionRepository } from '@/domain/library/repositories/collection.repository.interface';
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UpdateCollectionCommand } from './update-collection.command';
 import { Collection } from '@/domain/library/entities/collection.entity';
 
@@ -15,7 +19,9 @@ export class UpdateCollectionUseCase {
     }
 
     if (collection.userId.getValue() !== command.userId) {
-      throw new ForbiddenException('You do not have permission to update this collection');
+      throw new ForbiddenException(
+        'You do not have permission to update this collection',
+      );
     }
 
     collection.updateInfo({

@@ -71,6 +71,7 @@ async function bootstrap() {
 
   // Khởi động server
   await app.listen(port, '0.0.0.0');
-  console.log(`Backend running on ${await app.getUrl()}`);
+  const logger = app.get(Logger);
+  logger.log(`Backend running on ${await app.getUrl()}`);
 }
 bootstrap();

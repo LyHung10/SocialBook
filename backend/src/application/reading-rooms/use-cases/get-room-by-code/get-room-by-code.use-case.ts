@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
-import { ReadingRoomResult } from '../reading-room.result';
+import { ReadingRoomResult } from '../reading-room.result.interface';
 import { GetRoomByCodeQuery } from './get-room-by-code.query';
 
 @Injectable()

@@ -14,7 +14,6 @@ import {
 
 @Injectable()
 export class GetBookByIdUseCase {
-
   constructor(
     private readonly bookRepository: IBookRepository,
     private readonly eventEmitter: EventEmitter2,
@@ -47,4 +46,3 @@ export class GetBookByIdUseCase {
     return book;
   }
 }
-

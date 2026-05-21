@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -92,8 +92,8 @@ export class CommentsController {
       query.page,
       query.limit,
       query.cursor,
-      query.sortBy as any,
-      query.order as any,
+      query.sortBy as 'createdAt' | 'updatedAt' | 'likesCount' | undefined,
+      query.order,
       userId,
     );
     const result = await this.getUsersUseCase.execute(getQuery);
@@ -151,8 +151,11 @@ export class CommentsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string, @CurrentUser() user: any) {
-    const isAdmin = user.roles?.includes('admin') || false;
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; email: string; role: string },
+  ) {
+    const isAdmin = user.role === 'admin';
     const command = new DeleteCommentCommand(id, user.id, isAdmin);
 
     await this.deleteCommentUseCase.execute(command);

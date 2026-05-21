@@ -6,7 +6,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-import { CHAPTERS_IMPORT_JOB_NAME, CHAPTERS_IMPORT_QUEUE } from './chapters-import.processor';
+import {
+  CHAPTERS_IMPORT_JOB_NAME,
+  CHAPTERS_IMPORT_QUEUE,
+} from './chapters-import.processor';
 import type {
   ImportChaptersChapterInput,
   ImportChaptersJobData,
@@ -24,7 +27,14 @@ export interface StartChaptersImportResult {
 }
 
 export interface ChaptersImportStatusResult {
-  state: 'completed' | 'failed' | 'active' | 'waiting' | 'delayed' | 'paused' | 'unknown';
+  state:
+    | 'completed'
+    | 'failed'
+    | 'active'
+    | 'waiting'
+    | 'delayed'
+    | 'paused'
+    | 'unknown';
   progress: unknown;
   result?: ImportChaptersJobResult;
   failedReason?: string;
@@ -34,11 +44,19 @@ export interface ChaptersImportStatusResult {
 export class ChaptersImportService {
   constructor(
     @InjectQueue(CHAPTERS_IMPORT_QUEUE)
-    private readonly queue: Queue<ImportChaptersJobData, ImportChaptersJobResult>,
+    private readonly queue: Queue<
+      ImportChaptersJobData,
+      ImportChaptersJobResult
+    >,
   ) {}
 
-  async startImport(params: StartChaptersImportParams): Promise<StartChaptersImportResult> {
-    const tempJsonPath = path.join(os.tmpdir(), `chapters-import-${uuidv4()}.json`);
+  async startImport(
+    params: StartChaptersImportParams,
+  ): Promise<StartChaptersImportResult> {
+    const tempJsonPath = path.join(
+      os.tmpdir(),
+      `chapters-import-${uuidv4()}.json`,
+    );
     await fs.writeFile(tempJsonPath, JSON.stringify(params.chapters), 'utf8');
 
     const job = await this.queue.add(

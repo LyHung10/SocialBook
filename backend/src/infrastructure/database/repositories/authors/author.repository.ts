@@ -35,7 +35,7 @@ export class AuthorRepository
     return this.mapToEntity(doc);
   }
 
-  protected toPersistence(entity: AuthorEntity): any {
+  protected toPersistence(entity: AuthorEntity): Partial<AuthorDocument> {
     return this.mapToDocument(entity);
   }
 
@@ -118,7 +118,7 @@ export class AuthorRepository
     return await this.authorModel.countDocuments().exec();
   }
 
-  private mapToEntity(document: any): AuthorEntity {
+  private mapToEntity(document: AuthorDocument): AuthorEntity {
     return AuthorEntity.reconstitute({
       id: document._id.toString(),
       name: document.name,

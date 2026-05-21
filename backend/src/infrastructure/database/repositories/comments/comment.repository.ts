@@ -28,7 +28,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
-import { CommentMapper } from './comment.mapper';
+import { CommentMapper, CommentReadModelRaw } from './comment.mapper';
 import { LikeDocument } from '../../schemas/like.schema';
 
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
@@ -390,7 +390,7 @@ export class CommentRepository
     status: 'pending' | 'approved' | 'rejected',
     reason?: string,
   ): Promise<void> {
-    const update: any = {
+    const update: Record<string, unknown> = {
       moderationStatus: status,
       updatedAt: new Date(),
     };
@@ -485,7 +485,7 @@ export class CommentRepository
     reason?: string,
   ): Promise<void> {
     const objectIds = ids.map((id) => new Types.ObjectId(id.toString()));
-    const update: any = {
+    const update: Record<string, unknown> = {
       moderationStatus: status,
       updatedAt: new Date(),
     };
@@ -503,7 +503,7 @@ export class CommentRepository
       .exec();
   }
 
-  private mapToReadModel = (doc: any): CommentModel => ({
+  private mapToReadModel = (doc: CommentReadModelRaw): CommentModel => ({
     id: doc._id.toString(),
     content: doc.content,
     targetId: doc.targetId.toString(),
@@ -579,7 +579,7 @@ export class CommentRepository
     }));
   }
 
-  private mapToEntity(document: any): CommentEntity {
+  private mapToEntity(document: Comment): CommentEntity {
     return CommentMapper.toDomain(document);
   }
 
@@ -599,10 +599,11 @@ export class CommentRepository
       };
     }
 
-    const target = (await this.commentModel
+    const target = await this.commentModel
       .findById(parentId)
       .select('_id targetId targetType parentId')
-      .lean()) as any;
+      .lean()
+      .exec();
 
     if (!target) {
       throw new NotFoundException('Parent comment not found');
@@ -625,10 +626,11 @@ export class CommentRepository
       };
     }
 
-    const parent = (await this.commentModel
+    const parent = await this.commentModel
       .findById(target.parentId)
       .select('_id parentId')
-      .lean()) as any;
+      .lean()
+      .exec();
     if (!parent) {
       throw new NotFoundException('Parent comment not found');
     }

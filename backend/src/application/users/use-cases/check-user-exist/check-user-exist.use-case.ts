@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
 import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { UserEmail } from '@/domain/users/value-objects/user-email.vo';
@@ -6,6 +6,8 @@ import { CheckUserExistQuery } from './check-user-exist.query';
 
 @Injectable()
 export class CheckUserExistUseCase {
+  private readonly logger = new Logger(CheckUserExistUseCase.name);
+
   constructor(private readonly userRepository: IUserRepository) {}
 
   async execute(query: CheckUserExistQuery): Promise<boolean> {
@@ -29,7 +31,8 @@ export class CheckUserExistUseCase {
       }
 
       return false;
-    } catch {
+    } catch (error) {
+      this.logger.error('Failed to check user existence', error);
       return false;
     }
   }

@@ -1,9 +1,26 @@
 // file-import.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+interface EpubChapterRef {
+  id?: string;
+  title?: string;
+  href?: string;
+}
+
+interface EpubInstance {
+  flow?: EpubChapterRef[];
+  toc: EpubChapterRef[];
+  on(event: string, callback: (...args: unknown[]) => void): this;
+  getChapter(
+    chapterId: string,
+    callback: (error: Error | null, text?: string) => void,
+  ): void;
+  parse(): void;
+}
 
 export interface ParsedChapter {
   title: string;
@@ -17,6 +34,8 @@ export interface FileValidation {
 
 @Injectable()
 export class FileImportService {
+  private readonly logger = new Logger(FileImportService.name);
+
   private readonly defaultValidation: FileValidation = {
     maxSize: 50 * 1024 * 1024, // 50MB
     allowedTypes: [
@@ -122,24 +141,24 @@ export class FileImportService {
         // Write buffer to temporary file
         fs.writeFileSync(tempFilePath, buffer);
 
-        const epub = new EPub(tempFilePath);
+        const epub = new EPub(tempFilePath) as EpubInstance;
 
         epub.on('end', async () => {
           try {
             const chapters: ParsedChapter[] = [];
 
             // Process each chapter from spine
-            for (const chapterRef of epub.flow) {
+            for (const chapterRef of epub.flow ?? []) {
               const chapterText = await this.getEpubChapter(
                 epub,
-                chapterRef.id,
+                chapterRef.id ?? '',
               );
               const plainText = this.stripHtml(chapterText);
 
               // Get chapter title
               let title = chapterRef.title || chapterRef.id;
               const tocItem = epub.toc.find(
-                (t: any) => t.href === chapterRef.href,
+                (t: EpubChapterRef) => t.href === chapterRef.href,
               );
               if (tocItem?.title) {
                 title = tocItem.title;
@@ -174,16 +193,18 @@ export class FileImportService {
           }
         });
 
-        epub.on('error', (err: any) => {
+        epub.on('error', (err: Error) => {
           this.cleanupTempFile(tempFilePath);
           reject(new BadRequestException(`EPUB parsing error: ${err.message}`));
         });
 
         epub.parse();
-      } catch (error: any) {
+      } catch (error) {
         this.cleanupTempFile(tempFilePath);
         reject(
-          new BadRequestException(`Failed to read EPUB file: ${error.message}`),
+          new BadRequestException(
+            `Failed to read EPUB file: ${(error as Error).message}`,
+          ),
         );
       }
     });
@@ -192,9 +213,12 @@ export class FileImportService {
   /**
    * Get chapter content from EPUB
    */
-  private getEpubChapter(epub: any, chapterId: string): Promise<string> {
+  private getEpubChapter(
+    epub: EpubInstance,
+    chapterId: string,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
-      epub.getChapter(chapterId, (err: any, text: string) => {
+      epub.getChapter(chapterId, (err: Error | null, text?: string) => {
         if (err) {
           reject(err);
         } else {
@@ -276,11 +300,13 @@ export class FileImportService {
       }
 
       return chapters;
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`MOBI parsing error: ${error.message}`);
+      throw new BadRequestException(
+        `MOBI parsing error: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -423,7 +449,7 @@ export class FileImportService {
         fs.unlinkSync(filePath);
       }
     } catch (error) {
-      console.error(`Failed to cleanup temp file ${filePath}:`, error);
+      this.logger.error(`Failed to cleanup temp file ${filePath}:`, error);
     }
   }
 

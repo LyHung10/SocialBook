@@ -8,7 +8,18 @@ export class KnowledgeEntitySchema {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, enum: ['character', 'location', 'concept', 'event', 'vocabulary', 'reference'], required: true })
+  @Prop({
+    type: String,
+    enum: [
+      'character',
+      'location',
+      'concept',
+      'event',
+      'vocabulary',
+      'reference',
+    ],
+    required: true,
+  })
   type: string;
 
   @Prop({ type: String, required: true })
@@ -33,7 +44,6 @@ export class KnowledgeRelationshipSchema {
   description?: string;
 }
 
-
 @Schema({ timestamps: true, collection: 'chapter_knowledge' })
 export class ChapterKnowledge {
   @Prop({ type: String, required: true })
@@ -42,10 +52,16 @@ export class ChapterKnowledge {
   @Prop({ type: String, required: true, index: true })
   chapterId: string;
 
-  @Prop({ type: [SchemaFactory.createForClass(KnowledgeEntitySchema)], default: [] })
+  @Prop({
+    type: [SchemaFactory.createForClass(KnowledgeEntitySchema)],
+    default: [],
+  })
   entities: KnowledgeEntitySchema[];
 
-  @Prop({ type: [SchemaFactory.createForClass(KnowledgeRelationshipSchema)], default: [] })
+  @Prop({
+    type: [SchemaFactory.createForClass(KnowledgeRelationshipSchema)],
+    default: [],
+  })
   relationships: KnowledgeRelationshipSchema[];
 
   @Prop({ type: String })
@@ -55,6 +71,5 @@ export class ChapterKnowledge {
   updatedAt: Date;
 }
 
-
-
-export const ChapterKnowledgeSchema = SchemaFactory.createForClass(ChapterKnowledge);
+export const ChapterKnowledgeSchema =
+  SchemaFactory.createForClass(ChapterKnowledge);

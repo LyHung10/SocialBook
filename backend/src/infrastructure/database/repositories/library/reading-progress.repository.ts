@@ -11,19 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Progress, ProgressDocument } from '../../schemas/progress.schema';
 import { ReadingStatus } from '../../schemas/reading-list.schema';
-
-interface ReadingProgressPersistence {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
-  bookId: Types.ObjectId;
-  chapterId: Types.ObjectId;
-  progress: number;
-  status: string;
-  timeSpent: number;
-  lastReadAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ReadingProgressPersistence } from './reading-progress.mapper';
 
 @Injectable()
 export class ReadingProgressRepository implements IReadingProgressRepository {

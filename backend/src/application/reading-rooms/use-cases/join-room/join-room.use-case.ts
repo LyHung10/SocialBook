@@ -4,15 +4,13 @@ import {
   NotFoundDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
-import { ReadingRoomResult } from '../reading-room.result';
+import { ReadingRoomResult } from '../reading-room.result.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
 import { JoinRoomCommand } from './join-room.command';
 
 @Injectable()
 export class JoinRoomUseCase {
-  constructor(
-    private readonly roomRepository: IReadingRoomRepository,
-  ) {}
+  constructor(private readonly roomRepository: IReadingRoomRepository) {}
 
   async execute(command: JoinRoomCommand): Promise<ReadingRoomResult> {
     const room = await this.roomRepository.findActiveByCode(command.roomCode);

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CreateReviewDto } from '@/presentation/reviews/dto/create-review.dto';
 import { UpdateReviewDto } from '@/presentation/reviews/dto/update-review.dto';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { CreateReviewUseCase } from '@/application/reviews/use-cases/create-review.use-case';

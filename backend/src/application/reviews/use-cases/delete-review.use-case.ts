@@ -12,7 +12,8 @@ export class DeleteReviewUseCase {
 
   async execute(id: string, userId: string): Promise<void> {
     const review = await this.reviewRepository.findById(id);
-    if (!review) throw new NotFoundDomainException(ErrorMessages.REVIEW_NOT_FOUND);
+    if (!review)
+      throw new NotFoundDomainException(ErrorMessages.REVIEW_NOT_FOUND);
 
     if (review.userId.toString() !== userId) {
       throw new ForbiddenDomainException(

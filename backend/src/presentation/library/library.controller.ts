@@ -1,4 +1,4 @@
-import { ReadingStatusResult } from '@/application/library/mappers/library.results';
+import { ReadingStatusResult } from '@/application/library/mappers/library.result.dto';
 import { GetBookLibraryInfoQuery } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.query';
 import { GetBookLibraryInfoUseCase } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.use-case';
 import { GetChapterProgressQuery } from '@/application/library/use-cases/get-chapter-progress/get-chapter-progress.query';
@@ -58,25 +58,23 @@ export class LibraryController {
     private readonly getBookLibraryInfoUseCase: GetBookLibraryInfoUseCase,
     private readonly getChapterProgressUseCase: GetChapterProgressUseCase,
     private readonly getKnowledgeGraphUseCase: GetKnowledgeGraphUseCase,
-  ) { }
-
+  ) {}
 
   @Get()
   async getLibrary(
     @CurrentUser('id') userId: string,
     @Query('status') status?: string,
   ) {
-    let readingStatuses: any;
-
+    let readingStatuses: ReadingStatusResult | ReadingStatusResult[];
     if (status) {
       readingStatuses = status.includes(',')
-        ? status.split(',').map((s) => s.trim())
-        : status;
+        ? status.split(',').map((s) => s.trim() as ReadingStatusResult)
+        : (status as ReadingStatusResult);
     } else {
       readingStatuses = ReadingStatusResult.READING;
     }
 
-    const query = new GetLibraryQuery(userId, readingStatuses);
+    const query = new GetLibraryQuery(userId, readingStatuses as any);
     const readingLists = await this.getLibraryUseCase.execute(query);
 
     return {
@@ -95,7 +93,6 @@ export class LibraryController {
       data: result,
     };
   }
-
 
   @Post('status')
   async updateStatus(

@@ -17,7 +17,7 @@ export class SearchQueryDto {
   contentType?: 'book' | 'author' | 'chapter';
 
   @IsOptional()
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 
   @IsOptional()
   @IsNumber()

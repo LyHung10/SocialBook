@@ -5,17 +5,17 @@ import { VoteQuoteCommand } from './vote-quote.command';
 
 @Injectable()
 export class VoteQuoteUseCase {
-  constructor(
-    private readonly quoteRepository: IQuoteRepository,
-  ) {}
+  constructor(private readonly quoteRepository: IQuoteRepository) {}
 
-  async execute(command: VoteQuoteCommand): Promise<{ voteCount: number; userVoteType: 'up' | 'down' | null }> {
+  async execute(
+    command: VoteQuoteCommand,
+  ): Promise<{ voteCount: number; userVoteType: 'up' | 'down' | null }> {
     const quote = await this.quoteRepository.findById(command.quoteId);
     if (!quote) {
       throw new NotFoundDomainException('Quote not found');
     }
 
-    const existingVote = quote.votes.find(v => v.userId === command.userId);
+    const existingVote = quote.votes.find((v) => v.userId === command.userId);
     const isTogglingOff = existingVote?.type === command.voteType;
 
     if (isTogglingOff) {

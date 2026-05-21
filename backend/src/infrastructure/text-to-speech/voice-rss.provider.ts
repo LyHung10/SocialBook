@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Readable } from 'stream';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
 import {
   ITextToSpeechProvider,
@@ -58,13 +59,17 @@ export class VoiceRSSProvider implements ITextToSpeechProvider {
         throw new Error('VoiceRSS returned invalid audio data');
       }
 
-      const fakeAudioFile: any = {
+      const fakeAudioFile: Express.Multer.File = {
         buffer,
         originalname: `tts-${Date.now()}.${format}`,
         mimetype: `audio/${format}`,
         fieldname: 'audio',
         encoding: '7bit',
         size: buffer.length,
+        destination: '',
+        filename: `tts-${Date.now()}.${format}`,
+        path: '',
+        stream: Readable.from(buffer),
       };
 
       const audioUrl = await this.mediaService.uploadAudio(fakeAudioFile);

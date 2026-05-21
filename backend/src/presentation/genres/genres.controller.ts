@@ -6,7 +6,7 @@ import { GetGenresQuery } from '@/application/genres/use-cases/get-genres/get-ge
 import { GetGenresUseCase } from '@/application/genres/use-cases/get-genres/get-genres.use-case';
 import { UpdateGenreCommand } from '@/application/genres/use-cases/update-genre/update-genre.command';
 import { UpdateGenreUseCase } from '@/application/genres/use-cases/update-genre/update-genre.use-case';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { CreateGenreDto } from '@/presentation/genres/dto/create-genre.dto';
 import { FilterGenreDto } from '@/presentation/genres/dto/filter-genre.dto';
 import { GenreResponseDto } from '@/presentation/genres/dto/genre.response.dto';

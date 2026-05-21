@@ -89,7 +89,7 @@ export class TextToSpeechRepository implements ITextToSpeechRepository {
     status: TTSStatus,
     errorMessage?: string,
   ): Promise<void> {
-    const update: any = { status, updatedAt: new Date() };
+    const update: Record<string, unknown> = { status, updatedAt: new Date() };
     if (errorMessage) {
       update.errorMessage = errorMessage;
     }
@@ -102,7 +102,7 @@ export class TextToSpeechRepository implements ITextToSpeechRepository {
       .exec();
   }
 
-  private mapToEntity(doc: any): TextToSpeechEntity {
+  private mapToEntity(doc: Record<string, any>): TextToSpeechEntity {
     return TextToSpeechEntity.reconstitute({
       id: doc._id.toString(),
       chapterId: doc.chapterId.toString(),
@@ -126,7 +126,9 @@ export class TextToSpeechRepository implements ITextToSpeechRepository {
     });
   }
 
-  private mapToPersistence(entity: TextToSpeechEntity): any {
+  private mapToPersistence(
+    entity: TextToSpeechEntity,
+  ): Record<string, unknown> {
     return {
       chapterId: new Types.ObjectId(entity.chapterId),
       bookId: new Types.ObjectId(entity.bookId),

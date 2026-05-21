@@ -7,7 +7,13 @@ import {
 } from '@/common/interfaces/pagination.interface';
 import { Entity } from '@/shared/domain/entity.base';
 import { Identifier } from '@/shared/domain/identifier.base';
-import { Document, FilterQuery, Model, PipelineStage } from 'mongoose';
+import {
+  Document,
+  FilterQuery,
+  Model,
+  PipelineStage,
+  PopulateOptions,
+} from 'mongoose';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -17,11 +23,12 @@ export abstract class BaseMongoRepository<
   TEntity extends Entity<any>,
   TDocument extends Document,
   TId extends Identifier,
+  TPersistence = any,
 > {
   constructor(protected readonly model: Model<TDocument>) {}
 
   protected abstract toDomain(doc: TDocument): TEntity;
-  protected abstract toPersistence(entity: TEntity): any;
+  protected abstract toPersistence(entity: TEntity): TPersistence;
 
   protected async baseSave(entity: TEntity): Promise<void> {
     const persistenceData = this.toPersistence(entity);
@@ -30,7 +37,7 @@ export abstract class BaseMongoRepository<
     await this.model
       .findByIdAndUpdate(
         id,
-        { $set: persistenceData },
+        { $set: persistenceData as any },
         { upsert: true, new: true },
       )
       .exec();
@@ -60,7 +67,7 @@ export abstract class BaseMongoRepository<
     pagination?: PaginationOptions,
     sort?: SortOptions,
     mapFn?: (doc: any) => R,
-    populateArgs?: any[],
+    populateArgs?: PopulateOptions | PopulateOptions[] | string | string[],
     pipelineStages?: {
       preFacet?: PipelineStage[];
       postFacet?: PipelineStage[];
@@ -91,10 +98,10 @@ export abstract class BaseMongoRepository<
     const [result] = await this.model.aggregate(aggregatePipeline).exec();
 
     const total: number = result.metadata[0]?.total ?? 0;
-    let documents: any[] = result.data;
+    let documents = result.data as any[];
 
     if (populateArgs && documents.length > 0) {
-      documents = await this.model.populate(documents, populateArgs);
+      documents = await this.model.populate(documents, populateArgs as any);
     }
 
     const data = mapFn
@@ -112,7 +119,7 @@ export abstract class BaseMongoRepository<
     limit: number = DEFAULT_LIMIT,
     sort: Record<string, 1 | -1> = { _id: -1 },
     mapFn?: (doc: any) => R,
-    populateArgs?: any[],
+    populateArgs?: PopulateOptions | PopulateOptions[] | string | string[],
     pipelineStages?: PipelineStage[],
   ): Promise<CursorPaginatedResult<R>> {
     const aggregatePipeline: PipelineStage[] = [
@@ -130,7 +137,7 @@ export abstract class BaseMongoRepository<
     }
 
     if (populateArgs && docs.length > 0) {
-      docs = await this.model.populate(docs, populateArgs);
+      docs = await this.model.populate(docs, populateArgs as any);
     }
 
     const data = mapFn

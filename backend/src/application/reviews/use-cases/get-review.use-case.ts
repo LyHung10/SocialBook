@@ -10,7 +10,8 @@ export class GetReviewUseCase {
 
   async execute(id: string): Promise<Review> {
     const review = await this.reviewRepository.findById(id);
-    if (!review) throw new NotFoundDomainException(ErrorMessages.REVIEW_NOT_FOUND);
+    if (!review)
+      throw new NotFoundDomainException(ErrorMessages.REVIEW_NOT_FOUND);
     return review;
   }
 }

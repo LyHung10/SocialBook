@@ -1,5 +1,8 @@
 import { Entity } from '@/shared/domain/entity.base';
-import { ReactionType, ReactionTypeValue } from '../value-objects/reaction-type.vo';
+import {
+  ReactionType,
+  ReactionTypeValue,
+} from '../value-objects/reaction-type.vo';
 
 export interface RoomReactionProps {
   roomId: string;
@@ -31,18 +34,32 @@ export class RoomReaction extends Entity<string> {
     reactionType: ReactionTypeValue;
     createdAt: Date;
   }): RoomReaction {
-    return new RoomReaction(props.id, {
-      roomId: props.roomId,
-      chapterSlug: props.chapterSlug,
-      paragraphId: props.paragraphId,
-      userId: props.userId,
-      reactionType: props.reactionType,
-    }, props.createdAt);
+    return new RoomReaction(
+      props.id,
+      {
+        roomId: props.roomId,
+        chapterSlug: props.chapterSlug,
+        paragraphId: props.paragraphId,
+        userId: props.userId,
+        reactionType: props.reactionType,
+      },
+      props.createdAt,
+    );
   }
 
-  get roomId(): string { return this._props.roomId; }
-  get chapterSlug(): string { return this._props.chapterSlug; }
-  get paragraphId(): string { return this._props.paragraphId; }
-  get userId(): string { return this._props.userId; }
-  get reactionType(): ReactionTypeValue { return this._props.reactionType; }
+  get roomId(): string {
+    return this._props.roomId;
+  }
+  get chapterSlug(): string {
+    return this._props.chapterSlug;
+  }
+  get paragraphId(): string {
+    return this._props.paragraphId;
+  }
+  get userId(): string {
+    return this._props.userId;
+  }
+  get reactionType(): ReactionTypeValue {
+    return this._props.reactionType;
+  }
 }

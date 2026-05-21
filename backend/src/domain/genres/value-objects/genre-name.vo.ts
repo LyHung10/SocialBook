@@ -39,4 +39,3 @@ export class GenreName {
     return this.value;
   }
 }
-

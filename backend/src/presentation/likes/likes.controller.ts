@@ -13,7 +13,7 @@ import { GetLikeCountUseCase } from '@/application/likes/use-cases/get-like-coun
 import { GetLikeStatusUseCase } from '@/application/likes/use-cases/get-like-status/get-like-status.use-case';
 import { ToggleLikeUseCase } from '@/application/likes/use-cases/toggle-like/toggle-like.use-case';
 import { RequireAuth } from '@/common/decorators/auth-swagger.decorator';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { TargetType } from '@/domain/likes/value-objects/target-type.vo';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';

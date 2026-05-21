@@ -5,9 +5,7 @@ import { AddQuoteCommand } from './add-quote.command';
 
 @Injectable()
 export class AddQuoteUseCase {
-  constructor(
-    private readonly quoteRepository: IQuoteRepository,
-  ) {}
+  constructor(private readonly quoteRepository: IQuoteRepository) {}
 
   async execute(command: AddQuoteCommand): Promise<RoomQuote> {
     const quote = RoomQuote.create({

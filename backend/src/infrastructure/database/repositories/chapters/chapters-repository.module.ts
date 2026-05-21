@@ -42,5 +42,4 @@ import { ChapterKnowledgeRepository } from './chapter-knowledge.repository';
   ],
   exports: [IChapterRepository, IChapterKnowledgeRepository, MongooseModule],
 })
-
 export class ChaptersRepositoryModule {}

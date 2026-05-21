@@ -2,7 +2,7 @@ import { NotificationsApplicationModule } from '@/application/notifications/noti
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsService } from '@/infrastructure/notifications/notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationEventHandler } from './notification-event.handler';
 import { PostsRepositoryModule } from '../database/repositories/posts/posts-repository.module';
@@ -36,5 +36,4 @@ import { ReadingRoomPresenceModule } from './reading-room-presence.module';
   ],
   exports: [NotificationsService],
 })
-
 export class GatewaysModule {}

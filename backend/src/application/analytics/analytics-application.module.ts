@@ -13,14 +13,25 @@ import { AnalyticsListener } from './listeners/analytics.listener';
 
 @Module({
   imports: [
-    AnalyticsRepositoryModule, 
-    IdGeneratorModule, 
+    AnalyticsRepositoryModule,
+    IdGeneratorModule,
     BooksRepositoryModule,
     GenresRepositoryModule,
     ChaptersRepositoryModule,
     PostsRepositoryModule,
   ],
-  providers: [TrackUserEventUseCase, GetTrendingBooksUseCase, GetTopActiveReadersUseCase, ScoringService, AnalyticsListener],
-  exports: [TrackUserEventUseCase, GetTrendingBooksUseCase, GetTopActiveReadersUseCase, ScoringService],
+  providers: [
+    TrackUserEventUseCase,
+    GetTrendingBooksUseCase,
+    GetTopActiveReadersUseCase,
+    ScoringService,
+    AnalyticsListener,
+  ],
+  exports: [
+    TrackUserEventUseCase,
+    GetTrendingBooksUseCase,
+    GetTopActiveReadersUseCase,
+    ScoringService,
+  ],
 })
 export class AnalyticsApplicationModule {}

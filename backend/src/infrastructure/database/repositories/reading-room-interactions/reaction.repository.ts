@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { RoomReaction } from '@/domain/reading-room-interactions/entities/room-reaction.entity';
 import type { ReactionTypeValue } from '@/domain/reading-room-interactions/value-objects/reaction-type.vo';
-import { IReactionRepository, ReactionSummary } from '@/domain/reading-room-interactions/repositories/reaction.repository.interface';
-import { RoomReactionSchema, RoomReactionDocument } from '../../schemas/reading-room-interactions/room-reaction.schema';
+import {
+  IReactionRepository,
+  ReactionSummary,
+} from '@/domain/reading-room-interactions/repositories/reaction.repository.interface';
+import {
+  RoomReactionSchema,
+  RoomReactionDocument,
+} from '../../schemas/reading-room-interactions/room-reaction.schema';
 
 @Injectable()
 export class ReactionRepository extends IReactionRepository {
@@ -31,25 +37,36 @@ export class ReactionRepository extends IReactionRepository {
     await this.reactionModel.findByIdAndDelete(id).exec();
   }
 
-  async findByParagraph(roomId: string, chapterSlug: string, paragraphId: string, options?: { limit?: number }): Promise<RoomReaction[]> {
+  async findByParagraph(
+    roomId: string,
+    chapterSlug: string,
+    paragraphId: string,
+    options?: { limit?: number },
+  ): Promise<RoomReaction[]> {
     const docs = await this.reactionModel
       .find({ roomId, chapterSlug, paragraphId })
       .limit(options?.limit || 50)
       .lean()
       .exec();
-    return docs.map(d => RoomReaction.reconstitute({
-      id: String(d._id),
-      roomId: d.roomId,
-      chapterSlug: d.chapterSlug,
-      paragraphId: d.paragraphId,
-      userId: d.userId,
-      reactionType: d.reactionType as ReactionTypeValue,
-      createdAt: d.createdAt,
-    }));
+    return docs.map((d) =>
+      RoomReaction.reconstitute({
+        id: String(d._id),
+        roomId: d.roomId,
+        chapterSlug: d.chapterSlug,
+        paragraphId: d.paragraphId,
+        userId: d.userId,
+        reactionType: d.reactionType as ReactionTypeValue,
+        createdAt: d.createdAt,
+      }),
+    );
   }
 
-  async findByRoom(roomId: string, chapterSlug?: string, options?: { limit?: number }): Promise<RoomReaction[]> {
-    const query: any = { roomId };
+  async findByRoom(
+    roomId: string,
+    chapterSlug?: string,
+    options?: { limit?: number },
+  ): Promise<RoomReaction[]> {
+    const query: FilterQuery<RoomReactionDocument> = { roomId };
     if (chapterSlug) {
       query.chapterSlug = chapterSlug;
     }
@@ -58,18 +75,25 @@ export class ReactionRepository extends IReactionRepository {
       .limit(options?.limit || 50)
       .lean()
       .exec();
-    return docs.map(d => RoomReaction.reconstitute({
-      id: String(d._id),
-      roomId: d.roomId,
-      chapterSlug: d.chapterSlug,
-      paragraphId: d.paragraphId,
-      userId: d.userId,
-      reactionType: d.reactionType as ReactionTypeValue,
-      createdAt: d.createdAt,
-    }));
+    return docs.map((d) =>
+      RoomReaction.reconstitute({
+        id: String(d._id),
+        roomId: d.roomId,
+        chapterSlug: d.chapterSlug,
+        paragraphId: d.paragraphId,
+        userId: d.userId,
+        reactionType: d.reactionType as ReactionTypeValue,
+        createdAt: d.createdAt,
+      }),
+    );
   }
 
-  async findUserReaction(roomId: string, paragraphId: string, userId: string, type: string): Promise<RoomReaction | null> {
+  async findUserReaction(
+    roomId: string,
+    paragraphId: string,
+    userId: string,
+    type: string,
+  ): Promise<RoomReaction | null> {
     const doc = await this.reactionModel
       .findOne({ roomId, paragraphId, userId, reactionType: type })
       .lean()
@@ -86,32 +110,53 @@ export class ReactionRepository extends IReactionRepository {
     });
   }
 
-  async getSummary(roomId: string, chapterSlug: string, paragraphIds: string[]): Promise<ReactionSummary[]> {
+  async getSummary(
+    roomId: string,
+    chapterSlug: string,
+    paragraphIds: string[],
+  ): Promise<ReactionSummary[]> {
     const docs = await this.reactionModel
       .aggregate([
         { $match: { roomId, chapterSlug, paragraphId: { $in: paragraphIds } } },
-        { $group: {
-          _id: '$paragraphId',
-          reactions: { $push: '$reactionType' },
-          userReactions: { $push: { type: '$reactionType', userId: '$userId' } },
-        }},
-        { $project: {
-          paragraphId: '$_id',
-          reactions: {
-            $arrayToObject: {
-              $map: {
-                input: { $setUnion: ['$reactions', []] },
-                as: 'r',
-                in: { k: '$$r', v: { $size: { $filter: { input: '$reactions', as: 'f', cond: { $eq: ['$$f', '$$r'] } } } } },
-              },
+        {
+          $group: {
+            _id: '$paragraphId',
+            reactions: { $push: '$reactionType' },
+            userReactions: {
+              $push: { type: '$reactionType', userId: '$userId' },
             },
           },
-          userReactions: 1,
-        }},
+        },
+        {
+          $project: {
+            paragraphId: '$_id',
+            reactions: {
+              $arrayToObject: {
+                $map: {
+                  input: { $setUnion: ['$reactions', []] },
+                  as: 'r',
+                  in: {
+                    k: '$$r',
+                    v: {
+                      $size: {
+                        $filter: {
+                          input: '$reactions',
+                          as: 'f',
+                          cond: { $eq: ['$$f', '$$r'] },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            userReactions: 1,
+          },
+        },
       ])
       .exec();
 
-    return docs.map(d => ({
+    return docs.map((d) => ({
       paragraphId: d.paragraphId || '',
       reactions: d.reactions || {},
       userReactions: d.userReactions || [],

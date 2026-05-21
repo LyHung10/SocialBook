@@ -41,6 +41,7 @@ export class RoomQuoteSchema {
   updatedAt: Date;
 }
 
-export const RoomQuoteSchemaFactory = SchemaFactory.createForClass(RoomQuoteSchema);
+export const RoomQuoteSchemaFactory =
+  SchemaFactory.createForClass(RoomQuoteSchema);
 
 RoomQuoteSchemaFactory.index({ roomId: 1, createdAt: -1 });

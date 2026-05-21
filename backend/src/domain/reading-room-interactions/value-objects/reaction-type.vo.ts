@@ -1,21 +1,39 @@
 import { Identifier } from '@/shared/domain/identifier.base';
 import { BadRequestDomainException } from '@/shared/domain/common-exceptions';
 
-export type ReactionTypeValue = 'cry' | 'angry' | 'laugh' | 'think' | 'shock' | 'heart' | 'fire' | 'calm';
+export type ReactionTypeValue =
+  | 'cry'
+  | 'angry'
+  | 'laugh'
+  | 'think'
+  | 'shock'
+  | 'heart'
+  | 'fire'
+  | 'calm';
 
 export const REACTION_TYPES: ReactionTypeValue[] = [
-  'cry', 'angry', 'laugh', 'think', 'shock', 'heart', 'fire', 'calm',
+  'cry',
+  'angry',
+  'laugh',
+  'think',
+  'shock',
+  'heart',
+  'fire',
+  'calm',
 ];
 
-export const REACTION_META: Record<ReactionTypeValue, { emoji: string; label: string }> = {
-  cry:    { emoji: '😢', label: 'Buồn' },
-  angry:  { emoji: '😡', label: 'Tức' },
-  laugh:  { emoji: '😂', label: 'Cười' },
-  think:  { emoji: '🤔', label: 'Suy nghĩ' },
-  shock:  { emoji: '😮', label: 'Bất ngờ' },
-  heart:  { emoji: '❤️', label: 'Yêu thích' },
-  fire:   { emoji: '🔥', label: 'Đỉnh' },
-  calm:   { emoji: '😌', label: 'Nhẹ nhàng' },
+export const REACTION_META: Record<
+  ReactionTypeValue,
+  { emoji: string; label: string }
+> = {
+  cry: { emoji: '😢', label: 'Buồn' },
+  angry: { emoji: '😡', label: 'Tức' },
+  laugh: { emoji: '😂', label: 'Cười' },
+  think: { emoji: '🤔', label: 'Suy nghĩ' },
+  shock: { emoji: '😮', label: 'Bất ngờ' },
+  heart: { emoji: '❤️', label: 'Yêu thích' },
+  fire: { emoji: '🔥', label: 'Đỉnh' },
+  calm: { emoji: '😌', label: 'Nhẹ nhàng' },
 };
 
 export class ReactionType extends Identifier {

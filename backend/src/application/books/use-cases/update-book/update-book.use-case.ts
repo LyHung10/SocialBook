@@ -33,7 +33,9 @@ export class UpdateBookUseCase {
       const exists = await this.bookRepository.existsByTitle(newTitle, bookId);
 
       if (exists) {
-        throw new ConflictDomainException('Book with this title already exists');
+        throw new ConflictDomainException(
+          'Book with this title already exists',
+        );
       }
 
       book.changeTitle(command.title);

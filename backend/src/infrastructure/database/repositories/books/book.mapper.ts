@@ -2,17 +2,79 @@ import { Book as BookEntity } from '@/domain/books/entities/book.entity';
 import { BookDetailReadModel } from '@/domain/books/read-models/book-detail.read-model';
 import { BookListReadModel } from '@/domain/books/read-models/book-list.read-model';
 import { Types } from 'mongoose';
-import {
-  BookPersistence,
-  RawBookDetailAggregation,
-  RawBookDocument,
-  RawGenre,
-} from './book.raw-types';
+export interface BookPersistence {
+  title: string;
+  slug: string;
+  authorId: Types.ObjectId;
+  genres: Types.ObjectId[];
+  description: string;
+  publishedYear: string;
+  coverUrl: string;
+  status: string;
+  tags: string[];
+  views: number;
+  likes: number;
+  likedBy: Types.ObjectId[];
+  updatedAt: Date;
+}
+
+export interface RawGenre {
+  _id: Types.ObjectId;
+  name: string;
+  slug: string;
+}
+
+export interface RawParagraph {
+  _id: Types.ObjectId;
+  content: string;
+}
+
+export interface RawChapter {
+  _id: Types.ObjectId;
+  title: string;
+  slug: string;
+  paragraphs: RawParagraph[];
+  orderIndex: number;
+  viewsCount: number;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+export interface RawBookDocument {
+  _id: Types.ObjectId;
+  title: string;
+  slug: string;
+  authorId: Types.ObjectId | { _id: Types.ObjectId; name: string };
+  genres: (Types.ObjectId | RawGenre)[];
+  description?: string;
+  publishedYear?: string;
+  coverUrl?: string;
+  status?: string;
+  tags?: string[];
+  views?: number;
+  likes?: number;
+  likedBy?: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  chapterCount?: number;
+}
+
+export interface RawBookDetailAggregation
+  extends Omit<RawBookDocument, 'genres'> {
+  genres: Types.ObjectId[];
+  genreDetails: RawGenre[];
+  chapters: RawChapter[];
+}
 
 type PopulatedAuthor = { _id: Types.ObjectId; name: string };
 
 function isPopulatedAuthor(field: unknown): field is PopulatedAuthor {
-  return typeof field === 'object' && field !== null && '_id' in field && 'name' in field;
+  return (
+    typeof field === 'object' &&
+    field !== null &&
+    '_id' in field &&
+    'name' in field
+  );
 }
 
 export class BookMapper {
@@ -27,7 +89,7 @@ export class BookMapper {
     const authorName = isAuthorPopulated ? authorId.name : undefined;
     const authorIdStr = isAuthorPopulated
       ? authorId._id.toString()
-      : authorId?.toString() ?? '';
+      : (authorId?.toString() ?? '');
 
     return BookEntity.reconstitute({
       id: document._id.toString(),
@@ -62,7 +124,7 @@ export class BookMapper {
     const isAuthorPopulated = isPopulatedAuthor(authorId);
     const authorIdStr = isAuthorPopulated
       ? authorId._id.toString()
-      : authorId?.toString() ?? '';
+      : (authorId?.toString() ?? '');
     const authorName = isAuthorPopulated ? authorId.name : undefined;
 
     return {
@@ -71,7 +133,7 @@ export class BookMapper {
       slug: document.slug,
       authorId: authorIdStr,
       authorName,
-      genres: (document.genres as RawGenre[] || []).map((g) => ({
+      genres: ((document.genres as RawGenre[]) || []).map((g) => ({
         id: g._id.toString(),
         name: g.name,
         slug: g.slug,

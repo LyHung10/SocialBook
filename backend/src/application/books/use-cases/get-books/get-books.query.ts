@@ -39,7 +39,7 @@ export class GetBooksQuery {
     this.status = props.status;
     this.search = props.search;
     this.publishedYear = props.publishedYear;
-    
+
     const validSortFields = [
       'createdAt',
       'updatedAt',
@@ -53,7 +53,7 @@ export class GetBooksQuery {
         ? props.sortBy
         : 'createdAt'
     ) as any;
-    
+
     this.order = props.order ?? 'desc';
   }
 }

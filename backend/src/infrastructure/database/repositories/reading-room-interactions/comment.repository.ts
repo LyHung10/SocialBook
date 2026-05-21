@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { RoomComment } from '@/domain/reading-room-interactions/entities/room-comment.entity';
 import { ICommentRepository } from '@/domain/reading-room-interactions/repositories/comment.repository.interface';
-import { RoomCommentSchema, RoomCommentDocument } from '../../schemas/reading-room-interactions/room-comment.schema';
+import {
+  RoomCommentSchema,
+  RoomCommentDocument,
+} from '../../schemas/reading-room-interactions/room-comment.schema';
 
 @Injectable()
 export class CommentRepository extends ICommentRepository {
@@ -15,21 +18,23 @@ export class CommentRepository extends ICommentRepository {
   }
 
   async save(comment: RoomComment): Promise<void> {
-    await this.commentModel.findByIdAndUpdate(
-      comment.id,
-      {
-        _id: comment.id,
-        roomId: comment.roomId,
-        chapterSlug: comment.chapterSlug,
-        paragraphId: comment.paragraphId,
-        content: comment.content,
-        userId: comment.userId,
-        parentCommentId: comment.parentCommentId,
-        createdAt: comment.createdAt,
-        updatedAt: comment.updatedAt,
-      },
-      { upsert: true, new: true },
-    ).exec();
+    await this.commentModel
+      .findByIdAndUpdate(
+        comment.id,
+        {
+          _id: comment.id,
+          roomId: comment.roomId,
+          chapterSlug: comment.chapterSlug,
+          paragraphId: comment.paragraphId,
+          content: comment.content,
+          userId: comment.userId,
+          parentCommentId: comment.parentCommentId,
+          createdAt: comment.createdAt,
+          updatedAt: comment.updatedAt,
+        },
+        { upsert: true, new: true },
+      )
+      .exec();
   }
 
   async findById(id: string): Promise<RoomComment | null> {
@@ -54,7 +59,11 @@ export class CommentRepository extends ICommentRepository {
     paragraphId: string,
     options?: { limit?: number; before?: Date },
   ): Promise<RoomComment[]> {
-    const query: any = { roomId, chapterSlug, paragraphId };
+    const query: FilterQuery<RoomCommentDocument> = {
+      roomId,
+      chapterSlug,
+      paragraphId,
+    };
     if (options?.before) {
       query.createdAt = { $lt: options.before };
     }
@@ -64,17 +73,19 @@ export class CommentRepository extends ICommentRepository {
       .limit(options?.limit || 50)
       .lean()
       .exec();
-    return docs.map(d => RoomComment.reconstitute({
-      id: String(d._id),
-      roomId: d.roomId,
-      chapterSlug: d.chapterSlug,
-      paragraphId: d.paragraphId,
-      content: d.content,
-      userId: d.userId,
-      parentCommentId: d.parentCommentId,
-      createdAt: d.createdAt,
-      updatedAt: d.updatedAt,
-    }));
+    return docs.map((d) =>
+      RoomComment.reconstitute({
+        id: String(d._id),
+        roomId: d.roomId,
+        chapterSlug: d.chapterSlug,
+        paragraphId: d.paragraphId,
+        content: d.content,
+        userId: d.userId,
+        parentCommentId: d.parentCommentId,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }),
+    );
   }
 
   async findByRoom(
@@ -82,7 +93,7 @@ export class CommentRepository extends ICommentRepository {
     chapterSlug?: string,
     options?: { limit?: number; before?: Date },
   ): Promise<RoomComment[]> {
-    const query: any = { roomId };
+    const query: FilterQuery<RoomCommentDocument> = { roomId };
     if (chapterSlug) {
       query.chapterSlug = chapterSlug;
     }
@@ -95,17 +106,19 @@ export class CommentRepository extends ICommentRepository {
       .limit(options?.limit || 50)
       .lean()
       .exec();
-    return docs.map(d => RoomComment.reconstitute({
-      id: String(d._id),
-      roomId: d.roomId,
-      chapterSlug: d.chapterSlug,
-      paragraphId: d.paragraphId,
-      content: d.content,
-      userId: d.userId,
-      parentCommentId: d.parentCommentId,
-      createdAt: d.createdAt,
-      updatedAt: d.updatedAt,
-    }));
+    return docs.map((d) =>
+      RoomComment.reconstitute({
+        id: String(d._id),
+        roomId: d.roomId,
+        chapterSlug: d.chapterSlug,
+        paragraphId: d.paragraphId,
+        content: d.content,
+        userId: d.userId,
+        parentCommentId: d.parentCommentId,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }),
+    );
   }
 
   async delete(id: string): Promise<void> {

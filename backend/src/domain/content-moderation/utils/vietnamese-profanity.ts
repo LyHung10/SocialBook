@@ -18,9 +18,9 @@ const EXTREME_PROFANITY: PatternGroup[] = [
   {
     group: 'thô tục mạnh',
     raw: [
-      /đ[ịi]t\s*m/i,        
-      /đ[éè]\s*m/i,        
-      /l[ồổõọ]n/i,        
+      /đ[ịi]t\s*m/i,
+      /đ[éè]\s*m/i,
+      /l[ồổõọ]n/i,
       /c[ặắầấ]c/i,
       /đ[ịi]t\s*c[ụu]/i,
       /v[ôô]n\s*l[àà]i/i,

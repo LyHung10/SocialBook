@@ -24,9 +24,11 @@ export class ReadingListMapper {
       bookId: doc.bookId.toString(),
       status: doc.status,
       lastReadChapterId: doc.lastReadChapterId?.toString() || null,
-      collectionIds: doc.collectionIds.map((id: Types.ObjectId) => id.toString()),
-      createdAt: doc.createdAt as Date,
-      updatedAt: doc.updatedAt as Date,
+      collectionIds: doc.collectionIds.map((id: Types.ObjectId) =>
+        id.toString(),
+      ),
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
     });
   }
 

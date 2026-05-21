@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
-import { IVectorRepository, BatchIndexResult } from '@/domain/chroma/repositories/vector.repository.interface';
+import {
+  IVectorRepository,
+  BatchIndexResult,
+} from '@/domain/chroma/repositories/vector.repository.interface';
 import { VectorDocument } from '@/domain/chroma/entities/vector-document.entity';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 
@@ -61,7 +64,12 @@ export class ReindexAllUseCase {
   }
 
   private async reindexAuthors(): Promise<IndexStats> {
-    const stats: IndexStats = { total: 0, successful: 0, failed: 0, errors: [] };
+    const stats: IndexStats = {
+      total: 0,
+      successful: 0,
+      failed: 0,
+      errors: [],
+    };
     let currentPage = 1;
     let totalPages = 1;
     let batchBuffer: VectorDocument[] = [];
@@ -120,7 +128,12 @@ export class ReindexAllUseCase {
   }
 
   private async reindexBooks(): Promise<IndexStats> {
-    const stats: IndexStats = { total: 0, successful: 0, failed: 0, errors: [] };
+    const stats: IndexStats = {
+      total: 0,
+      successful: 0,
+      failed: 0,
+      errors: [],
+    };
     let currentPage = 1;
     let totalPages = 1;
     let batchBuffer: VectorDocument[] = [];

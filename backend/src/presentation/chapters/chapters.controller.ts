@@ -1,4 +1,4 @@
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -20,8 +20,6 @@ import {
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-
-
 import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
 import { ChapterResponseDto } from '@/presentation/chapters/dto/chapter.response.dto';
 import { CreateChapterDto } from '@/presentation/chapters/dto/create-chapter.dto';
@@ -40,6 +38,8 @@ import { GetChapterByIdUseCase } from '@/application/chapters/use-cases/get-chap
 import { GetChapterBySlugQuery } from '@/application/chapters/use-cases/get-chapter-by-slug/get-chapter-by-slug.query';
 import { GetChapterBySlugUseCase } from '@/application/chapters/use-cases/get-chapter-by-slug/get-chapter-by-slug.use-case';
 import { GetChaptersQuery } from '@/application/chapters/use-cases/get-chapters/get-chapters.query';
+import { ChapterResult } from '@/application/chapters/use-cases/get-chapters/get-chapters.result';
+import { PaginatedResult } from '@/common/interfaces/pagination.interface';
 import { UpdateChapterCommand } from '@/application/chapters/use-cases/update-chapter/update-chapter.command';
 import { ImportEpubPreviewUseCase } from '@/application/chapters/use-cases/import-epub-preview/import-epub-preview.use-case';
 import { StartChaptersImportUseCase } from '@/application/chapters/use-cases/start-chapters-import/start-chapters-import.use-case';
@@ -53,11 +53,6 @@ import { GetChapterKnowledgeQuery } from '@/application/chapters/use-cases/get-c
 import { AskChapterAIUseCase } from '@/application/chapters/use-cases/ask-ai/ask-chapter-ai.use-case';
 import { AskChapterAICommand } from '@/application/chapters/use-cases/ask-ai/ask-chapter-ai.command';
 import { ChapterKnowledgeResponseDto } from './dto/chapter-knowledge.response.dto';
-
-
-
-
-
 
 @Controller('books/:bookSlug/chapters')
 export class ChaptersController {
@@ -75,7 +70,6 @@ export class ChaptersController {
     private readonly askChapterAIUseCase: AskChapterAIUseCase,
   ) {}
 
-
   @Get(':chapterId/knowledge')
   @UseGuards(JwtAuthGuard)
   async getKnowledge(
@@ -90,9 +84,6 @@ export class ChaptersController {
     };
   }
 
-
-
-
   @Post(':chapterId/ask-ai')
   @UseGuards(JwtAuthGuard)
   async askAI(
@@ -104,13 +95,12 @@ export class ChaptersController {
     const result = await this.askChapterAIUseCase.execute(
       new AskChapterAICommand(chapterId, bookSlug, userId, question),
     );
-    
+
     return {
       message: 'AI response generated successfully',
       data: result,
     };
   }
-
 
   @Post('import/preview')
   @Roles('admin')
@@ -205,8 +195,14 @@ export class ChaptersController {
       filter.bookId,
       undefined,
       filter.orderIndex,
-      filter.sortBy as any,
-      filter.order as any,
+      filter.sortBy as
+        | 'createdAt'
+        | 'updatedAt'
+        | 'title'
+        | 'orderIndex'
+        | 'viewsCount'
+        | undefined,
+      filter.order as 'asc' | 'desc' | undefined,
     );
 
     const result = await this.getChaptersUseCase.execute(query);
@@ -218,7 +214,7 @@ export class ChaptersController {
       };
     }
 
-    const paginatedResult = result as any;
+    const paginatedResult = result;
     return {
       message: 'Get all chapters successfully',
       data: ChapterResponseDto.fromArray(paginatedResult.data),

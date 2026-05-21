@@ -14,15 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Genre, GenreDocument } from '../../schemas/genre.schema';
 import { GenreMapper } from './genre.mapper';
-
-interface GenrePersistence {
-  _id: Types.ObjectId;
-  name: string;
-  slug: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { GenrePersistence } from './genre.mapper';
 
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
 
@@ -98,7 +90,7 @@ export class GenresRepository
   async findAllSimple(): Promise<GenreEntity[]> {
     const docs = await this.genreModel
       .find()
-      .select('name slug')
+      .select('name slug createdAt updatedAt')
       .sort({ name: 1 })
       .lean()
       .exec();
@@ -108,8 +100,8 @@ export class GenresRepository
         name: doc.name,
         slug: doc.slug,
         description: '',
-        createdAt: (doc as any).createdAt || new Date(),
-        updatedAt: (doc as any).updatedAt || new Date(),
+        createdAt: doc.createdAt || new Date(),
+        updatedAt: doc.updatedAt || new Date(),
       }),
     );
   }

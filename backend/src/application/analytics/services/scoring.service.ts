@@ -20,11 +20,17 @@ export class ScoringService {
 
   constructor(private readonly analyticsRepository: IUserAnalyticsRepository) {}
 
-  async calculateScore(userId: string, eventType: string, genreIds: string[]): Promise<void> {
+  async calculateScore(
+    userId: string,
+    eventType: string,
+    genreIds: string[],
+  ): Promise<void> {
     const score = this.scoreMap[eventType];
     if (!score || genreIds.length === 0) return;
 
-    this.logger.log(`Updating scores for user ${userId}: ${eventType} (+${score}) for genres: ${genreIds.join(', ')}`);
+    this.logger.log(
+      `Updating scores for user ${userId}: ${eventType} (+${score}) for genres: ${genreIds.join(', ')}`,
+    );
 
     await Promise.all(
       genreIds.map((genreId) =>

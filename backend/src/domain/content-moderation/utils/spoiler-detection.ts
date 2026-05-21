@@ -55,9 +55,7 @@ const PATTERN_GROUPS: PatternGroup[] = [
   },
   {
     group: 'explicit-tags',
-    raw: [
-      /(tiết lộ|hóa ra|sự thật là).*?(:|là|rằng)/i,
-    ],
+    raw: [/(tiết lộ|hóa ra|sự thật là).*?(:|là|rằng)/i],
     normalized: [
       /(spoiler|spoil|leak|tiet lo|hoa ra|su that la).*?(:|la|rang)/i,
     ],

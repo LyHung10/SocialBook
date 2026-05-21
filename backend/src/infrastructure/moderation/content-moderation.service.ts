@@ -29,7 +29,9 @@ export class ContentModerationService implements IContentModerationService {
     // 1. Kiểm tra nhanh bằng Regex (Các từ cực kỳ thô tục)
     const quickCheck = containsVietnameseToxicWords(text);
     if (quickCheck) {
-      this.logger.debug(`[Regex] Phát hiện nội dung thô tục: ${quickCheck.group}`);
+      this.logger.debug(
+        `[Regex] Phát hiện nội dung thô tục: ${quickCheck.group}`,
+      );
       return {
         isSafe: false,
         isSpoiler: false,
@@ -43,8 +45,10 @@ export class ContentModerationService implements IContentModerationService {
 
     // 2. Sử dụng AI để đánh giá ngữ cảnh (Tiếng Việt)
     try {
-      this.logger.debug(`[AI] Đang đánh giá nội dung: "${text.substring(0, 50)}..."`);
-      
+      this.logger.debug(
+        `[AI] Đang đánh giá nội dung: "${text.substring(0, 50)}..."`,
+      );
+
       const prompt = `
         Bạn là một chuyên gia kiểm duyệt nội dung cho mạng xã hội về sách SocialBook.
         Hãy đánh giá nội dung sau đây (tiếng Việt) dựa trên các tiêu chí:
@@ -71,13 +75,16 @@ export class ContentModerationService implements IContentModerationService {
       `;
 
       const result = await this.geminiService.generateJSON<any>(prompt);
-      
+
       const isSafe = result.action === 'ALLOW';
-      const isToxic = result.category === 'toxic' || result.category === 'hate_speech';
+      const isToxic =
+        result.category === 'toxic' || result.category === 'hate_speech';
       const isSpoiler = result.category === 'spoiler';
 
       if (!isSafe) {
-        this.logger.log(`[AI] Flagged content [${result.action}]: ${result.reason}`);
+        this.logger.log(
+          `[AI] Flagged content [${result.action}]: ${result.reason}`,
+        );
       }
 
       return {
@@ -90,7 +97,10 @@ export class ContentModerationService implements IContentModerationService {
         reason: result.reason,
       };
     } catch (error) {
-      this.logger.error(`Lỗi khi gọi AI kiểm duyệt nội dung: ${error.message}`, error.stack);
+      this.logger.error(
+        `Lỗi khi gọi AI kiểm duyệt nội dung: ${error.message}`,
+        error.stack,
+      );
       // Fallback: Nếu AI lỗi, chuyển sang REVIEW để Admin kiểm duyệt cho an toàn
       return {
         isSafe: false,
@@ -99,7 +109,8 @@ export class ContentModerationService implements IContentModerationService {
         action: 'REVIEW',
         category: 'none',
         score: 0,
-        reason: 'Hệ thống kiểm duyệt AI tạm thời gián đoạn, nội dung được chuyển qua Admin kiểm tra.',
+        reason:
+          'Hệ thống kiểm duyệt AI tạm thời gián đoạn, nội dung được chuyển qua Admin kiểm tra.',
       };
     }
   }

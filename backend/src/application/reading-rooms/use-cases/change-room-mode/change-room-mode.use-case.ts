@@ -6,18 +6,18 @@ import {
 } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';
-import { ReadingRoomResult } from '../reading-room.result';
+import { ReadingRoomResult } from '../reading-room.result.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
 import { ChangeRoomModeCommand } from './change-room-mode.command';
 
 @Injectable()
 export class ChangeRoomModeUseCase {
-  constructor(
-    private readonly roomRepository: IReadingRoomRepository,
-  ) {}
+  constructor(private readonly roomRepository: IReadingRoomRepository) {}
 
   async execute(command: ChangeRoomModeCommand): Promise<ReadingRoomResult> {
-    const room = await this.roomRepository.findById(RoomId.create(command.roomId));
+    const room = await this.roomRepository.findById(
+      RoomId.create(command.roomId),
+    );
     if (!room) {
       throw new NotFoundDomainException('Reading room not found');
     }

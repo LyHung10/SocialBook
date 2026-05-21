@@ -4,7 +4,7 @@ import { GetCollectionByIdUseCase } from '@/application/library/use-cases/get-co
 import { UpdateCollectionUseCase } from '@/application/library/use-cases/update-collection/update-collection.use-case';
 import { DeleteCollectionUseCase } from '@/application/library/use-cases/delete-collection/delete-collection.use-case';
 import { UpdateCollectionCommand } from '@/application/library/use-cases/update-collection/update-collection.command';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import {
   CreateCollectionDto,

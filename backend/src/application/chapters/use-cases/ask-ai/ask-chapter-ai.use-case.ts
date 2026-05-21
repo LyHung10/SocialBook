@@ -21,7 +21,9 @@ export class AskChapterAIUseCase {
   ) {}
 
   async execute(command: AskChapterAICommand) {
-    const chapter = await this.chapterRepository.findById(ChapterId.create(command.chapterId));
+    const chapter = await this.chapterRepository.findById(
+      ChapterId.create(command.chapterId),
+    );
     if (!chapter) {
       throw new NotFoundDomainException('Chapter not found');
     }
@@ -31,7 +33,7 @@ export class AskChapterAIUseCase {
       throw new NotFoundDomainException('Book not found');
     }
 
-    const content = chapter.paragraphs.map(p => p.content).join('\n');
+    const content = chapter.paragraphs.map((p) => p.content).join('\n');
 
     const prompt = `
       Bạn là một trợ lý đọc sách thông minh.
@@ -49,13 +51,13 @@ export class AskChapterAIUseCase {
       Ngôn ngữ: Tiếng Việt. Độ dài: Ngắn gọn (2-4 câu).
     `;
 
-
     const aiResponse = await this.geminiService.generateText(prompt);
 
     return {
-      answer: aiResponse || 'Xin lỗi, tôi không thể tìm thấy câu trả lời phù hợp trong chương này.',
+      answer:
+        aiResponse ||
+        'Xin lỗi, tôi không thể tìm thấy câu trả lời phù hợp trong chương này.',
       createdAt: new Date(),
     };
-
   }
 }

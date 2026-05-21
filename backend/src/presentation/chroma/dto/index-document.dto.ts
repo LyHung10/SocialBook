@@ -20,7 +20,7 @@ export class IndexDocumentDto {
   content: string;
 
   @IsOptional()
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @IsArray()
   @IsNumber({}, { each: true })

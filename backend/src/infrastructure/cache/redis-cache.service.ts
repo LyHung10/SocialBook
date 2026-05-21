@@ -50,9 +50,7 @@ export class RedisCacheService implements ICacheService {
     try {
       await this.redis.flushdb();
     } catch (error) {
-      this.logger.error(
-        `Failed to reset cache: ${(error as Error).message}`,
-      );
+      this.logger.error(`Failed to reset cache: ${(error as Error).message}`);
     }
   }
 }

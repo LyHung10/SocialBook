@@ -5,7 +5,7 @@ import { GetTrendingBooksUseCase } from '@/application/analytics/use-cases/get-t
 import { GetTopActiveReadersUseCase } from '@/application/analytics/use-cases/get-top-active-readers/get-top-active-readers.use-case';
 import { TrackUserEventDto } from './dto/track-user-event.dto';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 
 @Controller('analytics')
 @UseGuards(JwtAuthGuard)

@@ -5,7 +5,6 @@ import {
   UserFilter,
   UserPaginationOptions,
 } from '@/domain/users/repositories/user.repository.interface';
-import { IReadingPreferences } from '@/domain/users/value-objects/reading-preferences.vo';
 import { UserEmail } from '@/domain/users/value-objects/user-email.vo';
 import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { Injectable } from '@nestjs/common';
@@ -13,27 +12,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UserMapper } from './user.mapper';
-
-interface UserPersistence {
-  _id: Types.ObjectId;
-  roleId: Types.ObjectId;
-  username: string;
-  email: string;
-  password?: string;
-  isVerified: boolean;
-  isBanned: boolean;
-  provider: string;
-  providerId?: string;
-  image?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-  hashedRt?: string;
-  favoriteGenres: Types.ObjectId[];
-  readingPreferences?: IReadingPreferences;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { UserPersistence } from './user.mapper';
 
 @Injectable()
 export class UsersRepository implements IUserRepository {
@@ -173,10 +152,7 @@ export class UsersRepository implements IUserRepository {
     return docs.map((doc) => this.toDomain(doc));
   }
 
-  async updateFavoriteGenres(
-    id: UserId,
-    genres: string[],
-  ): Promise<void> {
+  async updateFavoriteGenres(id: UserId, genres: string[]): Promise<void> {
     const genreObjectIds = genres.map((g) => new Types.ObjectId(g));
     await this.userModel
       .findByIdAndUpdate(id.toString(), {

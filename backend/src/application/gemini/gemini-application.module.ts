@@ -4,12 +4,13 @@ import { SummarizeChapterUseCase } from './use-cases/summarize-chapter/summarize
 import { GeminiRepositoryModule } from '@/infrastructure/database/repositories/gemini/gemini-repository.module';
 import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.module';
 
-
 @Module({
   imports: [GeminiRepositoryModule, IdGeneratorModule],
   providers: [GenerateTextUseCase, SummarizeChapterUseCase],
-  exports: [GeminiRepositoryModule, GenerateTextUseCase, SummarizeChapterUseCase],
-
+  exports: [
+    GeminiRepositoryModule,
+    GenerateTextUseCase,
+    SummarizeChapterUseCase,
+  ],
 })
-
 export class GeminiApplicationModule {}

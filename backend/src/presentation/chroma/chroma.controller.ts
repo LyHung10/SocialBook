@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -30,7 +30,7 @@ export class ChromaController {
     private readonly clearCollectionUseCase: ClearCollectionUseCase,
     private readonly getCollectionStatsUseCase: GetCollectionStatsUseCase,
     private readonly reindexAllUseCase: ReindexAllUseCase,
-  ) { }
+  ) {}
 
   @Public()
   @Post('search')

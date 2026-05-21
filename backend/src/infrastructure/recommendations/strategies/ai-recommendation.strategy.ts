@@ -9,6 +9,7 @@ import {
   RecommendationResponse,
   RecommendationResult,
 } from '@/domain/recommendations/interfaces/recommendation.interface';
+import { PopulatedBook } from '@/domain/recommendations/interfaces/recommendation-data.port';
 import { FallbackRecommendationStrategy } from './fallback-recommendation.strategy';
 
 interface AIAnalysis {
@@ -43,7 +44,7 @@ export class AIRecommendationStrategy implements IRecommendationStrategy {
   async generate(
     userId: string,
     userProfile: UserProfile,
-    availableBooks: any[],
+    availableBooks: PopulatedBook[],
     limit: number,
   ): Promise<RecommendationResponse> {
     try {
@@ -52,7 +53,7 @@ export class AIRecommendationStrategy implements IRecommendationStrategy {
         .map((cb) => {
           const book = cb.book;
           if (!book) return null;
-          return `- ${book.title} (${book.genres?.map((g: any) => g.name).join(', ') || 'N/A'})`;
+          return `- ${book.title} (${book.genres?.map((g: { _id: string; name: string; slug: string }) => g.name).join(', ') || 'N/A'})`;
         })
         .filter((text): text is string => text !== null)
         .join('\n');
@@ -79,7 +80,10 @@ export class AIRecommendationStrategy implements IRecommendationStrategy {
       const availableBooksText = availableBooks.slice(0, 50).map((book) => ({
         id: book._id.toString(),
         title: book.title,
-        genres: book.genres?.map((g: any) => g.name).join(', ') || 'N/A',
+        genres:
+          book.genres
+            ?.map((g: { _id: string; name: string; slug: string }) => g.name)
+            .join(', ') || 'N/A',
         description: book.description?.substring(0, 200) || 'No description',
         views: book.views || 0,
         likes: book.likes || 0,
@@ -152,7 +156,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG THÊM TEXT NÀO KHÁC.
 
       const result = await this.geminiService.generateJSON<AIResponse>(prompt);
 
-      const bookMap = new Map<string, any>(
+      const bookMap = new Map<string, PopulatedBook>(
         availableBooks.map((book) => [book._id.toString(), book]),
       );
 

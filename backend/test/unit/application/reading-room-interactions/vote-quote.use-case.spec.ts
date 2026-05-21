@@ -85,7 +85,9 @@ describe('VoteQuoteUseCase (Unit)', () => {
     mockQuoteRepo.findById.mockResolvedValue(null);
 
     await expect(
-      useCase.execute(new VoteQuoteCommand('user-2', 'room-abc', 'nonexistent', 'up')),
+      useCase.execute(
+        new VoteQuoteCommand('user-2', 'room-abc', 'nonexistent', 'up'),
+      ),
     ).rejects.toThrow('Quote not found');
   });
 
@@ -93,7 +95,9 @@ describe('VoteQuoteUseCase (Unit)', () => {
     mockQuoteRepo.findById.mockRejectedValue(new Error('DB read failed'));
 
     await expect(
-      useCase.execute(new VoteQuoteCommand('user-2', 'room-abc', 'quote-1', 'up')),
+      useCase.execute(
+        new VoteQuoteCommand('user-2', 'room-abc', 'quote-1', 'up'),
+      ),
     ).rejects.toThrow('DB read failed');
   });
 });

@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, Query } from '@nestjs/common';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { ScrapeBookUseCase } from '@/application/scraper/use-cases/scrape-book.use-case';
 import { ScrapeChapterUseCase } from '@/application/scraper/use-cases/scrape-chapter.use-case';
 

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
@@ -6,6 +6,8 @@ import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.inte
 
 @Injectable()
 export class CloudinaryService implements IMediaService, OnModuleInit {
+  private readonly logger = new Logger(CloudinaryService.name);
+
   constructor(private configService: ConfigService) {}
 
   onModuleInit() {
@@ -53,7 +55,7 @@ export class CloudinaryService implements IMediaService, OnModuleInit {
       await cloudinary.uploader.destroy(publicId);
     } catch (error) {
       // Log error but generally we might not want to throw if deletion fails on cloud
-      console.error('Failed to delete image from Cloudinary', error);
+      this.logger.error('Failed to delete image from Cloudinary', error);
     }
   }
 

@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { IntelligentSearchUseCase } from '@/application/search/use-cases/intelligent-search.use-case';
 import { IntelligentSearchQuery } from '@/application/search/use-cases/intelligent-search.query';
-import { Public } from '@/common/decorators/customize';
+import { Public } from '@/common/decorators/custom.decorator';
 import { SearchQueryDto } from '@/presentation/chroma/dto/search-query.dto';
 
 @Controller('search')

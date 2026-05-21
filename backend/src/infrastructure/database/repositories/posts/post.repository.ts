@@ -63,7 +63,6 @@ export class PostRepository implements IPostRepository {
     id: string,
     viewerUserId?: string,
   ): Promise<PostEntity | null> {
-
     const found = await this.model
       .findOne({ _id: id, isDeleted: false })
       .populate(POPULATE_USER)
@@ -75,7 +74,7 @@ export class PostRepository implements IPostRepository {
     }
 
     const [enriched] = await this.enrichPosts([found], viewerUserId);
-    return PostMapper.toDomain(enriched as PostDocument);
+    return PostMapper.toDomain(enriched);
   }
 
   async findAll(
@@ -114,7 +113,7 @@ export class PostRepository implements IPostRepository {
     const enrichedDocs = await this.enrichPosts(docs, options.viewerUserId);
 
     const data = enrichedDocs
-      .map((doc) => PostMapper.toDomain(doc as PostDocument))
+      .map((doc) => PostMapper.toDomain(doc))
       .filter((p): p is PostEntity => p !== null);
 
     return {

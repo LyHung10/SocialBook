@@ -13,7 +13,12 @@ export interface RoomCommentProps {
 export class RoomComment extends Entity<string> {
   private _props: RoomCommentProps;
 
-  private constructor(id: string, props: RoomCommentProps, createdAt?: Date, updatedAt?: Date) {
+  private constructor(
+    id: string,
+    props: RoomCommentProps,
+    createdAt?: Date,
+    updatedAt?: Date,
+  ) {
     super(id, createdAt, updatedAt);
     this._props = props;
   }
@@ -23,7 +28,9 @@ export class RoomComment extends Entity<string> {
       throw new BadRequestDomainException('Comment content cannot be empty');
     }
     if (props.content.length > 1000) {
-      throw new BadRequestDomainException('Comment content too long (max 1000 chars)');
+      throw new BadRequestDomainException(
+        'Comment content too long (max 1000 chars)',
+      );
     }
     return new RoomComment(crypto.randomUUID(), props);
   }
@@ -39,14 +46,19 @@ export class RoomComment extends Entity<string> {
     createdAt: Date;
     updatedAt: Date;
   }): RoomComment {
-    return new RoomComment(props.id, {
-      roomId: props.roomId,
-      chapterSlug: props.chapterSlug,
-      paragraphId: props.paragraphId,
-      content: props.content,
-      userId: props.userId,
-      parentCommentId: props.parentCommentId,
-    }, props.createdAt, props.updatedAt);
+    return new RoomComment(
+      props.id,
+      {
+        roomId: props.roomId,
+        chapterSlug: props.chapterSlug,
+        paragraphId: props.paragraphId,
+        content: props.content,
+        userId: props.userId,
+        parentCommentId: props.parentCommentId,
+      },
+      props.createdAt,
+      props.updatedAt,
+    );
   }
 
   editContent(newContent: string): void {
@@ -54,16 +66,30 @@ export class RoomComment extends Entity<string> {
       throw new BadRequestDomainException('Comment content cannot be empty');
     }
     if (newContent.length > 1000) {
-      throw new BadRequestDomainException('Comment content too long (max 1000 chars)');
+      throw new BadRequestDomainException(
+        'Comment content too long (max 1000 chars)',
+      );
     }
     this._props.content = newContent;
     this.markAsUpdated();
   }
 
-  get roomId(): string { return this._props.roomId; }
-  get chapterSlug(): string { return this._props.chapterSlug; }
-  get paragraphId(): string { return this._props.paragraphId; }
-  get content(): string { return this._props.content; }
-  get userId(): string { return this._props.userId; }
-  get parentCommentId(): string | undefined { return this._props.parentCommentId; }
+  get roomId(): string {
+    return this._props.roomId;
+  }
+  get chapterSlug(): string {
+    return this._props.chapterSlug;
+  }
+  get paragraphId(): string {
+    return this._props.paragraphId;
+  }
+  get content(): string {
+    return this._props.content;
+  }
+  get userId(): string {
+    return this._props.userId;
+  }
+  get parentCommentId(): string | undefined {
+    return this._props.parentCommentId;
+  }
 }

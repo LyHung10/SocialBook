@@ -17,7 +17,7 @@ export interface AIRequestProps {
   response: string | null;
   type: AIRequestType;
   userId: UserId;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export class AIRequest extends Entity<AIRequestId> {
@@ -38,7 +38,7 @@ export class AIRequest extends Entity<AIRequestId> {
     prompt: string;
     type: AIRequestType;
     userId: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }): AIRequest {
     return new AIRequest(AIRequestId.create(props.id), {
       prompt: props.prompt.trim(),
@@ -55,7 +55,7 @@ export class AIRequest extends Entity<AIRequestId> {
     response: string | null;
     type: AIRequestType;
     userId: string;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     createdAt: Date;
     updatedAt: Date;
   }): AIRequest {
@@ -85,7 +85,7 @@ export class AIRequest extends Entity<AIRequestId> {
   get userId(): UserId {
     return this._props.userId;
   }
-  get metadata(): Record<string, any> {
+  get metadata(): Record<string, unknown> {
     return this._props.metadata;
   }
 
@@ -94,7 +94,7 @@ export class AIRequest extends Entity<AIRequestId> {
     this.markAsUpdated();
   }
 
-  updateMetadata(metadata: Record<string, any>): void {
+  updateMetadata(metadata: Record<string, unknown>): void {
     this._props.metadata = { ...this._props.metadata, ...metadata };
     this.markAsUpdated();
   }

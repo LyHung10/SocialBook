@@ -7,6 +7,22 @@ import {
   ParsedChapter,
 } from '@/domain/chapters/interfaces/epub-parser.interface';
 
+interface EpubChapterRef {
+  id?: string;
+  title?: string;
+  href?: string;
+}
+
+interface EpubInstance {
+  flow?: EpubChapterRef[];
+  on(event: string, callback: (...args: unknown[]) => void): this;
+  getChapter(
+    chapterId: string,
+    callback: (error: Error, text?: string) => void,
+  ): void;
+  parse(): void;
+}
+
 @Injectable()
 export class EpubParserService implements IEpubParser {
   async parseEpub(
@@ -30,19 +46,19 @@ export class EpubParserService implements IEpubParser {
         );
       }
 
-      const epub: any = new EPub(tmpFile);
+      const epub: EpubInstance = new EPub(tmpFile) as EpubInstance;
 
       const chapters = await new Promise<ParsedChapter[]>((resolve, reject) => {
         epub.on('end', async () => {
           try {
             const result: ParsedChapter[] = [];
-            const flow: any[] = epub.flow || [];
+            const flow: EpubChapterRef[] = epub.flow || [];
 
             for (const chapter of flow) {
               if (!chapter.id) continue;
 
               const chapterText = await new Promise<string>((res, rej) => {
-                epub.getChapter(chapter.id, (err: Error, text: string) => {
+                epub.getChapter(chapter.id!, (err: Error, text: string) => {
                   if (err) rej(err);
                   else res(text || '');
                 });
@@ -81,9 +97,7 @@ export class EpubParserService implements IEpubParser {
       return chapters;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(
-        `Không thể parse file EPUB: ${message}`,
-      );
+      throw new BadRequestException(`Không thể parse file EPUB: ${message}`);
     } finally {
       await fs.unlink(tmpFile).catch(() => null);
     }

@@ -1,4 +1,11 @@
-import { IsEnum, IsNumber, IsOptional, IsString, IsObject, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsObject,
+  IsUUID,
+} from 'class-validator';
 import { UserEventType } from '@/domain/analytics/enums/user-event-type.enum';
 
 export class TrackUserEventDto {
@@ -31,7 +38,7 @@ export class TrackUserEventDto {
 
   @IsOptional()
   @IsObject()
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @IsOptional()
   @IsString()

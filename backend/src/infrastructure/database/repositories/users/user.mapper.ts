@@ -1,9 +1,9 @@
 import { User as UserEntity } from '@/domain/users/entities/user.entity';
 import { UserDocument } from '@/infrastructure/database/schemas/user.schema';
-import { IReadingPreferences } from '@/domain/users/value-objects/reading-preferences.vo';
 import { Types } from 'mongoose';
+import { IReadingPreferences } from '@/domain/users/value-objects/reading-preferences.vo';
 
-interface UserPersistence {
+export interface UserPersistence {
   _id: Types.ObjectId;
   roleId: Types.ObjectId;
   username: string;
@@ -41,7 +41,9 @@ export class UserMapper {
       location: doc.location,
       website: doc.website,
       hashedRt: doc.hashedRt,
-      favoriteGenres: (doc.favoriteGenres || []).map((g: Types.ObjectId) => g.toString()),
+      favoriteGenres: (doc.favoriteGenres || []).map((g: Types.ObjectId) =>
+        g.toString(),
+      ),
       readingPreferences: doc.readingPreferences,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
@@ -64,7 +66,9 @@ export class UserMapper {
       location: entity.location,
       website: entity.website,
       hashedRt: entity.hashedRt,
-      favoriteGenres: (entity.favoriteGenres || []).map((g) => new Types.ObjectId(g)),
+      favoriteGenres: (entity.favoriteGenres || []).map(
+        (g) => new Types.ObjectId(g),
+      ),
       readingPreferences: entity.readingPreferences,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

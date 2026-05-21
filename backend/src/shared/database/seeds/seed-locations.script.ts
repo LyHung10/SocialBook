@@ -26,7 +26,10 @@ import {
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI', 'mongodb://localhost:27017/socialbook'),
+        uri: configService.get<string>(
+          'MONGO_URI',
+          'mongodb://localhost:27017/socialbook',
+        ),
       }),
       inject: [ConfigService],
     }),
@@ -41,7 +44,7 @@ class SeedModule {}
 
 async function seedLocations() {
   const app = await NestFactory.createApplicationContext(SeedModule);
-  
+
   const userModel = app.get<Model<any>>(`${User.name}Model`);
 
   const locations = [
@@ -60,7 +63,8 @@ async function seedLocations() {
 
   let updated = 0;
   for (const user of users) {
-    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+    const randomLocation =
+      locations[Math.floor(Math.random() * locations.length)];
     await userModel.updateOne({ _id: user._id }, { location: randomLocation });
     updated++;
   }

@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RoomQuote } from '@/domain/reading-room-interactions/entities/room-quote.entity';
 import { IQuoteRepository } from '@/domain/reading-room-interactions/repositories/quote.repository.interface';
-import { RoomQuoteSchema, RoomQuoteDocument } from '../../schemas/reading-room-interactions/room-quote.schema';
+import {
+  RoomQuoteSchema,
+  RoomQuoteDocument,
+} from '../../schemas/reading-room-interactions/room-quote.schema';
 
 @Injectable()
 export class QuoteRepository extends IQuoteRepository {
@@ -27,23 +30,31 @@ export class QuoteRepository extends IQuoteRepository {
     });
   }
 
-  async findByRoom(roomId: string, options?: { limit?: number }): Promise<RoomQuote[]> {
+  async findByRoom(
+    roomId: string,
+    options?: { limit?: number },
+  ): Promise<RoomQuote[]> {
     const docs = await this.quoteModel
       .find({ roomId })
       .sort({ createdAt: -1 })
       .limit(options?.limit || 50)
       .lean()
       .exec();
-    return docs.map(d => RoomQuote.reconstitute({
-      id: String(d._id),
-      roomId: d.roomId,
-      content: d.content,
-      userId: d.userId,
-      chapterSlug: d.chapterSlug,
-      paragraphId: d.paragraphId,
-      votes: (d.votes || []).map(v => ({ userId: v.userId, type: v.type as 'up' | 'down' })),
-      createdAt: d.createdAt,
-    }));
+    return docs.map((d) =>
+      RoomQuote.reconstitute({
+        id: String(d._id),
+        roomId: d.roomId,
+        content: d.content,
+        userId: d.userId,
+        chapterSlug: d.chapterSlug,
+        paragraphId: d.paragraphId,
+        votes: (d.votes || []).map((v) => ({
+          userId: v.userId,
+          type: v.type as 'up' | 'down',
+        })),
+        createdAt: d.createdAt,
+      }),
+    );
   }
 
   async findById(id: string): Promise<RoomQuote | null> {
@@ -56,13 +67,18 @@ export class QuoteRepository extends IQuoteRepository {
       userId: doc.userId,
       chapterSlug: doc.chapterSlug,
       paragraphId: doc.paragraphId,
-      votes: (doc.votes || []).map(v => ({ userId: v.userId, type: v.type as 'up' | 'down' })),
+      votes: (doc.votes || []).map((v) => ({
+        userId: v.userId,
+        type: v.type as 'up' | 'down',
+      })),
       createdAt: doc.createdAt,
     });
   }
 
   async updateVotes(quote: RoomQuote): Promise<void> {
-    await this.quoteModel.findByIdAndUpdate(quote.id, { votes: quote.votes }).exec();
+    await this.quoteModel
+      .findByIdAndUpdate(quote.id, { votes: quote.votes })
+      .exec();
   }
 
   async deleteByRoom(roomId: string): Promise<void> {

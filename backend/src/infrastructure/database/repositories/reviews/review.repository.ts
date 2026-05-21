@@ -95,7 +95,7 @@ export class ReviewRepository implements IReviewRepository {
 
     if (!updated) return null;
 
-    return ReviewMapper.toDomain(updated as any);
+    return ReviewMapper.toDomain(updated);
   }
 
   async existsByUserAndBook(userId: string, bookId: string): Promise<boolean> {

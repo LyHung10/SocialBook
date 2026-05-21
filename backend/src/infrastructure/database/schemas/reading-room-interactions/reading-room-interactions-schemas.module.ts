@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RoomCommentSchema, RoomCommentSchemaFactory } from './room-comment.schema';
-import { RoomReactionSchema, RoomReactionSchemaFactory } from './room-reaction.schema';
+import {
+  RoomCommentSchema,
+  RoomCommentSchemaFactory,
+} from './room-comment.schema';
+import {
+  RoomReactionSchema,
+  RoomReactionSchemaFactory,
+} from './room-reaction.schema';
 import { RoomQuoteSchema, RoomQuoteSchemaFactory } from './room-quote.schema';
 
 const models = [

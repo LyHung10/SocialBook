@@ -1,5 +1,5 @@
 import { ReadingRoom } from '@/domain/reading-rooms/entities/reading-room.entity';
-import { ReadingRoomResult } from '../use-cases/reading-room.result';
+import { ReadingRoomResult } from '../use-cases/reading-room.result.interface';
 
 export class ReadingRoomApplicationMapper {
   static toResult(room: ReadingRoom): ReadingRoomResult {
@@ -14,8 +14,8 @@ export class ReadingRoomApplicationMapper {
       membersCount: room.activeMembers.length,
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
-      members: room.members.map(m => ({ userId: m.userId, role: m.role })),
-      highlights: room.highlights.map(h => ({
+      members: room.members.map((m) => ({ userId: m.userId, role: m.role })),
+      highlights: room.highlights.map((h) => ({
         id: h.id!,
         userId: h.userId,
         chapterSlug: h.chapterSlug,
@@ -24,7 +24,7 @@ export class ReadingRoomApplicationMapper {
         aiInsight: h.aiInsight,
         createdAt: h.createdAt!,
       })),
-      chatMessages: room.chatMessages.map(m => ({
+      chatMessages: room.chatMessages.map((m) => ({
         userId: m.userId,
         role: m.role,
         content: m.content,
@@ -34,6 +34,6 @@ export class ReadingRoomApplicationMapper {
   }
 
   static toResultArray(rooms: ReadingRoom[]): ReadingRoomResult[] {
-    return rooms.map(room => this.toResult(room));
+    return rooms.map((room) => this.toResult(room));
   }
 }

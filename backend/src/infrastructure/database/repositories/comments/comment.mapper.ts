@@ -1,6 +1,26 @@
 import { Comment as CommentEntity } from '@/domain/comments/entities/comment.entity';
-import { CommentDocument } from '@/infrastructure/database/schemas/comment.schema';
+import { Comment } from '@/infrastructure/database/schemas/comment.schema';
 import { Types } from 'mongoose';
+
+export interface CommentReadModelRaw {
+  _id: Types.ObjectId;
+  content: string;
+  targetId: Types.ObjectId;
+  targetType: string;
+  parentId: Types.ObjectId | null;
+  likesCount: number;
+  repliesCount?: number;
+  isLiked?: boolean;
+  isFlagged: boolean;
+  moderationStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: {
+    _id: Types.ObjectId;
+    username: string;
+    image: string;
+  };
+}
 
 interface CommentPersistence {
   userId: Types.ObjectId;
@@ -13,7 +33,7 @@ interface CommentPersistence {
 }
 
 export class CommentMapper {
-  static toDomain(document: CommentDocument): CommentEntity {
+  static toDomain(document: Comment): CommentEntity {
     return CommentEntity.reconstitute({
       id: document._id.toString(),
       userId: document.userId?.toString() || '',

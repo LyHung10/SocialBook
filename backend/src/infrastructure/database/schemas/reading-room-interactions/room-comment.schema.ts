@@ -30,7 +30,13 @@ export class RoomCommentSchema {
   updatedAt: Date;
 }
 
-export const RoomCommentSchemaFactory = SchemaFactory.createForClass(RoomCommentSchema);
+export const RoomCommentSchemaFactory =
+  SchemaFactory.createForClass(RoomCommentSchema);
 
-RoomCommentSchemaFactory.index({ roomId: 1, chapterSlug: 1, paragraphId: 1, createdAt: 1 });
+RoomCommentSchemaFactory.index({
+  roomId: 1,
+  chapterSlug: 1,
+  paragraphId: 1,
+  createdAt: 1,
+});
 RoomCommentSchemaFactory.index({ roomId: 1, createdAt: -1 });

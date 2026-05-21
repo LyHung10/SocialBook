@@ -28,7 +28,9 @@ export class UserEventMapper {
       sessionId: entity.sessionId,
       eventType: entity.eventType,
       bookId: entity.bookId ? new Types.ObjectId(entity.bookId) : undefined,
-      chapterId: entity.chapterId ? new Types.ObjectId(entity.chapterId) : undefined,
+      chapterId: entity.chapterId
+        ? new Types.ObjectId(entity.chapterId)
+        : undefined,
       durationSeconds: entity.durationSeconds,
       progressPercent: entity.progressPercent,
       source: entity.source,

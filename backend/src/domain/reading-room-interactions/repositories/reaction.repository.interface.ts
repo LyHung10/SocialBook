@@ -9,9 +9,27 @@ export interface ReactionSummary {
 export abstract class IReactionRepository {
   abstract save(reaction: RoomReaction): Promise<void>;
   abstract delete(id: string): Promise<void>;
-  abstract findByParagraph(roomId: string, chapterSlug: string, paragraphId: string, options?: { limit?: number }): Promise<RoomReaction[]>;
-  abstract findByRoom(roomId: string, chapterSlug?: string, options?: { limit?: number }): Promise<RoomReaction[]>;
-  abstract findUserReaction(roomId: string, paragraphId: string, userId: string, type: string): Promise<RoomReaction | null>;
-  abstract getSummary(roomId: string, chapterSlug: string, paragraphIds: string[]): Promise<ReactionSummary[]>;
+  abstract findByParagraph(
+    roomId: string,
+    chapterSlug: string,
+    paragraphId: string,
+    options?: { limit?: number },
+  ): Promise<RoomReaction[]>;
+  abstract findByRoom(
+    roomId: string,
+    chapterSlug?: string,
+    options?: { limit?: number },
+  ): Promise<RoomReaction[]>;
+  abstract findUserReaction(
+    roomId: string,
+    paragraphId: string,
+    userId: string,
+    type: string,
+  ): Promise<RoomReaction | null>;
+  abstract getSummary(
+    roomId: string,
+    chapterSlug: string,
+    paragraphIds: string[],
+  ): Promise<ReactionSummary[]>;
   abstract deleteByRoom(roomId: string): Promise<void>;
 }

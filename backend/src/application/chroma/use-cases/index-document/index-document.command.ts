@@ -3,7 +3,7 @@ export class IndexDocumentCommand {
     public readonly contentId: string,
     public readonly contentType: 'book' | 'author' | 'chapter',
     public readonly content: string,
-    public readonly metadata?: Record<string, any>,
+    public readonly metadata?: Record<string, unknown>,
     public readonly embedding?: number[],
   ) {}
 }

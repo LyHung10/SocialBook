@@ -17,13 +17,11 @@ import { GenresRepositoryModule } from '@/infrastructure/database/repositories/g
 import { AIInfrastructureModule } from '@/infrastructure/ai/ai-infrastructure.module';
 import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.module';
 
-
 import { ProcessReadingSessionUseCase } from './use-cases/process-reading-session/process-reading-session.use-case';
 import { UpdateCollectionUseCase } from './use-cases/update-collection/update-collection.use-case';
 import { DeleteCollectionUseCase } from './use-cases/delete-collection/delete-collection.use-case';
 import { GetKnowledgeGraphUseCase } from './use-cases/get-knowledge-graph/get-knowledge-graph.use-case';
 import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories/chapters/chapters-repository.module';
-
 
 @Module({
   imports: [
@@ -35,7 +33,6 @@ import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories
     IdGeneratorModule,
     ChaptersRepositoryModule,
   ],
-
 
   providers: [
     CreateCollectionUseCase,
