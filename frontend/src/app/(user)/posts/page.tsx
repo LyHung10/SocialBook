@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import {useCallback} from 'react';
+import { useCallback } from 'react';
 import PostList from '@/components/post/PostList';
 import { useAppAuth } from '@/features/auth/hooks';
-import {BookOpen, Users, Library, Quote, ImageIcon, PenSquare} from 'lucide-react';
-import {useRouter} from "next/navigation";
+import { Quote, ImageIcon, PenSquare } from 'lucide-react';
+import { useRouter } from "next/navigation";
 import { useModalStore } from '@/store/useModalStore';
 import TrendingBooksWidget from '@/components/post/TrendingBooksWidget';
 import TopActiveReadersWidget from '@/components/post/TopActiveReadersWidget';
@@ -33,7 +33,7 @@ const RecommendedBooks = dynamic(
 
 export default function Post() {
     const { openCreatePost } = useModalStore();
-    const {user} = useAppAuth();
+    const { user } = useAppAuth();
     const currentUserId = user?.id;
     const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
@@ -84,46 +84,12 @@ export default function Post() {
                                 }}
                                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-slate-50 dark:bg-zinc-800 text-xs font-medium text-foreground py-2 hover:bg-slate-100 dark:hover:bg-gray-800 transition"
                             >
-                                <PenSquare size={14}/>
+                                <PenSquare size={14} />
                                 <span>Viết bài mới</span>
                             </button>
                         </div>
 
-                        <UserSearchSidebar/>
-                        {/* NAVIGATION */}
-                        <div
-                            className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-border p-4">
-                            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                                Điều hướng
-                            </h2>
-
-                            <nav className="space-y-2 text-sm text-foreground">
-                                <button
-                                    className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
-                                    <BookOpen size={16}/>
-                                    <span onClick={() => router.push(`/`)}
-                                    >Trang chủ</span>
-                                </button>
-
-                                {
-                                    currentUserId && (
-                                        <button
-                                            className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
-                                            <Users size={16}/>
-                                            <span onClick={goToFollowing}>Bạn bè & theo dõi</span>
-                                        </button>
-                                    )
-                                }
-
-                                <button
-                                    className="flex items-center gap-2 w-full text-left hover:text-sky-600 dark:hover:text-sky-400">
-                                    <Library size={16}/>
-                                    <span
-                                        onClick={() => router.push(`/library`)}
-                                    >Thư viện cá nhân</span>
-                                </button>
-                            </nav>
-                        </div>
+                        <UserSearchSidebar />
                         {/* WIDGETS */}
                         <TrendingBooksWidget />
                         <TopActiveReadersWidget />
@@ -162,7 +128,7 @@ export default function Post() {
                                     onClick={() => openCreatePost()}
                                     className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400"
                                 >
-                                    <ImageIcon size={16}/>
+                                    <ImageIcon size={16} />
                                     <span>Ảnh</span>
                                 </button>
 
@@ -170,7 +136,7 @@ export default function Post() {
                                     onClick={() => openCreatePost()}
                                     className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400"
                                 >
-                                    <Quote size={16}/>
+                                    <Quote size={16} />
                                     <span>Trích dẫn</span>
                                 </button>
                             </div>
@@ -179,7 +145,7 @@ export default function Post() {
                                 onClick={() => openCreatePost()}
                                 className="inline-flex items-center gap-2 bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-sky-700"
                             >
-                                <PenSquare size={14}/>
+                                <PenSquare size={14} />
                                 <span>Đăng bài</span>
                             </button>
                         </div>
@@ -191,7 +157,7 @@ export default function Post() {
                 {/* RIGHT SIDEBAR */}
                 <aside className="hidden lg:block w-[22%]">
                     <div className="sticky top-20 space-y-4">
-                        <RecommendedBooks/>
+                        <RecommendedBooks />
                     </div>
                 </aside>
             </main>
