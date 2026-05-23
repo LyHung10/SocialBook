@@ -13,16 +13,18 @@ import { PopularBooksTable } from '@/components/admin/dashboard/PopularBooksTabl
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
 import LoginWall from '@/components/auth/LoginWall';
 
 const UserGrowthChart = dynamic(
   () => import('@/components/admin/dashboard/UserGrowthChart').then((mod) => mod.UserGrowthChart),
-  { ssr: false, loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-800 h-[300px] rounded-xl flex justify-center items-center">Loading chart...</div> }
+  { ssr: false, loading: () => <div className="h-[300px] rounded-xl flex justify-center items-center"><LoadingSpinner /></div> }
 );
 
 const GenreDistributionChart = dynamic(
   () => import('@/components/admin/dashboard/GenreDistributionChart').then((mod) => mod.GenreDistributionChart),
-  { ssr: false, loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-800 h-[300px] rounded-xl flex justify-center items-center">Loading chart...</div> }
+  { ssr: false, loading: () => <div className="h-[300px] rounded-xl flex justify-center items-center"><LoadingSpinner /></div> }
 );
 
 export default function AdminPage() {
@@ -61,26 +63,21 @@ export default function AdminPage() {
   if (isAuthLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-          <p className="text-gray-600 font-medium">Loading Dashboard...</p>
-        </div>
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 font-medium mb-4">{error}</p>
-          <button
-            onClick={refetch}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Retry
-          </button>
-        </div>
+      <div className="min-h-screen">
+        <EmptyState
+          icon={ShieldAlert}
+          title="Lỗi tải dữ liệu"
+          description={error}
+          action={<Button onClick={refetch}>Thử lại</Button>}
+          iconClassName="text-red-500"
+        />
       </div>
     );
   }

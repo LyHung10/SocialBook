@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 import { useModerationManagement } from '@/features/admin/hooks/moderation/useModerationManagement';
+import { formatDateTime } from '@/lib/utils';
 
 const ModerationQueuePage = () => {
     const {
@@ -135,7 +136,7 @@ const ModerationQueuePage = () => {
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium pl-1">
                                         <Clock className="h-3.5 w-3.5" />
-                                        <span>Đăng lúc: {new Date(post.createdAt).toLocaleDateString('vi-VN')} {new Date(post.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <span>Đăng lúc: {formatDateTime(post.createdAt)}</span>
                                     </div>
                                 </CardContent>
                             </Card>

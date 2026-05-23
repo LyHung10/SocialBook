@@ -1,5 +1,5 @@
 'use client';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Book } from '@/features/books/types/book.interface';
@@ -45,7 +45,7 @@ export const BookSidebar = ({ book, bookSlug }: BookSidebarProps) => {
             <DetailRow label="Năm xuất bản" value={book.publishedYear} />
             <DetailRow
               label="Cập nhật cuối"
-              value={new Date(book.updatedAt).toLocaleDateString('vi-VN')}
+              value={formatDate(book.updatedAt)}
             />
           </CardContent>
         </Card>
@@ -79,7 +79,7 @@ export const BookSidebar = ({ book, bookSlug }: BookSidebarProps) => {
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Chương {chapter.orderIndex}</span>
                     <span>
-                      {new Date(chapter.createdAt).toLocaleDateString('vi-VN')}
+                      {formatDate(chapter.createdAt)}
                     </span>
                   </div>
                 </Link>

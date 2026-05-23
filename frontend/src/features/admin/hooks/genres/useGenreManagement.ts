@@ -1,55 +1,36 @@
-import { useState } from 'react';
 import { useGetGenresQuery, useDeleteGenreMutation } from '@/features/genres/api/genreApi';
-import { useDebounce } from '@/hooks/useDebounce';
 import { useModalStore } from '@/store/useModalStore';
 import { Genre } from '@/features/genres/types/genre.interface';
-import { toast } from 'sonner';
-import { getErrorMessage } from '@/lib/utils';
+import { useAdminListPage } from '@/features/admin/hooks/shared/useAdminListPage';
 
 export function useGenreManagement() {
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState('');
-    const debouncedSearch = useDebounce(search, 500);
-    const { openConfirm, openGenreModal } = useModalStore();
+  const { openConfirm, openGenreModal } = useModalStore();
 
-    const { data, isLoading, isFetching, refetch } = useGetGenresQuery({
-        page,
-        pageSize: 15,
-        name: debouncedSearch || undefined,
-    }, {
-        refetchOnMountOrArgChange: true,
-    });
+  const {
+    page, setPage,
+    search, setSearch,
+    items: genres,
+    meta,
+    isLoading, isFetching, isDeleting,
+    refetch,
+    handleDelete,
+  } = useAdminListPage<Genre>({
+    useListQuery: useGetGenresQuery as never,
+    useDeleteMutation: useDeleteGenreMutation as never,
+    searchKey: 'name',
+    successMessage: 'Xóa thể loại thành công!',
+    errorMessage: (name) => `Xóa thể loại "${name}" thất bại!`,
+  });
 
-    const [deleteGenre, { isLoading: isDeleting }] = useDeleteGenreMutation();
-    const genres: Genre[] = data?.data || [];
-    const meta = data?.meta;
-
-    const handleDelete = async (id: string, name: string) => {
-        try {
-            await deleteGenre(id).unwrap();
-            toast.success('Xóa thể loại thành công!');
-            refetch();
-        } catch (error: unknown) {
-            console.error('Failed to delete genre:', error);
-            toast.error(
-                getErrorMessage(error) || `Xóa thể loại "${name}" thất bại!`
-            );
-        }
-    };
-
-    return {
-        page,
-        setPage,
-        search,
-        setSearch,
-        genres,
-        meta,
-        isLoading,
-        isFetching,
-        isDeleting,
-        refetch,
-        handleDelete,
-        openGenreModal,
-        openConfirm
-    };
+  return {
+    page, setPage,
+    search, setSearch,
+    genres,
+    meta,
+    isLoading, isFetching, isDeleting,
+    refetch,
+    handleDelete,
+    openGenreModal,
+    openConfirm,
+  };
 }

@@ -2,6 +2,7 @@
 import { use, useEffect } from 'react';
 import { useGetRoomQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useRoomPresence } from '@/features/reading-rooms/hooks/useRoomPresence';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
@@ -9,8 +10,11 @@ import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, MessageSquare } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, MessageSquare, AlertTriangle } from 'lucide-react';
 import LoginWall from '@/components/auth/LoginWall';
+import { GlassCard } from '@/components/common/GlassCard';
+import { LoadingSpinner, LoadingOverlay } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { store } from '@/store/store';
@@ -27,30 +31,20 @@ import { QuoteBoard } from '@/features/reading-room-interactions/components/Quot
 import { useReadingRoomProgress } from '@/features/reading-room-interactions/hooks/useReadingRoomProgress';
 import { useGetRoomQuotesQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { useModalStore } from '@/store/useModalStore';
 
+const ROOM_BTN_BASE = "font-bold px-4 h-9 rounded-full transition-all shadow-sm gap-2";
 
 export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode: string }> }) {
   const { roomCode } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [copied, setCopied] = useState(false);
+  const { copy, copiedText } = useCopyToClipboard();
+  const copied = !!copiedText;
+  const { openConfirm } = useModalStore();
   
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(roomCode);
-    setCopied(true);
-    toast.success('Đã sao chép mã phòng!');
-    setTimeout(() => setCopied(false), 2000);
+    copy(roomCode, 'Đã sao chép mã phòng!');
   };
 
   const { user, isAuthenticated } = useAppAuth();
@@ -113,19 +107,22 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   if (isLoadingRoom) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center flex-col gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p>Đang kết nối vào phòng...</p>
+      <div className="min-h-[60vh]">
+        <LoadingOverlay>Đang kết nối vào phòng...</LoadingOverlay>
       </div>
     );
   }
 
   if (error || !initialRoom) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center flex-col gap-4">
-        <h2 className="text-2xl font-bold text-red-500">Không tìm thấy phòng</h2>
-        <p className="text-muted-foreground">Phòng không tồn tại hoặc đã kết thúc.</p>
-        <Button onClick={() => router.push('/reading-rooms')}>Quay lại</Button>
+      <div className="min-h-[60vh]">
+        <EmptyState
+          icon={AlertTriangle}
+          title="Không tìm thấy phòng"
+          description="Phòng không tồn tại hoặc đã kết thúc."
+          action={<Button onClick={() => router.push('/reading-rooms')}>Quay lại</Button>}
+          iconClassName="text-red-500"
+        />
       </div>
     );
   }
@@ -220,7 +217,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     <Button 
                       variant="outline"
                       size="sm" 
-                      className="font-bold px-4 h-9 rounded-full border-primary/20 hover:bg-primary/5 transition-all gap-2"
+                      className={`${ROOM_BTN_BASE} border-primary/20 hover:bg-primary/5`}
                       onClick={() => {
                         const newMode = room?.mode === 'sync' ? 'free' : 'sync';
                         changeMode(newMode);
@@ -239,73 +236,45 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       )}
                     </Button>
                     
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          className="font-bold px-4 h-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg shadow-orange-500/20 gap-2"
-                        >
-                          <LogOut size={15} />
-                          <span className="text-xs">Kết thúc</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-xl font-bold">Kết thúc phòng đọc?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-sm">
-                            Hành động này sẽ đóng phòng đọc đối với tất cả mọi người. Bạn không thể hoàn tác thao tác này.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-2xl font-bold">Hủy bỏ</AlertDialogCancel>
-                          <AlertDialogAction 
-                            className="rounded-2xl bg-orange-500 hover:bg-orange-600 font-bold"
-                            onClick={() => {
-                              endRoom();
-                              setTimeout(() => {
-                                store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
-                                router.push('/reading-rooms');
-                              }, 300);
-                            }}
-                          >
-                            Xác nhận kết thúc
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button 
+                      size="sm" 
+                      onClick={() => openConfirm({
+                        title: "Kết thúc phòng đọc?",
+                        description: "Hành động này sẽ đóng phòng đọc đối với tất cả mọi người. Bạn không thể hoàn tác thao tác này.",
+                        confirmText: "Xác nhận kết thúc",
+                        variant: "destructive",
+                        onConfirm: () => {
+                          endRoom();
+                          setTimeout(() => {
+                            store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
+                            router.push('/reading-rooms');
+                          }, 300);
+                        }
+                      })}
+                      className={`${ROOM_BTN_BASE} bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-orange-500/20`}
+                    >
+                      <LogOut size={15} />
+                      <span className="text-xs">Kết thúc</span>
+                    </Button>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          className="font-bold px-4 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white border-0 shadow-lg shadow-red-500/20 gap-2"
-                        >
-                          <Trash2 size={15} />
-                          <span className="text-xs">Xoá</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-xl font-bold">Xoá phòng đọc?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-sm">
-                            Hành động này sẽ xoá vĩnh viễn phòng đọc và tất cả dữ liệu liên quan (bình luận, phản hồi, trích dẫn, sự kiện). Không thể hoàn tác!
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-2xl font-bold">Hủy bỏ</AlertDialogCancel>
-                          <AlertDialogAction 
-                            className="rounded-2xl bg-red-500 hover:bg-red-600 font-bold"
-                            onClick={() => {
-                              deleteRoom();
-                              store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
-                              router.push('/reading-rooms');
-                            }}
-                          >
-                            Xác nhận xoá
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button 
+                      size="sm" 
+                      onClick={() => openConfirm({
+                        title: "Xoá phòng đọc?",
+                        description: "Hành động này sẽ xoá vĩnh viễn phòng đọc và tất cả dữ liệu liên quan (bình luận, phản hồi, trích dẫn, sự kiện). Không thể hoàn tác!",
+                        confirmText: "Xác nhận xoá",
+                        variant: "destructive",
+                        onConfirm: () => {
+                          deleteRoom();
+                          store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
+                          router.push('/reading-rooms');
+                        }
+                      })}
+                      className={`${ROOM_BTN_BASE} bg-red-500 hover:bg-red-600 text-white border-0 shadow-red-500/20`}
+                    >
+                      <Trash2 size={15} />
+                      <span className="text-xs">Xoá</span>
+                    </Button>
                   </>
                 )}
 
@@ -313,7 +282,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="font-bold px-4 h-9 rounded-full hover:bg-accent/50 transition-all gap-2"
+                    className={`${ROOM_BTN_BASE} hover:bg-accent/50`}
                     onClick={() => {
                       leaveRoom();
                       router.push('/reading-rooms');
@@ -325,7 +294,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 ) : isHost ? (
                   <Button
                     size="sm"
-                    className="font-bold px-4 h-9 rounded-full bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20 gap-2"
+                    className={`${ROOM_BTN_BASE} bg-primary hover:bg-primary/90 text-white border-0 shadow-primary/20`}
                     disabled={isReactivating}
                     onClick={async () => {
                       try {
@@ -344,7 +313,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="font-bold px-4 h-9 rounded-full hover:bg-accent/50 transition-all gap-2"
+                    className={`${ROOM_BTN_BASE} hover:bg-accent/50`}
                     onClick={() => router.push('/reading-rooms')}
                   >
                     <Info size={15} />
@@ -361,11 +330,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             
             <div className="flex-1 w-full max-w-3xl mx-auto lg:mx-0">
               {isLoadingChapter ? (
-                <div className="min-h-[400px] flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground animate-pulse">Đang tải nội dung chương...</p>
-                  </div>
+                <div className="min-h-[400px]">
+                  <LoadingOverlay>Đang tải nội dung chương...</LoadingOverlay>
                 </div>
               ) : chapter && bookData ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -418,7 +384,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
             <aside className="w-full lg:w-80 sticky top-24 shrink-0 space-y-6 hidden sm:block">
               <Tabs defaultValue="activity" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-4 rounded-2xl h-12 p-1 bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border shadow-sm">
+                <TabsList variant="glass" className="grid grid-cols-4 mb-4">
                   <TabsTrigger value="activity" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <Info className="w-3.5 h-3.5" />
                     <span className="hidden lg:inline">HĐ</span>
@@ -442,15 +408,18 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 </TabsContent>
 
                 <TabsContent value="members" className="mt-0 outline-none">
-                  <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
-                    <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30 flex items-center justify-between">
-                      <h3 className="text-sm font-bold tracking-tight uppercase">Thành viên</h3>
-                      {!isEnded && (
-                        <Badge variant="secondary" className="text-[10px] font-bold">
-                          {Object.keys(presences).length}
-                        </Badge>
-                      )}
-                    </div>
+                  <GlassCard 
+                    header={
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold tracking-tight uppercase">Thành viên</h3>
+                        {!isEnded && (
+                          <Badge variant="secondary" className="text-[10px] font-bold">
+                            {Object.keys(presences).length}
+                          </Badge>
+                        )}
+                      </div>
+                    }
+                  >
                     
                     <div className="p-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
                       {isEnded ? (
@@ -487,19 +456,22 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                         </div>
                       )}
                     </div>
-                  </div>
+                  </GlassCard>
                 </TabsContent>
 
                 <TabsContent value="quotes" className="mt-0 outline-none">
-                  <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
-                    <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30 flex items-center gap-2">
-                      <span className="text-sm leading-none text-primary">&ldquo;</span>
-                      <h3 className="text-sm font-bold tracking-tight uppercase">Trích dẫn</h3>
-                    </div>
+                  <GlassCard 
+                    header={
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm leading-none text-primary">&ldquo;</span>
+                        <h3 className="text-sm font-bold tracking-tight uppercase">Trích dẫn</h3>
+                      </div>
+                    }
+                  >
                     <div className="p-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
                       <QuoteBoard />
                     </div>
-                  </div>
+                  </GlassCard>
                 </TabsContent>
 
                 <TabsContent value="knowledge" className="mt-0 outline-none">
@@ -513,9 +485,9 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
                   ) : (
 
-                    <div className="p-12 text-center bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl">
+                    <GlassCard className="p-12 text-center">
                       <p className="text-xs text-muted-foreground italic">Đang tải kiến thức...</p>
-                    </div>
+                    </GlassCard>
                   )}
                 </TabsContent>
               </Tabs>

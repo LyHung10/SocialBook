@@ -25,6 +25,9 @@ import { getErrorMessage } from '@/lib/utils';
 import { useModalStore } from '@/store/useModalStore';
 import { useAppAuth } from '@/features/auth/hooks';
 import LoginWall from '@/components/auth/LoginWall';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Button } from '@/components/ui/button';
+import { formatDate } from '@/lib/utils';
 
 export default function CollectionDetailPage() {
   const router = useRouter();
@@ -96,20 +99,14 @@ export default function CollectionDetailPage() {
 
   if (error || !collection) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background transition-colors duration-300">
-        <FolderOpen
-          size={48}
-          className="text-muted-foreground mb-4 opacity-20"
+      <div className="min-h-screen">
+        <EmptyState
+          icon={FolderOpen}
+          title="Không tìm thấy bộ sưu tập"
+          action={
+            <Button onClick={() => router.push('/library')}>Quay lại thư viện</Button>
+          }
         />
-        <h2 className="text-xl font-bold text-foreground mb-2">
-          Không tìm thấy bộ sưu tập
-        </h2>
-        <Link
-          href="/library"
-          className="text-primary hover:underline font-medium"
-        >
-          Quay lại thư viện
-        </Link>
       </div>
     );
   }
@@ -236,7 +233,7 @@ export default function CollectionDetailPage() {
                   ) : (
                     <p className="text-xs text-muted-foreground mt-1 transition-colors">
                       Đã thêm:{' '}
-                      {new Date(item.updatedAt).toLocaleDateString('vi-VN')}
+                      {formatDate(item.updatedAt)}
                     </p>
                   )}
                 </div>

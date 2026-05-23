@@ -22,6 +22,7 @@ import { LibraryStatus } from '@/features/library/types/library.interface';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useModalStore } from '@/store/useModalStore';
 import LoginWall from '@/components/auth/LoginWall';
+import { formatDate } from '@/lib/utils';
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryStatus>(
@@ -134,7 +135,7 @@ export default function LibraryPage() {
                           {col.name}
                         </h3>
                         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          {new Date(col.createdAt).toLocaleDateString('vi-VN')}
+                          {formatDate(col.createdAt)}
                         </p>
                       </div>
                       <Folder size={18} className="text-yellow-400" />

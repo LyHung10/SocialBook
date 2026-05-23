@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useDeletePostImageMutation, useDeletePostMutation } from '@/features/posts/api/postApi';
 import { usePostToggleLikeMutation } from '@/features/likes/api/likeApi';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
+import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
+import { MESSAGES } from '@/constants/messages';
 
 interface UsePostActionsOptions {
   postId: string;
@@ -22,43 +24,27 @@ interface UsePostActionsReturn {
 export function usePostActions(options: UsePostActionsOptions): UsePostActionsReturn {
   const { postId, initialLikeCount = 0, initialLikeStatus = false } = options;
   
-  const [likeCount, setLikeCount] = useState(initialLikeCount);
-  const [isLiked, setIsLiked] = useState(initialLikeStatus);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    setLikeCount(initialLikeCount);
-    setIsLiked(initialLikeStatus);
-  }, [postId, initialLikeCount, initialLikeStatus]);
 
   const [deletePostMutation] = useDeletePostMutation();
   const [deleteImageMutation] = useDeletePostImageMutation();
   const [toggleLikeMutation] = usePostToggleLikeMutation();
 
-  const toggleLike = useCallback(async () => {
-    const nextLiked = !isLiked;
-    
-    // Optimistic update
-    setIsLiked(nextLiked);
-    setLikeCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
-
-    try {
-      await toggleLikeMutation({
-        targetId: postId,
-        targetType: 'post',
-      }).unwrap();
-    } catch (error) {
-      // Rollback on error
-      setIsLiked(!nextLiked);
-      setLikeCount((prev) => (nextLiked ? Math.max(0, prev - 1) : prev + 1));
-    }
-  }, [isLiked, postId, toggleLikeMutation]);
+  const {
+    count: likeCount,
+    isActive: isLiked,
+    toggle: toggleLike,
+  } = useOptimisticToggle({
+    initialCount: initialLikeCount,
+    initialState: initialLikeStatus,
+    onToggle: () => toggleLikeMutation({ targetId: postId, targetType: 'post' }).unwrap(),
+  });
 
   const deletePost = useCallback(async () => {
     setIsDeleting(true);
     try {
       await deletePostMutation(postId).unwrap();
-      toast.success('Xóa bài viết thành công!');
+      toast.success(MESSAGES.POST_DELETE_SUCCESS);
     } catch (error) {
       if ((error as { status?: number })?.status !== 401) {
         toast.error(getErrorMessage(error));
@@ -76,7 +62,7 @@ export function usePostActions(options: UsePostActionsOptions): UsePostActionsRe
           id: postId,
           data: { imageUrl },
         }).unwrap();
-        toast.success('Xóa ảnh thành công!');
+        toast.success(MESSAGES.POST_IMAGE_DELETE_SUCCESS);
       } catch (error) {
         if ((error as { status?: number })?.status !== 401) {
           toast.error(getErrorMessage(error));

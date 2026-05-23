@@ -18,6 +18,7 @@ import GenreModal from '@/components/admin/genre/GenreModal';
 import AuthorModal from '@/components/admin/author/AuthorModal';
 import ManageChapterModal from '@/components/admin/chapter/ManageChapterModal';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 export const metadata = {
   title: 'SocialBook',
@@ -39,7 +40,9 @@ export default function RootLayout({
         >
           <Providers>
             <ScrollToTop />
-            {children}
+            <ErrorBoundary name="RootLayout">
+              {children}
+            </ErrorBoundary>
             <CreatePostModal />
             <EditPostModal />
             <SharePostModal />

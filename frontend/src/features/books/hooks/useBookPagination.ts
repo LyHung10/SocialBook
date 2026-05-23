@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
 import type { Book, BookOrderField } from '@/features/books/types/book.interface';
+import { useIntersectionPagination } from '@/hooks/useIntersectionPagination';
 
 interface UseBookPaginationProps {
     search?: string;
@@ -56,21 +57,10 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
     }, [data, page, isLoading, isFetching]);
 
     // Logic Infinite Scroll (Intersection Observer)
-    const observer = useRef<IntersectionObserver>(null);
-
-    const lastBookRef = useCallback((node: HTMLDivElement) => {
-        if (isFetching) return;
-
-        if (observer.current) observer.current.disconnect();
-
-        observer.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasMore) {
-                setPage((prev) => prev + 1);
-            }
-        });
-
-        if (node) observer.current.observe(node);
-    }, [isFetching, hasMore]);
+    const lastBookRef = useIntersectionPagination({
+        onLoadMore: () => setPage((prev) => prev + 1),
+        isEnabled: !isFetching && hasMore,
+    });
 
     return {
         books: allBooks,

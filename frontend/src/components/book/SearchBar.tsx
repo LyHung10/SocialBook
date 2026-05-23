@@ -1,12 +1,13 @@
 'use client';
 import { Search, X } from 'lucide-react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchBarProps {
   initialValue: string;
   onSearch: (value: string) => void;
   onClear: () => void;
-  debounceMs?: number; // Default 500ms
+  debounceMs?: number;
 }
 
 export const SearchBar = ({
@@ -16,13 +17,11 @@ export const SearchBar = ({
   debounceMs = 500
 }: SearchBarProps) => {
   const [input, setInput] = useState(initialValue);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debouncedInput = useDebounce(input, debounceMs);
   const isComposing = useRef(false);
   const lastSearchedValue = useRef(initialValue);
 
-  // Sync khi URL thay đổi từ bên ngoài (nhưng bỏ qua nếu do chính mình vừa search)
   useEffect(() => {
-    // So sánh đã trim() để tránh việc URL (thường bị trim) ghi đè mất dấu cách cuối câu người dùng đang gõ
     const normalizedInitial = initialValue.trim();
     const normalizedLast = lastSearchedValue.current.trim();
 
@@ -32,37 +31,21 @@ export const SearchBar = ({
     }
   }, [initialValue]);
 
-  // Cleanup debounce on unmount
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, []);
-
-  // Debounced search handler
-  const handleInputChange = useCallback((value: string) => {
-    setInput(value);
-
     if (isComposing.current) return;
 
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    const trimmedInput = debouncedInput.trim();
+    const trimmedLast = lastSearchedValue.current.trim();
 
-    // Set new timeout for debounced search
-    debounceRef.current = setTimeout(() => {
-      if (value.trim()) {
-        onSearch(value);
-        lastSearchedValue.current = value;
+    if (trimmedInput !== trimmedLast) {
+      if (trimmedInput) {
+        onSearch(debouncedInput);
       } else {
         onClear();
-        lastSearchedValue.current = '';
       }
-    }, debounceMs);
-  }, [onSearch, debounceMs]);
+      lastSearchedValue.current = debouncedInput;
+    }
+  }, [debouncedInput, onSearch, onClear]);
 
   const handleCompositionStart = () => {
     isComposing.current = true;
@@ -70,39 +53,17 @@ export const SearchBar = ({
 
   const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
     isComposing.current = false;
-    // Trigger search immediately after composition ends (optional, or wait for next debounce)
     const value = e.currentTarget.value;
-
-    // Clear previous timeout to maintain consistent debounce behavior
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      if (value.trim()) {
-        onSearch(value);
-        lastSearchedValue.current = value;
-      } else {
-        onClear();
-        lastSearchedValue.current = '';
-      }
-    }, debounceMs);
+    setInput(value);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Clear debounce and search immediately on submit
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
     onSearch(input);
     lastSearchedValue.current = input;
   };
 
   const handleClear = () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
     setInput('');
     onClear();
     lastSearchedValue.current = '';
@@ -116,7 +77,7 @@ export const SearchBar = ({
       <input
         type="text"
         value={input}
-        onChange={(e) => handleInputChange(e.target.value)}
+        onChange={(e) => setInput(e.target.value)}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         placeholder="Tìm kiếm tên truyện, tác giả..."

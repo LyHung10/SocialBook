@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useCreateBookMutation, useGetFiltersQuery } from '@/features/books/api/bookApi';
 import { useGetAuthorsQuery, useGetGenresQuery } from '@/features/admin/api/bookRelationApi';
-import { AuthorOption, GenreOption } from '@/features/admin/types/bookRelation.interface';
+import type { Author, Genre } from '@/features/books/types/book.interface';
 import { useCreateBookForm, BookStatus } from '@/features/admin/hooks/books/useCreateBookForm';
 
 // shadcn/ui components
@@ -42,11 +42,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-
-type Status = BookStatus;
-
-const EMPTY_AUTHORS: AuthorOption[] = [];
-const EMPTY_GENRES: GenreOption[] = [];
+const EMPTY_AUTHORS: Author[] = [];
+const EMPTY_GENRES: Genre[] = [];
 
 export default function CreateBook() {
   const router = useRouter();

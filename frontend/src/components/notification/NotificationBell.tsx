@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useNotifications } from './useNotifications';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -87,10 +87,11 @@ export function NotificationBell() {
                     `}
                   >
                     <div className="relative shrink-0">
-                      <Avatar className="w-9 h-9 border border-border">
-                        <AvatarImage src={notif.meta?.image || '/user.png'} />
-                        <AvatarFallback>U</AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        src={notif.meta?.image}
+                        name="U"
+                        className="w-9 h-9 border border-border"
+                      />
                       {isUnread && (
                         <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary border-2 border-white dark:border-[#1a1a1a]" />
                       )}

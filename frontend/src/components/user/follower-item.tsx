@@ -1,16 +1,13 @@
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FollowingUser } from '@/features/follows/api/followApi';
 import { useFollowerItem } from '@/features/follows/hooks/useFollowerItem';
-import { UserCheck, UserPlus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { UserAvatar } from '@/components/common/UserAvatar';
+import { FollowButton } from '@/components/user/FollowButton';
 
 const FollowerItem = (props: FollowingUser) => {
     const {
-        isFollowing,
-        isToggling,
         isCurrentUser,
-        handleToggleFollow,
+        isToggling,
         handleNavigateToProfile,
     } = useFollowerItem({
         userId: props.userId,
@@ -23,18 +20,13 @@ const FollowerItem = (props: FollowingUser) => {
         >
             {/* Left */}
             <div className="flex items-center gap-3">
-                <div
+                <UserAvatar
+                    src={props.image}
+                    name={props.username}
+                    size="md"
                     onClick={handleNavigateToProfile}
-                    className="relative h-10 w-10 overflow-hidden rounded-full cursor-pointer border border-border"
-                >
-                    <Image
-                        src={props.image || '/user.png'}
-                        alt={props.username}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                    />
-                </div>
+                    className="border border-border"
+                />
 
                 <div className="flex flex-col">
                     <span className="font-semibold text-foreground">
@@ -64,29 +56,12 @@ const FollowerItem = (props: FollowingUser) => {
                     Xem hồ sơ
                 </Button>
             ) : (
-                <Button
-                    variant={isFollowing ? 'default' : 'outline'}
-                    disabled={isToggling}
-                    onClick={handleToggleFollow}
-                    className={cn(
-                        'rounded-md text-xs font-medium tracking-wide transition-all shadow-sm',
-                        isFollowing
-                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                            : 'hover:bg-accent',
-                    )}
-                >
-                    {isFollowing ? (
-                        <>
-                            <UserCheck className="mr-2 h-3.5 w-3.5" />
-                            Đang theo dõi
-                        </>
-                    ) : (
-                        <>
-                            <UserPlus className="mr-2 h-3.5 w-3.5" />
-                            Theo dõi
-                        </>
-                    )}
-                </Button>
+                <FollowButton
+                    userId={props.userId}
+                    initialIsFollowing={props.isFollowedByCurrentUser}
+                    size="sm"
+                    className="rounded-md shadow-sm"
+                />
             )}
         </div>
     );

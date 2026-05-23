@@ -3,14 +3,14 @@
 import Image from 'next/image';
 import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { Heart, MessageCircle, Send, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useModalStore } from '@/store/useModalStore';
 import { usePostComments } from '@/features/posts/hooks/usePostComments';
 import { usePostActions } from '@/features/posts/hooks/usePostActions';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -99,12 +99,12 @@ export default function ModalPostComment() {
                 <div className="flex flex-col w-full md:w-1/2 h-full bg-card">
                     {/* Header */}
                     <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
-                        <Avatar className="h-10 w-10 border border-border">
-                            <AvatarImage src={post.user?.image} className="object-cover" />
-                            <AvatarFallback className="bg-slate-100 dark:bg-gray-800 text-slate-500">
-                                {post.user?.username?.charAt(0).toUpperCase() || 'U'}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            src={post.user?.image}
+                            name={post.user?.username}
+                            size="md"
+                            className="border border-border"
+                        />
                         <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-bold text-foreground truncate">
                                 {post.user?.username}
@@ -123,10 +123,12 @@ export default function ModalPostComment() {
                             <div className="p-4 pb-0">
                                 {/* Post Content Section */}
                                 <div className="mb-6 flex gap-3">
-                                    <Avatar className="h-8 w-8 shrink-0">
-                                        <AvatarImage src={post.user?.image} className="object-cover" />
-                                        <AvatarFallback>U</AvatarFallback>
-                                    </Avatar>
+                                    <UserAvatar
+                                        src={post.user?.image}
+                                        name={post.user?.username}
+                                        size="sm"
+                                        className="shrink-0"
+                                    />
                                     <div className="space-y-1">
                                         <p className="text-sm">
                                             <span className="font-bold text-foreground mr-2">
@@ -137,7 +139,7 @@ export default function ModalPostComment() {
                                             </span>
                                         </p>
                                         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                                            {new Date(post.createdAt || '').toLocaleDateString('vi-VN')}
+                                            {formatDate(post.createdAt)}
                                         </p>
                                     </div>
                                 </div>
@@ -196,9 +198,12 @@ export default function ModalPostComment() {
                             </div>
 
                             <div className="flex gap-3 items-center">
-                                <Avatar className="h-8 w-8 border border-border">
-                                    <AvatarFallback className="text-[10px] bg-slate-100 dark:bg-gray-800">ME</AvatarFallback>
-                                </Avatar>
+                                <UserAvatar
+                                    name="ME"
+                                    size="sm"
+                                    className="border border-border"
+                                    fallbackClassName="text-[10px]"
+                                />
                                 <div className="flex-1 flex gap-2">
                                     <Input
                                         ref={commentInputRef}

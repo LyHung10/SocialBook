@@ -9,6 +9,7 @@ import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import CommentInput from './CommentInput';
 
 export interface Comment {
@@ -49,7 +50,7 @@ export default function CommentSection({
         if (!trimmed) return;
 
         if (!isAuthenticated) {
-            toast.info('Vui lòng đăng nhập để bình luận', {
+            toast.info(MESSAGES.REQUIRE_LOGIN, {
                 action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
             });
             return;
@@ -64,7 +65,7 @@ export default function CommentSection({
                 parentId: null,
             }).unwrap();
 
-            toast.success('Bình luận đã được gửi!');
+            toast.success(MESSAGES.COMMENT_CREATE_SUCCESS);
         } catch (error) {
             const apiError = error as { status?: number } | null;
             if (apiError?.status !== 401) {

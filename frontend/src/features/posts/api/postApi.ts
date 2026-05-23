@@ -2,6 +2,7 @@ import { NESTJS_POSTS_ENDPOINTS } from '@/constants/server-endpoints';
 import { axiosBaseQuery } from '@/lib/nestjs-client-api';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { CreatePostRequest, DeleteImageRequest, PaginatedPostsResponse, PaginationParams, PaginationParamsByUser, Post, UpdatePostRequest } from '../../posts/types/post.interface';
+import { buildFormData } from '@/lib/utils';
 
 type RawPost = Post & {
   likesCount?: number;
@@ -117,23 +118,11 @@ export const postApi = createApi({
     }),
 
     createPost: builder.mutation<NormalizedPostWithModerationResponse, CreatePostRequest>({
-      query: (data) => {
-        const formData = new FormData();
-        formData.append('bookId', data.bookId);
-        formData.append('content', data.content);
-
-        if (data.images && data.images.length > 0) {
-          data.images.forEach((image) => {
-            formData.append('images', image);
-          });
-        }
-
-        return {
-          url: NESTJS_POSTS_ENDPOINTS.create,
-          method: 'POST',
-          body: formData,
-        };
-      },
+      query: (data) => ({
+        url: NESTJS_POSTS_ENDPOINTS.create,
+        method: 'POST',
+        body: buildFormData(data as any),
+      }),
       transformResponse: (response: MutationRawResponse) => {
         if (isWrappedResponse(response)) {
           return {
@@ -152,29 +141,11 @@ export const postApi = createApi({
 
     updatePost: builder.mutation<NormalizedPostWithModerationResponse, { id: string; data: UpdatePostRequest }>(
       {
-        query: ({ id, data }) => {
-          const formData = new FormData();
-
-          if (data.content !== undefined) {
-            formData.append('content', data.content);
-          }
-
-          if (data.bookId) {
-            formData.append('bookId', data.bookId);
-          }
-
-          if (data.images && data.images.length > 0) {
-            data.images.forEach((image) => {
-              formData.append('images', image);
-            });
-          }
-
-          return {
-            url: NESTJS_POSTS_ENDPOINTS.update(id),
-            method: 'PATCH',
-            body: formData,
-          };
-        },
+        query: ({ id, data }) => ({
+          url: NESTJS_POSTS_ENDPOINTS.update(id),
+          method: 'PATCH',
+          body: buildFormData(data as any),
+        }),
         transformResponse: (response: MutationRawResponse) => {
           if (isWrappedResponse(response)) {
             return {

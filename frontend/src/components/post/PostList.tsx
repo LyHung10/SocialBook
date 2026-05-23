@@ -13,7 +13,7 @@ import { AlertCircle, ArrowUp, LayoutGrid, List } from 'lucide-react';
 
 const PostList: React.FC = memo(function PostList() {
     const { viewMode, setViewMode, mounted } = usePostListViewMode();
-    const { posts, isLoading, isFetching, error, hasMore, observerTarget } = usePostsFeed({
+    const { posts, isLoading, isFetching, error, hasMore, lastPostRef } = usePostsFeed({
         limit: 10,
     });
 
@@ -94,7 +94,7 @@ const PostList: React.FC = memo(function PostList() {
                 </div>
             ) : null}
 
-            {hasMore ? <div ref={observerTarget} className="h-10 w-full" /> : null}
+            {hasMore ? <div ref={lastPostRef} className="h-10 w-full" /> : null}
 
             {posts.length > 5 ? (
                 <Button

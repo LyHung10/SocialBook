@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketProvider';
+import { useSocketEvents } from '@/hooks/useSocketEvents';
 
 export interface NotificationItem {
     id: string;
@@ -45,33 +46,31 @@ export function useNotificationSocket(
     const socket = getSocket('/notifications');
     const { onNotificationList, onNewNotification, onReadNotification } = options;
 
+    useSocketEvents(socket, {
+        'connect': () => {
+            if (socket) {
+                socket.emit('notification:list', (data: NotificationItem[]) => {
+                    onNotificationList(data);
+                });
+            }
+        },
+        'notification:new': (payload: NotificationItem) => {
+            onNewNotification(payload);
+        },
+        'notification:read': (data: { id: string }) => {
+            onReadNotification(data);
+        },
+        'connect_error': () => {
+            toast.error('Kết nối thông báo thất bại');
+        }
+    }, [onNotificationList, onNewNotification, onReadNotification]);
+
     useEffect(() => {
         if (!userToken) return;
 
         const init = async () => {
             const s = await connectSocket('/notifications');
-            if (!s) return;
-
-            s.on('connect', () => {
-                s.emit('notification:list', (data: NotificationItem[]) => {
-                    onNotificationList(data);
-                });
-            });
-
-            s.on('notification:new', (payload: NotificationItem) => {
-                onNewNotification(payload);
-            });
-
-            s.on('notification:read', (data: { id: string }) => {
-                onReadNotification(data);
-            });
-
-            s.on('connect_error', (err) => {
-                toast.error('Kết nối thông báo thất bại');
-            });
-
-            // Nếu đã connected rồi (multiplexing), chủ động lấy list
-            if (s.connected) {
+            if (s && s.connected) {
                 s.emit('notification:list', (data: NotificationItem[]) => {
                     onNotificationList(data);
                 });
@@ -79,14 +78,7 @@ export function useNotificationSocket(
         };
 
         init();
-
-        return () => {
-            socket.off('connect');
-            socket.off('notification:new');
-            socket.off('notification:read');
-            socket.off('connect_error');
-        };
-    }, [userToken, connectSocket, socket, onNotificationList, onNewNotification, onReadNotification]);
+    }, [userToken, connectSocket, onNotificationList]);
 
     const markAsRead = useCallback((id: string) => {
         if (!socket?.connected) return;

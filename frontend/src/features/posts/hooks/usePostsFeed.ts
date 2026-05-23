@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGetPostsQuery } from '../api/postApi';
 import type { Post } from '../types/post.interface';
+import { useIntersectionPagination } from '@/hooks/useIntersectionPagination';
 
 interface UsePostsFeedOptions {
   limit?: number;
@@ -15,7 +16,7 @@ interface UsePostsFeedReturn {
   hasMore: boolean;
   loadMore: () => void;
   refresh: () => void;
-  observerTarget: React.RefObject<HTMLDivElement | null>;
+  lastPostRef: (node: HTMLElement | null) => void;
 }
 
 export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedReturn {
@@ -23,7 +24,6 @@ export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedRet
   
   const [cursor, setCursor] = useState<string | undefined>(options.initialCursor);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
-  const observerTarget = useRef<HTMLDivElement | null>(null);
 
   const { data, isLoading, error, isFetching, refetch } = useGetPostsQuery(
     { cursor, limit },
@@ -51,27 +51,16 @@ export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedRet
     });
   }, [items, cursor, hasMore]);
 
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const target = observerTarget.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && hasMore && !isFetching && nextCursor) {
-          setCursor(nextCursor);
-        }
-      },
-      { threshold: 0.15 }
-    );
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasMore, isFetching, nextCursor]);
+  // Intersection Observer for infinite scroll using general hook
+  const lastPostRef = useIntersectionPagination({
+    onLoadMore: () => {
+      if (nextCursor) {
+        setCursor(nextCursor);
+      }
+    },
+    isEnabled: hasMore && !isFetching && !!nextCursor,
+    threshold: '100px',
+  });
 
   const loadMore = useCallback(() => {
     if (hasMore && !isFetching && nextCursor) {
@@ -93,6 +82,6 @@ export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedRet
     hasMore,
     loadMore,
     refresh,
-    observerTarget,
+    lastPostRef,
   };
 }

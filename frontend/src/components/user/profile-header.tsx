@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { useModalStore } from "@/store/useModalStore";
 
 interface PropsProfileHeader {
@@ -36,16 +36,12 @@ export function ProfileHeader(props: PropsProfileHeader) {
                 {/* Avatar with Ring */}
                 <div className="relative mb-4 group">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-indigo-500 rounded-full opacity-75 group-hover:opacity-100 transition duration-200 blur"></div>
-                    <Avatar className="h-32 w-32 border-4 border-black relative">
-                        <AvatarImage
-                            src={props.image ?? "/user.png"}
-                            alt={props.username ?? "user"}
-                            className="object-cover"
-                        />
-                        <AvatarFallback className="bg-slate-800 text-3xl font-bold">
-                            {props.username?.charAt(0).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                        src={props.image}
+                        name={props.username}
+                        className="h-32 w-32 border-4 border-black relative text-3xl font-bold"
+                        fallbackClassName="bg-slate-800"
+                    />
                 </div>
 
                 <h1 className="text-3xl font-bold tracking-tight mb-6 text-white drop-shadow-md">

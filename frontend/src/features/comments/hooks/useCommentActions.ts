@@ -8,6 +8,8 @@ import {
 } from '@/features/comments/api/commentApi';
 import { CommentItem } from '@/features/comments/types/comment.interface';
 import { usePostToggleLikeMutation } from '@/features/likes/api/likeApi';
+import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
+import { MESSAGES } from '@/constants/messages';
 
 export interface UseCommentActionsOptions {
     comment: CommentItem;
@@ -53,12 +55,6 @@ export function useCommentActions({
     const [replyText, setReplyText] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.content);
-    const [optimisticLikeCount, setOptimisticLikeCount] = useState(
-        comment.likesCount ?? 0
-    );
-    const [optimisticIsLiked, setOptimisticIsLiked] = useState(
-        comment.isLiked ?? false
-    );
     const [optimisticReplyCount, setOptimisticReplyCount] = useState(
         comment.repliesCount ?? 0
     );
@@ -74,13 +70,18 @@ export function useCommentActions({
     const [createComment, { isLoading: isPostingReply }] =
         usePostCreateMutation();
 
-    useEffect(() => {
-        setOptimisticLikeCount(comment.likesCount ?? 0);
-    }, [comment.likesCount]);
-
-    useEffect(() => {
-        setOptimisticIsLiked(comment.isLiked ?? false);
-    }, [comment.isLiked]);
+    const {
+        count: optimisticLikeCount,
+        isActive: optimisticIsLiked,
+        toggle: handleLikeComment,
+    } = useOptimisticToggle({
+        initialCount: comment.likesCount ?? 0,
+        initialState: comment.isLiked ?? false,
+        onToggle: () => postToggleLike({
+            targetId: comment.id,
+            targetType: 'comment',
+        }).unwrap(),
+    });
 
     useEffect(() => {
         if (hasReplyCount) {
@@ -107,7 +108,7 @@ export function useCommentActions({
                 targetId,
                 parentId: comment.parentId ?? null,
             }).unwrap();
-            toast.success('Bình luận đã được chỉnh sửa!');
+            toast.success(MESSAGES.COMMENT_UPDATE_SUCCESS);
             setIsEditing(false);
         } catch (error: unknown) {
             const apiError = error as {
@@ -130,7 +131,7 @@ export function useCommentActions({
                 targetId,
                 parentId: comment.parentId ?? null,
             }).unwrap();
-            toast.success('Bình luận đã được xóa!');
+            toast.success(MESSAGES.COMMENT_DELETE_SUCCESS);
         } catch (error: unknown) {
             if ((error as { status?: number })?.status !== 401) {
                 toast.error(getErrorMessage(error));
@@ -162,25 +163,7 @@ export function useCommentActions({
         }
     }, [replyText, targetType, targetId, comment.id, hasReplyCount, createComment]);
 
-    const handleLikeComment = useCallback(async () => {
-        try {
-            const nextLiked = !optimisticIsLiked;
 
-            setOptimisticIsLiked(nextLiked);
-            setOptimisticLikeCount((prev) =>
-                nextLiked ? prev + 1 : Math.max(0, prev - 1)
-            );
-
-            await postToggleLike({
-                targetId: comment.id,
-                targetType: 'comment',
-            }).unwrap();
-        } catch (error) {
-            setOptimisticIsLiked(comment.isLiked ?? false);
-            setOptimisticLikeCount(comment.likesCount ?? 0);
-
-        }
-    }, [optimisticIsLiked, comment.id, comment.isLiked, comment.likesCount, postToggleLike]);
 
     const effectiveParentId = comment.parentId ?? comment.id;
 

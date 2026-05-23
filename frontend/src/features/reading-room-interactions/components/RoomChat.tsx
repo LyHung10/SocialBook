@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 import { useAppAuth } from '@/features/auth/hooks';
+import { GlassCard } from '@/components/common/GlassCard';
 
 interface RoomChatProps {
   sendChatMessage: (content: string) => void;
@@ -39,10 +40,10 @@ export function RoomChat({ sendChatMessage, disabled }: RoomChatProps) {
   const userMessages = chatMessages.filter((m) => m.role === 'user');
 
   return (
-    <div className="flex flex-col h-[50vh] bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
-      <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30">
-        <h3 className="text-sm font-bold tracking-tight uppercase">Trò chuyện</h3>
-      </div>
+    <GlassCard 
+      className="flex flex-col h-[50vh]"
+      header={<h3 className="text-sm font-bold tracking-tight uppercase">Trò chuyện</h3>}
+    >
 
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-3">
         {userMessages.length === 0 ? (
@@ -53,7 +54,7 @@ export function RoomChat({ sendChatMessage, disabled }: RoomChatProps) {
           <div className="space-y-2">
             {userMessages.map((msg, i) => (
               <div
-                key={i}
+                key={`${msg.userId}-${msg.createdAt}-${i}`}
                 className="flex items-start gap-2.5 p-2.5 rounded-2xl bg-black/[0.03] dark:bg-white/5 hover:bg-black/[0.05] dark:hover:bg-white/10 transition-colors"
               >
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
@@ -106,6 +107,6 @@ export function RoomChat({ sendChatMessage, disabled }: RoomChatProps) {
           </Button>
         </div>
       </form>
-    </div>
+    </GlassCard>
   );
 }
