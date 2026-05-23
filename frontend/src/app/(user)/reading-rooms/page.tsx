@@ -1,12 +1,15 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
-import { useCreateRoomMutation, useGetMyActiveRoomsQuery } from '@/features/reading-rooms/api/readingRoomsApi';
+import { useCreateRoomMutation, useGetMyActiveRoomsQuery, useGetMyHistoryQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useAppAuth } from '@/features/auth/hooks';
+import LoginWall from '@/components/auth/LoginWall';
 
 export default function ReadingRoomsHub() {
   const [roomCode, setRoomCode] = useState('');
@@ -14,11 +17,33 @@ export default function ReadingRoomsHub() {
   const [createRoom, { isLoading }] = useCreateRoomMutation();
   const { data: booksData, isLoading: isBooksLoading } = useGetBooksQuery({ page: 1, limit: 10 });
   const { data: myRooms, isLoading: isMyRoomsLoading } = useGetMyActiveRoomsQuery();
+  const { data: myHistory, isLoading: isHistoryLoading } = useGetMyHistoryQuery();
+  const [reactivateRoom, { isLoading: isReactivating }] = useReactivateRoomMutation();
+  const { user, isAuthenticated } = useAppAuth();
   const router = useRouter();
+
+  if (!isAuthenticated) {
+    return (
+      <LoginWall
+        title="Phòng đọc sách cùng nhau"
+        description="Đăng nhập để tạo hoặc tham gia phòng đọc và chia sẻ trải nghiệm đọc sách cùng bạn bè."
+        secondaryLabel="Khám phá sách trước"
+        secondaryHref="/books"
+      />
+    );
+  }
+
+  const selectedBookData = booksData?.data.find(b => b.id === selectedBook);
+  const hasNoChapters = selectedBookData && (!selectedBookData.stats?.chapterCount || selectedBookData.stats.chapterCount === 0);
 
   const handleCreate = async () => {
     if (!selectedBook) {
       toast.error('Vui lòng chọn một cuốn sách để đọc chung');
+      return;
+    }
+
+    if (hasNoChapters) {
+      toast.error('Sách này chưa có chương nào. Không thể tạo phòng đọc.');
       return;
     }
 
@@ -77,19 +102,29 @@ export default function ReadingRoomsHub() {
                <SelectTrigger>
                  <SelectValue placeholder={isBooksLoading ? "Đang tải danh sách..." : "Chọn một cuốn sách"} />
                </SelectTrigger>
-               <SelectContent>
-                 {booksData?.data.map((book) => (
-                   <SelectItem key={book.id} value={book.id}>
-                     {book.title}
-                   </SelectItem>
-                 ))}
-               </SelectContent>
+                <SelectContent>
+                  {booksData?.data.map((book) => {
+                    const noChapters = !book.stats?.chapterCount || book.stats.chapterCount === 0;
+                    return (
+                      <SelectItem key={book.id} value={book.id} disabled={noChapters}>
+                        <span className="flex items-center gap-2">
+                          {book.title}
+                          {noChapters && (
+                            <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-muted-foreground">
+                              Chưa có chương
+                            </Badge>
+                          )}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
              </Select>
            </div>
 
-           <Button size="lg" onClick={handleCreate} disabled={isLoading || !selectedBook} className="mt-auto w-full">
-             {isLoading ? 'Đang tạo...' : 'Tạo phòng ngay'}
-           </Button>
+           <Button size="lg" onClick={handleCreate} disabled={isLoading || !selectedBook || hasNoChapters} className="mt-auto w-full">
+              {isLoading ? 'Đang tạo...' : hasNoChapters ? 'Sách chưa có chương' : 'Tạo phòng ngay'}
+            </Button>
          </div>
        </div>
 
@@ -139,6 +174,78 @@ export default function ReadingRoomsHub() {
         ) : (
           <div className="text-center py-12 border-2 border-dashed rounded-3xl opacity-50">
             <p className="text-muted-foreground">Bạn chưa tham gia phòng nào.</p>
+          </div>
+        )}
+      </div>
+
+      {/* My History Rooms Section */}
+      <div className="mt-12">
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <span className="w-2 h-6 bg-muted-foreground/30 rounded-full"></span>
+          Lịch sử phòng đã tham gia
+        </h2>
+
+        {isHistoryLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl"></div>
+            ))}
+          </div>
+        ) : myHistory && myHistory.items.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myHistory.items.map((room) => {
+              const book = booksData?.data.find(b => b.id === room.bookId);
+              const isHost = room.hostId === user?.id;
+              return (
+                <div
+                  key={room.roomId}
+                  className="group p-4 border rounded-2xl bg-card hover:border-muted-foreground/30 transition-all shadow-sm opacity-70 hover:opacity-100"
+                >
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/reading-rooms/${room.roomId}`)}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-black tracking-widest text-muted-foreground uppercase bg-muted/50 px-2 py-1 rounded-md">
+                        {room.roomId}
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        Đã kết thúc
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm line-clamp-1">
+                      {book?.title || 'Đã đọc chung...'}
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {room.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}
+                    </p>
+                  </div>
+                  {isHost && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 w-full h-8 text-xs rounded-xl"
+                      disabled={isReactivating}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await reactivateRoom(room.roomId).unwrap();
+                          toast.success('Đã mở lại phòng đọc!');
+                        } catch {
+                          toast.error('Không thể mở lại phòng');
+                        }
+                      }}
+                    >
+                      {isReactivating ? 'Đang mở...' : 'Mở lại phòng'}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8 border-2 border-dashed rounded-3xl opacity-30">
+            <p className="text-muted-foreground text-sm">Chưa có lịch sử.</p>
           </div>
         )}
       </div>

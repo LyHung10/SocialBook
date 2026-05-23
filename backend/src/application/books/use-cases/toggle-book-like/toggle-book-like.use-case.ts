@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import {
@@ -7,6 +7,8 @@ import {
 } from '@/application/likes/use-cases/toggle-like/toggle-like.use-case';
 import { GetLikeCountUseCase } from '@/application/likes/use-cases/get-like-count/get-like-count.use-case';
 import { TargetType } from '@/domain/likes/value-objects/target-type.vo';
+import { BOOK_CACHE_SERVICE } from '@/domain/books/cache/book-cache.service.interface';
+import type { IBookCacheService } from '@/domain/books/cache/book-cache.service.interface';
 import { ToggleBookLikeCommand } from './toggle-book-like.command';
 
 export interface ToggleBookLikeResponse {
@@ -22,6 +24,7 @@ export class ToggleBookLikeUseCase {
     private readonly bookRepository: IBookRepository,
     private readonly toggleLikeUseCase: ToggleLikeUseCase,
     private readonly getLikeCountUseCase: GetLikeCountUseCase,
+    @Inject(BOOK_CACHE_SERVICE) private readonly bookCache: IBookCacheService,
   ) {}
 
   async execute(
@@ -52,6 +55,8 @@ export class ToggleBookLikeUseCase {
       this.logger.log(
         `Book ${command.bookId} like toggled by user ${command.userId}: ${likeResult.isLiked}`,
       );
+
+      await this.bookCache.invalidateDetail(command.bookId, command.bookSlug);
 
       return {
         isLiked: likeResult.isLiked,

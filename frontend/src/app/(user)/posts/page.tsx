@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useModalStore } from '@/store/useModalStore';
 import TrendingBooksWidget from '@/components/post/TrendingBooksWidget';
 import TopActiveReadersWidget from '@/components/post/TopActiveReadersWidget';
+import LoginWall from '@/components/auth/LoginWall';
 
 const UserSearchSidebar = dynamic(
     () => import('@/components/post/UserSearchSidebar'),
@@ -33,7 +34,7 @@ const RecommendedBooks = dynamic(
 
 export default function Post() {
     const { openCreatePost } = useModalStore();
-    const { user } = useAppAuth();
+    const { user, isAuthenticated } = useAppAuth();
     const currentUserId = user?.id;
     const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
@@ -44,6 +45,17 @@ export default function Post() {
             router.push(`users/${currentUserId}/following`);
         }
     }, [router, currentUserId]);
+
+    if (!isAuthenticated) {
+        return (
+            <LoginWall
+                title="Dòng sự kiện"
+                description="Đăng nhập để đọc và đăng bài chia sẻ về những cuốn sách bạn yêu thích với cộng đồng."
+                secondaryLabel="Khám phá sách trước"
+                secondaryHref="/books"
+            />
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">

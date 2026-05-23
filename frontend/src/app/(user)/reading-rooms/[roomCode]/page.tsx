@@ -1,6 +1,6 @@
 'use client';
 import { use, useEffect } from 'react';
-import { useGetRoomQuery } from '@/features/reading-rooms/api/readingRoomsApi';
+import { useGetRoomQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useRoomPresence } from '@/features/reading-rooms/hooks/useRoomPresence';
@@ -9,7 +9,8 @@ import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2 } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, MessageSquare } from 'lucide-react';
+import LoginWall from '@/components/auth/LoginWall';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { store } from '@/store/store';
@@ -51,18 +52,21 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     toast.success('Đã sao chép mã phòng!');
     setTimeout(() => setCopied(false), 2000);
   };
-  
-  const { data: initialRoom, isLoading: isLoadingRoom, error } = useGetRoomQuery(roomCode);
-  
-  const { endRoom, deleteRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, askAI, sendChatMessage } = useReadingRoomSocket(roomCode);
 
-  const { user } = useAppAuth();
+  const { user, isAuthenticated } = useAppAuth();
+  
+  const { data: initialRoom, isLoading: isLoadingRoom, error } = useGetRoomQuery(roomCode, { skip: !isAuthenticated });
+  
+  const isEnded = initialRoom?.status === 'ended';
+  const shouldConnectSocket = isAuthenticated && !!initialRoom && !isEnded;
+  const { endRoom, deleteRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, askAI, sendChatMessage } = useReadingRoomSocket(shouldConnectSocket ? roomCode : undefined);
+  const [reactivateRoom, { isLoading: isReactivating }] = useReactivateRoomMutation();
   const storeRoom = useReadingRoomStore(state => state.room);
   const room = storeRoom || initialRoom;
   const isHost = room?.hostId === user?.id;
   const presences = useReadingRoomStore(state => state.presences);
 
-  const currentChapterSlug = room?.mode === 'sync' 
+  const currentChapterSlug = !isEnded && room?.mode === 'sync' 
     ? room?.currentChapterSlug || ''
     : (searchParams.get('chapter') || room?.currentChapterSlug || '');
 
@@ -75,8 +79,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   const chapter = chapterData?.chapter;
   const navigation = chapterData?.navigation;
-  const readingProgress = useReadingRoomProgress(!!room);
-  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room });
+  const readingProgress = useReadingRoomProgress(!!room && !isEnded);
+  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room || isEnded });
 
   useEffect(() => {
     if (quotesData) {
@@ -84,7 +88,28 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     }
   }, [quotesData]);
 
+  useEffect(() => {
+    if (isEnded && initialRoom) {
+      useReadingRoomStore.getState().setRoom({
+        ...initialRoom,
+        highlights: initialRoom.highlights || [],
+        chatMessages: initialRoom.chatMessages || [],
+      });
+    }
+  }, [isEnded, initialRoom]);
+
   useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, null, readingProgress);
+
+  if (!isAuthenticated) {
+    return (
+      <LoginWall
+        title="Phòng đọc"
+        description="Đăng nhập để tham gia phòng đọc sách cùng bạn bè và đồng bộ tiến độ theo thời gian thực."
+        secondaryLabel="Khám phá sách trước"
+        secondaryHref="/books"
+      />
+    );
+  }
 
   if (isLoadingRoom) {
     return (
@@ -136,6 +161,11 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   <Badge variant="outline" className="text-[10px] uppercase font-black px-2 py-0.5 bg-primary/5 text-primary border-primary/20">
                     {room?.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}
                   </Badge>
+                  {isEnded && (
+                    <Badge variant="outline" className="text-[10px] uppercase font-black px-2 py-0.5 bg-muted text-muted-foreground border-muted-foreground/30">
+                      Đã kết thúc
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-[10px] text-muted-foreground truncate max-w-[200px] font-medium">
                   {bookData?.title || 'Đang tải sách...'}
@@ -144,46 +174,48 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             </div>
 
             <div className="flex items-center gap-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      <div className="flex -space-x-2 mr-1">
-                        {Object.values(presences).slice(0, 4).map(p =>
-                          p.avatarUrl ? (
-                            <img
-                              key={p.userId}
-                              src={p.avatarUrl}
-                              alt=""
-                              className="w-6 h-6 rounded-full border-2 border-background"
-                            />
-                          ) : (
-                            <div
-                              key={p.userId}
-                              className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold"
-                            >
-                              {p.displayName.charAt(0).toUpperCase()}
+              {!isEnded && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <div className="flex -space-x-2 mr-1">
+                          {Object.values(presences).slice(0, 4).map(p =>
+                            p.avatarUrl ? (
+                              <img
+                                key={p.userId}
+                                src={p.avatarUrl}
+                                alt=""
+                                className="w-6 h-6 rounded-full border-2 border-background"
+                              />
+                            ) : (
+                              <div
+                                key={p.userId}
+                                className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold"
+                              >
+                                {p.displayName.charAt(0).toUpperCase()}
+                              </div>
+                            )
+                          )}
+                          {Object.keys(presences).length > 4 && (
+                            <div className="w-6 h-6 rounded-full border-2 border-background bg-muted text-[9px] font-bold flex items-center justify-center">
+                              +{Object.keys(presences).length - 4}
                             </div>
-                          )
-                        )}
-                        {Object.keys(presences).length > 4 && (
-                          <div className="w-6 h-6 rounded-full border-2 border-background bg-muted text-[9px] font-bold flex items-center justify-center">
-                            +{Object.keys(presences).length - 4}
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          <span>{Object.keys(presences).length} online</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <span>{Object.keys(presences).length} online</span>
-                      </div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="rounded-xl font-bold text-[10px]">Thành viên đang hiện diện</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-xl font-bold text-[10px]">Thành viên đang hiện diện</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
               <div className="flex items-center gap-2">
-                {isHost && (
+                {isHost && !isEnded && (
                   <>
                     <Button 
                       variant="outline"
@@ -230,8 +262,10 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                             className="rounded-2xl bg-orange-500 hover:bg-orange-600 font-bold"
                             onClick={() => {
                               endRoom();
-                              store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
-                              router.push('/reading-rooms');
+                              setTimeout(() => {
+                                store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
+                                router.push('/reading-rooms');
+                              }, 300);
                             }}
                           >
                             Xác nhận kết thúc
@@ -275,18 +309,48 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   </>
                 )}
 
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="font-bold px-4 h-9 rounded-full hover:bg-accent/50 transition-all gap-2"
-                  onClick={() => {
-                    leaveRoom();
-                    router.push('/reading-rooms');
-                  }}
-                >
-                  <Info size={15} className="text-muted-foreground" />
-                  <span className="text-xs">Rời phòng</span>
-                </Button>
+                {!isEnded ? (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="font-bold px-4 h-9 rounded-full hover:bg-accent/50 transition-all gap-2"
+                    onClick={() => {
+                      leaveRoom();
+                      router.push('/reading-rooms');
+                    }}
+                  >
+                    <Info size={15} className="text-muted-foreground" />
+                    <span className="text-xs">Rời phòng</span>
+                  </Button>
+                ) : isHost ? (
+                  <Button
+                    size="sm"
+                    className="font-bold px-4 h-9 rounded-full bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20 gap-2"
+                    disabled={isReactivating}
+                    onClick={async () => {
+                      try {
+                        await reactivateRoom(roomCode).unwrap();
+                        toast.success('Phòng đã được mở lại!');
+                        router.refresh();
+                      } catch {
+                        toast.error('Không thể mở lại phòng');
+                      }
+                    }}
+                  >
+                    {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LockOpen size={15} />}
+                    <span className="text-xs">{isReactivating ? 'Đang mở...' : 'Mở lại phòng'}</span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-bold px-4 h-9 rounded-full hover:bg-accent/50 transition-all gap-2"
+                    onClick={() => router.push('/reading-rooms')}
+                  >
+                    <Info size={15} />
+                    <span className="text-xs">Danh sách phòng</span>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -317,11 +381,11 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   
                   <div className="mt-12 pt-12 border-t border-border pb-20">
                     <ChapterNavigation
-                      hasPrevious={!!navigation?.previous && (room?.mode === 'free' || isHost)}
-                      hasNext={!!navigation?.next && (room?.mode === 'free' || isHost)}
+                      hasPrevious={!!navigation?.previous && (isEnded || room?.mode === 'free' || isHost)}
+                      hasNext={!!navigation?.next && (isEnded || room?.mode === 'free' || isHost)}
                       onPrevious={() => {
                         if (navigation?.previous) {
-                          if (room?.mode === 'sync' && isHost) {
+                          if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.previous.slug);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
@@ -331,7 +395,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       }}
                       onNext={() => {
                         if (navigation?.next) {
-                          if (room?.mode === 'sync' && isHost) {
+                          if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.next.slug);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
@@ -374,20 +438,26 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 </TabsList>
 
                 <TabsContent value="activity" className="mt-0 outline-none">
-                  <RoomChat sendChatMessage={sendChatMessage} />
+                  <RoomChat sendChatMessage={sendChatMessage} disabled={isEnded} />
                 </TabsContent>
 
                 <TabsContent value="members" className="mt-0 outline-none">
                   <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
                     <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30 flex items-center justify-between">
                       <h3 className="text-sm font-bold tracking-tight uppercase">Thành viên</h3>
-                      <Badge variant="secondary" className="text-[10px] font-bold">
-                        {Object.keys(presences).length}
-                      </Badge>
+                      {!isEnded && (
+                        <Badge variant="secondary" className="text-[10px] font-bold">
+                          {Object.keys(presences).length}
+                        </Badge>
+                      )}
                     </div>
                     
                     <div className="p-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                      {Object.values(presences).length === 0 ? (
+                      {isEnded ? (
+                        <div className="py-8 text-center text-xs text-muted-foreground italic">
+                          Phòng đã kết thúc
+                        </div>
+                      ) : Object.values(presences).length === 0 ? (
                         <div className="py-8 text-center text-xs text-muted-foreground italic">
                           Đang đợi mọi người...
                         </div>
@@ -450,13 +520,21 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 </TabsContent>
               </Tabs>
               
-              <div className="p-6 bg-primary/5 border border-primary/10 rounded-3xl">
-                <h4 className="text-[10px] font-black uppercase text-primary mb-2">Thông báo phòng</h4>
+              <div className={`p-6 rounded-3xl border ${isEnded ? 'bg-muted/5 border-muted/20' : 'bg-primary/5 border-primary/10'}`}>
+                <h4 className={`text-[10px] font-black uppercase mb-2 ${isEnded ? 'text-muted-foreground' : 'text-primary'}`}>
+                  {isEnded ? 'Phòng đã kết thúc' : 'Thông báo phòng'}
+                </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Bạn đang ở chế độ <strong>{room?.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}</strong>. 
-                  {room?.mode === 'sync' 
-                    ? ' Chương sách sẽ được tự động lật khi trưởng phòng chuyển trang.' 
-                    : ' Bạn có thể tự do đọc các chương khác nhau.'}
+                  {isEnded ? (
+                    'Phòng đọc này đã kết thúc. Bạn có thể xem lại nội dung nhưng không thể tương tác.'
+                  ) : (
+                    <>
+                      Bạn đang ở chế độ <strong>{room?.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}</strong>. 
+                      {room?.mode === 'sync' 
+                        ? ' Chương sách sẽ được tự động lật khi trưởng phòng chuyển trang.' 
+                        : ' Bạn có thể tự do đọc các chương khác nhau.'}
+                    </>
+                  )}
                 </p>
               </div>
             </aside>

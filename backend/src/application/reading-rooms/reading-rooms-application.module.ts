@@ -5,8 +5,10 @@ import { LeaveRoomUseCase } from './use-cases/leave-room/leave-room.use-case';
 import { ChangeChapterUseCase } from './use-cases/change-chapter/change-chapter.use-case';
 import { ChangeRoomModeUseCase } from './use-cases/change-room-mode/change-room-mode.use-case';
 import { EndRoomUseCase } from './use-cases/end-room/end-room.use-case';
+import { ReactivateRoomUseCase } from './use-cases/reactivate-room/reactivate-room.use-case';
 import { DeleteRoomUseCase } from './use-cases/delete-room/delete-room.use-case';
 import { GetMyActiveRoomsUseCase } from './use-cases/get-my-active-rooms/get-my-active-rooms.use-case';
+import { GetMyHistoryUseCase } from './use-cases/get-my-history/get-my-history.use-case';
 import { GetRoomByCodeUseCase } from './use-cases/get-room-by-code/get-room-by-code.use-case';
 import { ReadingRoomsRepositoryModule } from '@/infrastructure/database/repositories/reading-rooms/reading-rooms-repository.module';
 import { BooksRepositoryModule } from '@/infrastructure/database/repositories/books/books-repository.module';
@@ -35,11 +37,13 @@ import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-roo
     ChangeChapterUseCase,
     ChangeRoomModeUseCase,
     EndRoomUseCase,
+    ReactivateRoomUseCase,
     DeleteRoomUseCase,
     AddHighlightUseCase,
     RemoveHighlightUseCase,
     AskAIUseCase,
     GetMyActiveRoomsUseCase,
+    GetMyHistoryUseCase,
     GetRoomByCodeUseCase,
   ],
   exports: [
@@ -49,11 +53,13 @@ import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-roo
     ChangeChapterUseCase,
     ChangeRoomModeUseCase,
     EndRoomUseCase,
+    ReactivateRoomUseCase,
     DeleteRoomUseCase,
     AddHighlightUseCase,
     RemoveHighlightUseCase,
     AskAIUseCase,
     GetMyActiveRoomsUseCase,
+    GetMyHistoryUseCase,
     GetRoomByCodeUseCase,
   ],
 })

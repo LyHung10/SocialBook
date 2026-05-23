@@ -75,7 +75,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const [askChapterAI, { isLoading: isSoloPending }] = useAskChapterAIMutation();
 
   const { chatMessages: roomChatMessages } = useReadingRoomStore();
-  const chatMessages = roomId ? roomChatMessages : localChatMessages;
+  const chatMessages = roomId ? roomChatMessages.filter(m => m.role === 'ai') : localChatMessages;
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });

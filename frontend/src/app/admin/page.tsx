@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
-import { Users, BookOpen, FileText, MessageSquare, BarChart2, Download } from 'lucide-react';
+import { Users, BookOpen, FileText, MessageSquare, BarChart2, Download, ShieldAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { StatCard } from '@/components/admin/dashboard/StatCard';
 import { TimeRangeSelector } from '@/components/admin/dashboard/TimeRangeSelector';
@@ -13,6 +13,7 @@ import { PopularBooksTable } from '@/components/admin/dashboard/PopularBooksTabl
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import LoginWall from '@/components/auth/LoginWall';
 
 const UserGrowthChart = dynamic(
   () => import('@/components/admin/dashboard/UserGrowthChart').then((mod) => mod.UserGrowthChart),
@@ -33,36 +34,29 @@ export default function AdminPage() {
   const { stats, growthData, bookStats, loading, error, refetch } = useDashboardData(timeRange, viewType);
   const { exportCSV, exporting } = useExportStatistics(timeRange);
 
-  // Reset time range when view type changes
   const handleViewTypeChange = (newViewType: ViewType) => {
     setViewType(newViewType);
-    // Set appropriate default time range for new view type
     switch (newViewType) {
-      case 'day':
-        setTimeRange('30');
-        break;
-      case 'month':
-        setTimeRange('180'); // 6 months
-        break;
-      case 'year':
-        setTimeRange('1095'); // 3 years
-        break;
+      case 'day':  setTimeRange('30');   break;
+      case 'month': setTimeRange('180'); break;
+      case 'year':  setTimeRange('1095'); break;
     }
   };
 
-  useEffect(() => {
-    if (isAuthLoading) return;
+  if (!isAuthLoading && !isAuthenticated) {
+    return (
+      <LoginWall
+        icon={<ShieldAlert size={40} className="text-blue-600 dark:text-blue-400" />}
+        title="Khu vực quản trị"
+        description="Đăng nhập bằng tài khoản quản trị viên để truy cập trang quản lý."
+      />
+    );
+  }
 
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    if (isAuthenticated && !isAdmin) {
-      router.push('/');
-      return;
-    }
-  }, [isAuthenticated, isAuthLoading, isAdmin, router]);
+  if (!isAuthLoading && isAuthenticated && !isAdmin) {
+    router.replace('/');
+    return null;
+  }
 
   if (isAuthLoading || loading) {
     return (

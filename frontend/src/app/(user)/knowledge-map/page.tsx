@@ -3,9 +3,25 @@
 import { KnowledgeGraph } from '@/components/profile/KnowledgeGraph';
 import { useGetKnowledgeGraphQuery } from '@/features/library/api/libraryApi';
 import { motion } from 'framer-motion';
+import { useAppAuth } from '@/features/auth/hooks';
+import LoginWall from '@/components/auth/LoginWall';
+import { BrainCircuit } from 'lucide-react';
 
 export default function KnowledgeMapPage() {
-  const { data, isLoading, error } = useGetKnowledgeGraphQuery();
+  const { isAuthenticated } = useAppAuth();
+  const { data, isLoading, error } = useGetKnowledgeGraphQuery(undefined, { skip: !isAuthenticated });
+
+  if (!isAuthenticated) {
+    return (
+      <LoginWall
+        icon={<BrainCircuit size={40} className="text-blue-600 dark:text-blue-400" />}
+        title="Vũ trụ Tri thức"
+        description="Đăng nhập để khám phá mạng lưới kết nối giữa những cuốn sách, tác giả và chủ đề bạn đã chinh phục."
+        secondaryLabel="Khám phá sách trước"
+        secondaryHref="/books"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-zinc-950/50 pt-14 pb-12">

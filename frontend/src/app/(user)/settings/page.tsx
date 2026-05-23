@@ -56,6 +56,7 @@ import {
 } from '@/features/users/api/usersApi';
 import { getErrorMessage } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import LoginWall from '@/components/auth/LoginWall';
 
 const profileSchema = z.object({
     username: z.string().min(3, 'Tên người dùng phải có ít nhất 3 ký tự'),
@@ -67,6 +68,21 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
+    const { isAuthenticated } = useAppAuth();
+
+    if (!isAuthenticated) {
+        return (
+            <LoginWall
+                title="Cài đặt tài khoản"
+                description="Đăng nhập để quản lý hồ sơ công khai, tùy chỉnh giao diện và thiết lập bảo mật tài khoản."
+            />
+        );
+    }
+
+    return <SettingsContent />;
+}
+
+function SettingsContent() {
     const { user: authUser } = useAppAuth();
     const userId = authUser?.id || '';
 

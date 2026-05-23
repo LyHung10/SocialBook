@@ -91,16 +91,20 @@ export const useReadingRoomSocket = (roomId?: string) => {
       const store = useReadingRoomStore.getState();
       if (store.room) {
         store.setRoom({ ...store.room, mode: data.mode });
-        toast.info(`Chế độ phòng đã đổi thành: ${data.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}`);
+        if (data.changedBy !== user.id) {
+          toast.info(`Chế độ phòng đã đổi thành: ${data.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}`);
+        }
       }
     });
 
     const invalidateMyRooms = () => {
-      store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
+      store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
     };
 
-    socket.on(ReadingRoomServerEvent.ROOM_ENDED, () => {
-      toast.info('Phòng đọc đã kết thúc');
+    socket.on(ReadingRoomServerEvent.ROOM_ENDED, (data) => {
+      if (data.endedBy !== user.id) {
+        toast.info('Phòng đọc đã kết thúc');
+      }
       useReadingRoomStore.getState().clearRoom();
       invalidateMyRooms();
       router.push('/reading-rooms');

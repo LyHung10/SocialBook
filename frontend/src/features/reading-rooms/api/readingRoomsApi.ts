@@ -6,6 +6,7 @@ export interface RoomResponse {
   bookId: string;
   hostId: string;
   mode: 'sync' | 'free' | 'discussion';
+  status: string;
   currentChapterSlug: string;
   highlights?: Array<{
     id: string;
@@ -51,8 +52,22 @@ export const readingRoomsApi = createApi({
       }),
       providesTags: ['MyRooms'],
     }),
+    getMyHistory: builder.query<{ items: RoomResponse[]; total: number }, void>({
+      query: () => ({
+        url: '/reading-rooms/my-history',
+        method: 'GET',
+      }),
+      providesTags: ['MyHistory'],
+    }),
+    reactivateRoom: builder.mutation<RoomResponse, string>({
+      query: (code) => ({
+        url: `/reading-rooms/${code}/reactivate`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['MyRooms', 'MyHistory'],
+    }),
   }),
-  tagTypes: ['MyRooms'],
+  tagTypes: ['MyRooms', 'MyHistory'],
 });
 
-export const { useCreateRoomMutation, useGetRoomQuery, useGetMyActiveRoomsQuery } = readingRoomsApi;
+export const { useCreateRoomMutation, useGetRoomQuery, useGetMyActiveRoomsQuery, useGetMyHistoryQuery, useReactivateRoomMutation } = readingRoomsApi;

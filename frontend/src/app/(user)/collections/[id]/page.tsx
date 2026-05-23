@@ -23,14 +23,28 @@ import { LibraryItem } from '@/features/library/types/library.interface';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { useModalStore } from '@/store/useModalStore';
+import { useAppAuth } from '@/features/auth/hooks';
+import LoginWall from '@/components/auth/LoginWall';
 
 export default function CollectionDetailPage() {
   const router = useRouter();
   const params = useParams();
   const collectionId = params.id as string;
+  const { isAuthenticated } = useAppAuth();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { openEditCollection, openConfirm } = useModalStore();
+
+  if (!isAuthenticated) {
+    return (
+      <LoginWall
+        title="Bộ sưu tập"
+        description="Đăng nhập để xem và quản lý bộ sưu tập sách cá nhân của bạn."
+        secondaryLabel="Khám phá sách trước"
+        secondaryHref="/books"
+      />
+    );
+  }
 
   const {
     data: response,
