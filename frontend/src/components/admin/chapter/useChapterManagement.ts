@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
+import { useState, useRef, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useGetBookByIdQuery } from "@/features/books/api/bookApi";
 import {
   useGetAdminChaptersQuery,
   useCreateChapterMutation,
@@ -9,14 +9,17 @@ import {
   useLazyGetChapterByIdQuery,
   useStartChaptersImportMutation,
   useLazyGetChaptersImportStatusQuery,
-} from '@/features/chapters/api/chaptersApi';
+} from "@/features/chapters/api/chaptersApi";
 import {
   useGenerateChapterAudioMutation,
   useGenerateBookAudioMutation,
-} from '@/features/tts/api/ttsApi';
-import { Chapter, Paragraph } from '@/features/chapters/types/chapter.interface';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
+} from "@/features/tts/api/ttsApi";
+import {
+  Chapter,
+  Paragraph,
+} from "@/features/chapters/types/chapter.interface";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 export function useChapterManagement() {
   const params = useParams();
@@ -26,45 +29,72 @@ export function useChapterManagement() {
   const [hasMore, setHasMore] = useState(true);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const shouldRefetchRef = useRef(false);
 
-  const { data: bookData, isLoading: isLoadingBook } = useGetBookByIdQuery(bookId);
+  const { data: bookData, isLoading: isLoadingBook } =
+    useGetBookByIdQuery(bookId);
 
-  const { data: chaptersData, isFetching: isFetchingChapters, isLoading: isLoadingChapters, refetch: refetchChaptersQuery } = useGetAdminChaptersQuery({
-    bookSlug: bookData?.slug || '',
-    page,
-    limit: 20
-  }, {
-    skip: !bookData?.slug,
-  });
+  const {
+    data: chaptersData,
+    isFetching: isFetchingChapters,
+    isLoading: isLoadingChapters,
+    refetch: refetchChaptersQuery,
+  } = useGetAdminChaptersQuery(
+    {
+      bookSlug: bookData?.slug || "",
+      page,
+      limit: 20,
+    },
+    {
+      skip: !bookData?.slug,
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const refetchChapters = () => {
-    setPage(1);
     setChapters([]);
-    refetchChaptersQuery();
+    if (page === 1) {
+      if (bookData?.slug) {
+        refetchChaptersQuery();
+      }
+    } else {
+      shouldRefetchRef.current = true;
+      setPage(1);
+    }
   };
+
+  // Effect to handle forced refetch when page resets to 1
+  useEffect(() => {
+    if (page === 1 && shouldRefetchRef.current) {
+      shouldRefetchRef.current = false;
+      if (bookData?.slug) {
+        refetchChaptersQuery();
+      }
+    }
+  }, [page, bookData?.slug, refetchChaptersQuery]);
 
   // Infinite Scroll Effect
   useEffect(() => {
-    if (chaptersData?.chapters) {
+    if (chaptersData?.chapters && !isFetchingChapters) {
       if (page === 1) {
         setChapters(chaptersData.chapters);
       } else {
-        setChapters(prev => [...prev, ...chaptersData.chapters]);
+        setChapters((prev) => [...prev, ...chaptersData.chapters]);
       }
       const total = chaptersData.total || 0;
       const currentCount = (page - 1) * 20 + chaptersData.chapters.length;
       setHasMore(currentCount < total);
     }
-  }, [chaptersData, page]);
+  }, [chaptersData, page, isFetchingChapters]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         if (entries[0].isIntersecting && hasMore && !isFetchingChapters) {
-          setPage(prev => prev + 1);
+          setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1, rootMargin: '500px' }
+      { threshold: 0.1, rootMargin: "500px" },
     );
 
     if (observerTarget.current) {
@@ -74,24 +104,30 @@ export function useChapterManagement() {
     return () => observer.disconnect();
   }, [hasMore, isFetchingChapters]);
 
-  const [triggerGetChapter, { isFetching: isFetchingDetails }] = useLazyGetChapterByIdQuery();
+  const [triggerGetChapter, { isFetching: isFetchingDetails }] =
+    useLazyGetChapterByIdQuery();
   const [createChapter, { isLoading: isCreating }] = useCreateChapterMutation();
   const [updateChapter, { isLoading: isUpdating }] = useUpdateChapterMutation();
   const [deleteChapter] = useDeleteChapterMutation();
-  const [startChaptersImport, { isLoading: isStartingImport }] = useStartChaptersImportMutation();
+  const [startChaptersImport, { isLoading: isStartingImport }] =
+    useStartChaptersImportMutation();
   const [triggerImportStatus] = useLazyGetChaptersImportStatusQuery();
-  const [generateChapterAudio, { isLoading: isGeneratingAudio }] = useGenerateChapterAudioMutation();
-  const [generateBookAudio, { isLoading: isGeneratingAllAudio }] = useGenerateBookAudioMutation();
+  const [generateChapterAudio, { isLoading: isGeneratingAudio }] =
+    useGenerateChapterAudioMutation();
+  const [generateBookAudio, { isLoading: isGeneratingAllAudio }] =
+    useGenerateBookAudioMutation();
 
-  const [expandedChapterId, setExpandedChapterId] = useState<string | null>(null);
+  const [expandedChapterId, setExpandedChapterId] = useState<string | null>(
+    null,
+  );
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState('');
+  const [editingTitle, setEditingTitle] = useState("");
   const [editingParagraphs, setEditingParagraphs] = useState<Paragraph[]>([]);
   const [showNewChapterForm, setShowNewChapterForm] = useState(false);
-  const [newChapterTitle, setNewChapterTitle] = useState('');
-  const [newChapterParagraphs, setNewChapterParagraphs] = useState<Paragraph[]>([
-    { id: uuidv4(), content: '' },
-  ]);
+  const [newChapterTitle, setNewChapterTitle] = useState("");
+  const [newChapterParagraphs, setNewChapterParagraphs] = useState<Paragraph[]>(
+    [{ id: uuidv4(), content: "" }],
+  );
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const newChapterBottomRef = useRef<HTMLDivElement>(null);
@@ -125,23 +161,24 @@ export function useChapterManagement() {
     try {
       const fullChapter = await triggerGetChapter({
         bookSlug: book.slug,
-        chapterId: chapter.id
+        chapterId: chapter.id,
       }).unwrap();
 
       setEditingTitle(fullChapter.title);
-      const paras = fullChapter.paragraphs && fullChapter.paragraphs.length > 0
-        ? fullChapter.paragraphs
-        : [{ id: uuidv4(), content: '' }];
+      const paras =
+        fullChapter.paragraphs && fullChapter.paragraphs.length > 0
+          ? fullChapter.paragraphs
+          : [{ id: uuidv4(), content: "" }];
       setEditingParagraphs(paras);
     } catch (error) {
-      console.error('Failed to fetch:', error);
+      console.error("Failed to fetch:", error);
       setEditingChapterId(null);
     }
   };
 
   const handleCancelEdit = () => {
     setEditingChapterId(null);
-    setEditingTitle('');
+    setEditingTitle("");
     setEditingParagraphs([]);
   };
 
@@ -153,28 +190,29 @@ export function useChapterManagement() {
         chapterId,
         data: {
           title: editingTitle,
-          paragraphs: editingParagraphs.filter(p => p.content.trim()).length > 0
-            ? editingParagraphs.filter(p => p.content.trim())
-            : [{ id: uuidv4(), content: ' ' }],
+          paragraphs:
+            editingParagraphs.filter((p) => p.content.trim()).length > 0
+              ? editingParagraphs.filter((p) => p.content.trim())
+              : [{ id: uuidv4(), content: " " }],
         },
       }).unwrap();
       setEditingChapterId(null);
-      setEditingTitle('');
+      setEditingTitle("");
       setEditingParagraphs([]);
     } catch (error) {
-      console.error('Failed to update:', error);
+      console.error("Failed to update:", error);
     }
   };
 
   const handleDeleteChapter = async (chapterId: string) => {
     if (!book?.slug) return;
-    if (!confirm('Bạn có chắc muốn xóa chương này?')) return;
+    if (!confirm("Bạn có chắc muốn xóa chương này?")) return;
 
     try {
       await deleteChapter({ bookSlug: book.slug, chapterId }).unwrap();
       if (expandedChapterId === chapterId) setExpandedChapterId(null);
     } catch (error) {
-      console.error('Failed to delete:', error);
+      console.error("Failed to delete:", error);
     }
   };
 
@@ -183,21 +221,21 @@ export function useChapterManagement() {
     content: string,
     paragraphs: Paragraph[],
     setParagraphs: (p: Paragraph[]) => void,
-    onPaste?: () => void
+    onPaste?: () => void,
   ) => {
     const isPaste = content.length - paragraphs[index].content.length > 5;
-    if (content.includes('\n') || (isPaste && /[.!?]\s/.test(content))) {
+    if (content.includes("\n") || (isPaste && /[.!?]\s/.test(content))) {
       const segments = content
         .split(/(?<=[.!?])\s+|\n+/)
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
 
       if (segments.length > 1) {
-        const newParagraphs = paragraphs.map(p => ({ ...p }));
+        const newParagraphs = paragraphs.map((p) => ({ ...p }));
         newParagraphs[index].content = segments[0];
-        const newItems = segments.slice(1).map(line => ({
+        const newItems = segments.slice(1).map((line) => ({
           id: uuidv4(),
-          content: line
+          content: line,
         }));
         newParagraphs.splice(index + 1, 0, ...newItems);
         setParagraphs(newParagraphs);
@@ -205,7 +243,7 @@ export function useChapterManagement() {
         return;
       }
     }
-    const newParagraphs = paragraphs.map(p => ({ ...p }));
+    const newParagraphs = paragraphs.map((p) => ({ ...p }));
     newParagraphs[index].content = content;
     setParagraphs(newParagraphs);
   };
@@ -214,34 +252,42 @@ export function useChapterManagement() {
     e: React.KeyboardEvent<HTMLTextAreaElement>,
     index: number,
     paragraphs: Paragraph[],
-    setParagraphs: (p: Paragraph[]) => void
+    setParagraphs: (p: Paragraph[]) => void,
   ) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       const cursorPosition = e.currentTarget.selectionStart;
       const content = paragraphs[index].content;
       const leftPart = content.slice(0, cursorPosition);
       const rightPart = content.slice(cursorPosition);
-      const newParagraphs = paragraphs.map(p => ({ ...p }));
+      const newParagraphs = paragraphs.map((p) => ({ ...p }));
       newParagraphs[index].content = leftPart;
       newParagraphs.splice(index + 1, 0, { id: uuidv4(), content: rightPart });
       setParagraphs(newParagraphs);
-      
+
       setTimeout(() => {
-        const allTextareas = Array.from(document.querySelectorAll('textarea'));
+        const allTextareas = Array.from(document.querySelectorAll("textarea"));
         const currentIdx = allTextareas.indexOf(e.currentTarget);
         if (currentIdx !== -1 && currentIdx + 1 < allTextareas.length) {
-          const nextTextarea = allTextareas[currentIdx + 1] as HTMLTextAreaElement;
+          const nextTextarea = allTextareas[
+            currentIdx + 1
+          ] as HTMLTextAreaElement;
           nextTextarea.focus();
           nextTextarea.setSelectionRange(0, 0);
         }
       }, 0);
-    } else if (e.key === 'Backspace' && paragraphs[index].content === '' && paragraphs.length > 1) {
+    } else if (
+      e.key === "Backspace" &&
+      paragraphs[index].content === "" &&
+      paragraphs.length > 1
+    ) {
       e.preventDefault();
-      const newParagraphs = paragraphs.map(p => ({ ...p })).filter((_, i) => i !== index);
+      const newParagraphs = paragraphs
+        .map((p) => ({ ...p }))
+        .filter((_, i) => i !== index);
       setParagraphs(newParagraphs);
       setTimeout(() => {
-        const newTextareas = document.querySelectorAll('textarea');
+        const newTextareas = document.querySelectorAll("textarea");
         if (index > 0 && newTextareas[index - 1]) {
           const el = newTextareas[index - 1] as HTMLTextAreaElement;
           el.focus();
@@ -254,64 +300,90 @@ export function useChapterManagement() {
   const handleDeleteParagraph = (
     index: number,
     paragraphs: Paragraph[],
-    setParagraphs: (p: Paragraph[]) => void
+    setParagraphs: (p: Paragraph[]) => void,
   ) => {
     if (paragraphs.length === 1) return;
-    const newParagraphs = paragraphs.map(p => ({ ...p })).filter((_, i) => i !== index);
+    const newParagraphs = paragraphs
+      .map((p) => ({ ...p }))
+      .filter((_, i) => i !== index);
     setParagraphs(newParagraphs);
   };
 
   const handleCreateChapter = async () => {
-    if (!bookId) return toast.error('Không tìm thấy ID sách.');
-    if (!newChapterTitle.trim()) return toast.info('Vui lòng nhập tiêu đề chương');
+    if (!bookId) return toast.error("Không tìm thấy ID sách.");
+    if (!newChapterTitle.trim())
+      return toast.info("Vui lòng nhập tiêu đề chương");
 
     try {
       await createChapter({
-        bookSlug: book?.slug || '',
+        bookSlug: book?.slug || "",
         data: {
           title: newChapterTitle,
           bookId,
-          paragraphs: newChapterParagraphs.filter(p => p.content.trim()),
+          paragraphs: newChapterParagraphs.filter((p) => p.content.trim()),
         },
       }).unwrap();
       setShowNewChapterForm(false);
-      setNewChapterTitle('');
-      setNewChapterParagraphs([{ id: uuidv4(), content: '' }]);
+      setNewChapterTitle("");
+      setNewChapterParagraphs([{ id: uuidv4(), content: "" }]);
     } catch (error: any) {
-      toast.error(`Tạo thất bại: ${error?.data?.message || 'Lỗi không xác định'}`);
+      toast.error(
+        `Tạo thất bại: ${error?.data?.message || "Lỗi không xác định"}`,
+      );
     }
   };
 
   const handleGenerateAudio = async (chapterId: string) => {
     try {
       const ttsResult = await generateChapterAudio({ chapterId }).unwrap();
-      toast.success('Tạo audio thành công!');
-      setChapters(prev => prev.map(ch =>
-        ch.id === chapterId ? { ...ch, ttsStatus: 'completed' as const, audioUrl: ttsResult.audioUrl } : ch
-      ));
+      toast.success("Tạo audio thành công!");
+      setChapters((prev) =>
+        prev.map((ch) =>
+          ch.id === chapterId
+            ? {
+                ...ch,
+                ttsStatus: "completed" as const,
+                audioUrl: ttsResult.audioUrl,
+              }
+            : ch,
+        ),
+      );
       refetchChaptersQuery();
     } catch (error: any) {
-      toast.error(`Tạo audio thất bại: ${error?.data?.message || 'Lỗi không xác định'}`);
+      toast.error(
+        `Tạo audio thất bại: ${error?.data?.message || "Lỗi không xác định"}`,
+      );
     }
   };
 
   const handleGenerateAllAudio = async () => {
     if (!bookId) return;
-    if (!confirm(`Bạn có chắc muốn tạo audio cho tất cả ${chapters.length} chương?`)) return;
+    if (
+      !confirm(
+        `Bạn có chắc muốn tạo audio cho tất cả ${chapters.length} chương?`,
+      )
+    )
+      return;
     try {
       const result = await generateBookAudio({ bookId }).unwrap();
-      alert(`Hoàn thành!\nThành công: ${result.successful}/${result.total}\nThất bại: ${result.failed}`);
+      alert(
+        `Hoàn thành!\nThành công: ${result.successful}/${result.total}\nThất bại: ${result.failed}`,
+      );
       refetchChapters();
     } catch (error: any) {
-      alert(`Lỗi: ${error?.data?.message || 'Lỗi không xác định'}`);
+      alert(`Lỗi: ${error?.data?.message || "Lỗi không xác định"}`);
     }
   };
 
-  const handleImportChapters = async (importedChapters: { title: string; content: string }[]) => {
+  const handleImportChapters = async (
+    importedChapters: { title: string; content: string }[],
+  ) => {
     setIsImportModalOpen(false);
-    if (!book?.slug) return toast.error('Book information missing');
+    if (!book?.slug) return toast.error("Book information missing");
 
-    const toastId = toast.loading(`Đang tạo job import ${importedChapters.length} chương...`);
+    const toastId = toast.loading(
+      `Đang tạo job import ${importedChapters.length} chương...`,
+    );
     try {
       const { jobId } = await startChaptersImport({
         bookSlug: book.slug,
@@ -325,31 +397,46 @@ export function useChapterManagement() {
 
       while (true) {
         if (Date.now() - startedAt > TIMEOUT_MS) {
-          toast.error('Import quá lâu, vui lòng thử lại.', { id: toastId });
+          toast.error("Import quá lâu, vui lòng thử lại.", { id: toastId });
           break;
         }
 
-        const status = await triggerImportStatus({ bookSlug: book.slug, jobId }).unwrap();
-        if (status?.state === 'completed') {
+        const status = await triggerImportStatus(
+          { bookSlug: book.slug, jobId, timestamp: Date.now() },
+          false, // preferCacheValue = false → always fetch fresh from API
+        ).unwrap();
+        if (status?.state === "completed") {
           const result = status.result;
           if (result && result.failed > 0) {
-            toast.warning(`Thành công ${result.successful}/${result.total}, ${result.failed} lỗi.`, { id: toastId });
+            toast.warning(
+              `Thành công ${result.successful}/${result.total}, ${result.failed} lỗi.`,
+              { id: toastId },
+            );
           } else {
-            toast.success('Import hoàn tất!', { id: toastId });
+            toast.success("Import hoàn tất!", { id: toastId });
           }
           refetchChapters();
           break;
         }
 
-        if (status?.state === 'failed') {
-          toast.error(`Import thất bại: ${status.failedReason || 'Lỗi không xác định'}`, { id: toastId });
+        if (status?.state === "unknown") {
+          toast.success("Import hoàn tất!", { id: toastId });
+          refetchChapters();
+          break;
+        }
+
+        if (status?.state === "failed") {
+          toast.error(
+            `Import thất bại: ${status.failedReason || "Lỗi không xác định"}`,
+            { id: toastId },
+          );
           break;
         }
 
         await new Promise((r) => setTimeout(r, POLL_MS));
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || 'Lỗi', { id: toastId });
+      toast.error(error?.data?.message || "Lỗi", { id: toastId });
     }
   };
 
