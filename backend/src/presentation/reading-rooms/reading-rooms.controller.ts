@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -14,8 +15,12 @@ import { DeleteRoomUseCase } from '@/application/reading-rooms/use-cases/delete-
 import { DeleteRoomCommand } from '@/application/reading-rooms/use-cases/delete-room/delete-room.command';
 import { GetMyActiveRoomsUseCase } from '@/application/reading-rooms/use-cases/get-my-active-rooms/get-my-active-rooms.use-case';
 import { GetMyActiveRoomsQuery } from '@/application/reading-rooms/use-cases/get-my-active-rooms/get-my-active-rooms.query';
+import { GetMyHistoryUseCase } from '@/application/reading-rooms/use-cases/get-my-history/get-my-history.use-case';
+import { GetMyHistoryQuery } from '@/application/reading-rooms/use-cases/get-my-history/get-my-history.query';
 import { GetRoomByCodeUseCase } from '@/application/reading-rooms/use-cases/get-room-by-code/get-room-by-code.use-case';
 import { GetRoomByCodeQuery } from '@/application/reading-rooms/use-cases/get-room-by-code/get-room-by-code.query';
+import { ReactivateRoomUseCase } from '@/application/reading-rooms/use-cases/reactivate-room/reactivate-room.use-case';
+import { ReactivateRoomCommand } from '@/application/reading-rooms/use-cases/reactivate-room/reactivate-room.command';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
@@ -29,7 +34,9 @@ export class ReadingRoomsController {
     private readonly createRoomUseCase: CreateRoomUseCase,
     private readonly deleteRoomUseCase: DeleteRoomUseCase,
     private readonly getMyActiveRoomsUseCase: GetMyActiveRoomsUseCase,
+    private readonly getMyHistoryUseCase: GetMyHistoryUseCase,
     private readonly getRoomByCodeUseCase: GetRoomByCodeUseCase,
+    private readonly reactivateRoomUseCase: ReactivateRoomUseCase,
   ) {}
 
   @Post()
@@ -59,6 +66,35 @@ export class ReadingRoomsController {
     return {
       message: 'Lấy danh sách phòng hoạt động thành công',
       data: ReadingRoomResponseDto.fromArray(results),
+    };
+  }
+
+  @Get('my-history')
+  async getMyHistory(
+    @CurrentUser('id') userId: string,
+  ) {
+    const result = await this.getMyHistoryUseCase.execute(
+      new GetMyHistoryQuery(userId),
+    );
+    return {
+      message: 'Lấy lịch sử phòng đọc thành công',
+      data: {
+        items: ReadingRoomResponseDto.fromArray(result.items),
+        total: result.total,
+      },
+    };
+  }
+
+  @Patch(':code/reactivate')
+  async reactivateRoom(
+    @CurrentUser('id') userId: string,
+    @Param('code') code: string,
+  ) {
+    const command = new ReactivateRoomCommand(userId, code);
+    const result = await this.reactivateRoomUseCase.execute(command);
+    return {
+      message: 'Phòng đã được mở lại thành công',
+      data: ReadingRoomResponseDto.fromResult(result),
     };
   }
 

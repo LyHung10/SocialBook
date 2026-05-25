@@ -8,7 +8,7 @@ import { useChapterComments } from '@/features/chapters/hooks/useChapterComments
 import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
 import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
 import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
-import { Highlighter, Sparkles, User, QuoteIcon, Trash2 } from 'lucide-react';
+import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Share2 } from 'lucide-react';
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
@@ -51,6 +51,7 @@ export function ChapterContent({
         activeParagraph,
         handleToggleComments,
         handleCloseDrawer,
+        handleOpenPostModal,
     } = useChapterComments({ bookId, bookTitle });
 
     const { data } = useGetChapterKnowledgeQuery(
@@ -223,47 +224,85 @@ export function ChapterContent({
                         return (
                             <div
                                 key={para.id}
-                                className="group relative"
+                                className="group relative flex items-start"
                                 onMouseUp={() => handleMouseUp(para.id)}
                             >
-                                <p
-                                    className={`transition-colors duration-300 w-full relative ${activeParagraphId === para.id
-                                        ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
-                                        : ''
-                                        }`}
-                                    style={{
-                                        fontSize: `${settings.fontSize}px`,
-                                        fontFamily: settings.fontFamily,
-                                        lineHeight: settings.lineHeight,
-                                        letterSpacing: `${settings.letterSpacing}px`,
-                                        textAlign: settings.textAlign,
-                                    }}
-                                >
-                                    <ChapterTextRenderer
-                                        content={para.content}
-                                        highlights={paraHighlights}
-                                        knowledge={data?.entities || []}
-                                        currentUserId={user?.id}
-                                        onRemoveHighlight={removeHighlight}
-                                    />
-                                </p>
+                                <div className="flex-1 min-w-0">
+                                    <p
+                                        className={`transition-colors duration-300 w-full relative ${activeParagraphId === para.id
+                                            ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
+                                            : ''
+                                            }`}
+                                        style={{
+                                            fontSize: `${settings.fontSize}px`,
+                                            fontFamily: settings.fontFamily,
+                                            lineHeight: settings.lineHeight,
+                                            letterSpacing: `${settings.letterSpacing}px`,
+                                            textAlign: settings.textAlign,
+                                        }}
+                                    >
+                                        <ChapterTextRenderer
+                                            content={para.content}
+                                            highlights={paraHighlights}
+                                            knowledge={data?.entities || []}
+                                            currentUserId={user?.id}
+                                            onRemoveHighlight={removeHighlight}
+                                        />
+                                    </p>
 
-                                {room && (
-                                    <div className={`flex items-center gap-3 mt-1 transition-opacity duration-200 ${openCommentParaId === para.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                        <ParagraphAnnotations
-                                            roomId={room.roomId}
-                                            chapterSlug={room.currentChapterSlug}
-                                            paragraphId={para.id}
-                                            isOpen={openCommentParaId === para.id}
-                                            onToggle={(open) => setOpenCommentParaId(open ? para.id : null)}
-                                        />
-                                        <ParagraphReactions
-                                            roomId={room.roomId}
-                                            chapterSlug={room.currentChapterSlug}
-                                            paragraphId={para.id}
-                                        />
-                                    </div>
-                                )}
+                                    {room && (
+                                        <div className={`flex items-center gap-3 mt-1 transition-opacity duration-200 ${openCommentParaId === para.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                            <ParagraphAnnotations
+                                                roomId={room.roomId}
+                                                chapterSlug={room.currentChapterSlug}
+                                                paragraphId={para.id}
+                                                isOpen={openCommentParaId === para.id}
+                                                onToggle={(open) => setOpenCommentParaId(open ? para.id : null)}
+                                            />
+                                            <ParagraphReactions
+                                                roomId={room.roomId}
+                                                chapterSlug={room.currentChapterSlug}
+                                                paragraphId={para.id}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-2 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-0.5 shrink-0">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={() => handleToggleComments(para)}
+                                                className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform"
+                                                aria-label="Bình luận đoạn này"
+                                            >
+                                                <MessageSquarePlus size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right">
+                                            <p>Bình luận</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={() => handleOpenPostModal(para)}
+                                                className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform"
+                                                aria-label="Chia sẻ trích dẫn"
+                                            >
+                                                <Share2 size={16} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right">
+                                            <p>Chia sẻ</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
                             </div>
                         );
                     })}

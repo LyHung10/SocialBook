@@ -169,6 +169,7 @@ export class BooksController {
     const command = new ToggleBookLikeCommand({
       bookId: book.id,
       userId,
+      bookSlug: book.slug,
     });
     const result = await this.toggleBookLikeUseCase.execute(command);
 

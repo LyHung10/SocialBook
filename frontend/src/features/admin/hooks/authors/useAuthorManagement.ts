@@ -1,52 +1,36 @@
-import { useState } from 'react';
 import { useGetAuthorsQuery, useDeleteAuthorMutation } from '@/features/authors/api/authorApi';
-import { useDebounce } from '@/hooks/useDebounce';
 import { useModalStore } from '@/store/useModalStore';
 import { Author } from '@/features/authors/types/author.interface';
-import { toast } from 'sonner';
+import { useAdminListPage } from '@/features/admin/hooks/shared/useAdminListPage';
 
 export function useAuthorManagement() {
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState('');
-    const debouncedSearch = useDebounce(search, 500);
-    const { openConfirm, openAuthorModal } = useModalStore();
+  const { openConfirm, openAuthorModal } = useModalStore();
 
-    const { data, isLoading, isFetching, refetch } = useGetAuthorsQuery({
-        page,
-        pageSize: 15,
-        name: debouncedSearch || undefined,
-    }, {
-        refetchOnMountOrArgChange: true,
-    });
+  const {
+    page, setPage,
+    search, setSearch,
+    items: authors,
+    meta,
+    isLoading, isFetching, isDeleting,
+    refetch,
+    handleDelete,
+  } = useAdminListPage<Author>({
+    useListQuery: useGetAuthorsQuery as never,
+    useDeleteMutation: useDeleteAuthorMutation as never,
+    searchKey: 'name',
+    successMessage: 'Xóa tác giả thành công',
+    errorMessage: (name) => `Xóa tác giả "${name}" thất bại!`,
+  });
 
-    const [deleteAuthor, { isLoading: isDeleting }] = useDeleteAuthorMutation();
-    const authors: Author[] = data?.data || [];
-    const meta = data?.meta;
-
-    const handleDelete = async (id: string, name: string) => {
-        try {
-            await deleteAuthor(id).unwrap();
-            toast.success('Xóa tác giả thành công');
-            refetch();
-        } catch (error) {
-            console.error('Failed to delete author:', error);
-            toast.error('Xóa tác giả thất bại!');
-        }
-    };
-
-    return {
-        page,
-        setPage,
-        search,
-        setSearch,
-        authors,
-        meta,
-        isLoading,
-        isFetching,
-        isDeleting,
-        refetch,
-        handleDelete,
-        openAuthorModal,
-        openConfirm
-    };
+  return {
+    page, setPage,
+    search, setSearch,
+    authors,
+    meta,
+    isLoading, isFetching, isDeleting,
+    refetch,
+    handleDelete,
+    openAuthorModal,
+    openConfirm,
+  };
 }

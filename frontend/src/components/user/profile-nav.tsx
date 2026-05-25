@@ -1,17 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-    useToggleFollowMutation,
-    useUnfollowMutation,
-    type FollowStateResponse,
-} from "@/features/follows/api/followApi";
+import { type FollowStateResponse } from "@/features/follows/api/followApi";
 import { usersApi } from "@/features/users/api/usersApi";
 import { cn } from "@/lib/utils";
-import { Check, MessageSquare, Settings, UserPlus } from "lucide-react"; // Import MessageSquare
+import { MessageSquare, Settings } from "lucide-react";
 import { useRouter, useSelectedLayoutSegment } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { FollowButton } from "@/components/user/FollowButton";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Shadcn Tabs
 
@@ -29,37 +26,9 @@ export function ProfileNav({ profileUserId, initialFollowState }: ProfileNavProp
         initialFollowState
     );
 
-    const [toggleFollow, { isLoading: isFollowing_loading }] = useToggleFollowMutation();
-    const [unfollow, { isLoading: isUnfollowing_loading }] = useUnfollowMutation();
-    const isToggling = isFollowing_loading || isUnfollowing_loading;
-
     const isAuthenticated = !!followState;
     const isOwner = followState?.isOwner === true;
     const isFollowing = followState?.isFollowing === true;
-
-    const handleFollowClick = async () => {
-        try {
-            let result;
-            if (isFollowing) {
-                result = await unfollow(profileUserId);
-            } else {
-                result = await toggleFollow(profileUserId);
-            }
-
-            if (result && !('error' in result)) {
-                setFollowState((prev) =>
-                    prev ? { ...prev, isFollowing: !prev.isFollowing } : prev
-                );
-                dispatch(
-                    usersApi.util.invalidateTags([
-                        { type: 'Users', id: `OVERVIEW_${profileUserId}` },
-                    ])
-                );
-            }
-        } catch (e) {
-            // Silently fail — follow state remains unchanged
-        }
-    };
 
     const currentTab = segment === null ? "about" : segment;
 
@@ -77,23 +46,14 @@ export function ProfileNav({ profileUserId, initialFollowState }: ProfileNavProp
                 <div className="flex flex-col md:flex-row md:h-14 items-center justify-between gap-4 py-2 md:py-0">
 
                     <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full md:w-auto">
-                        <TabsList className="bg-transparent p-0 h-auto w-full md:w-auto flex justify-start space-x-6 overflow-x-auto no-scrollbar">
-                            <TabsTrigger
-                                value="about"
-                                className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 font-medium text-slate-500 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 dark:text-gray-400 dark:data-[state=active]:border-indigo-400 dark:data-[state=active]:text-indigo-400 bg-transparent shadow-none hover:text-slate-800 dark:hover:text-gray-200 transition-none"
-                            >
+                        <TabsList variant="underline">
+                            <TabsTrigger value="about" variant="underline">
                                 Giới thiệu
                             </TabsTrigger>
-                            <TabsTrigger
-                                value="posts"
-                                className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 font-medium text-slate-500 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 dark:text-gray-400 dark:data-[state=active]:border-indigo-400 dark:data-[state=active]:text-indigo-400 bg-transparent shadow-none hover:text-slate-800 dark:hover:text-gray-200 transition-none"
-                            >
+                            <TabsTrigger value="posts" variant="underline">
                                 Bài đăng
                             </TabsTrigger>
-                            <TabsTrigger
-                                value="following"
-                                className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 font-medium text-slate-500 data-[state=active]:border-indigo-500 data-[state=active]:text-indigo-600 dark:text-gray-400 dark:data-[state=active]:border-indigo-400 dark:data-[state=active]:text-indigo-400 bg-transparent shadow-none hover:text-slate-800 dark:hover:text-gray-200 transition-none"
-                            >
+                            <TabsTrigger value="following" variant="underline">
                                 Đang theo dõi
                             </TabsTrigger>
                         </TabsList>
@@ -112,18 +72,24 @@ export function ProfileNav({ profileUserId, initialFollowState }: ProfileNavProp
                             </Button>
                         ) : (
                             <div className="flex gap-2">
-                                <Button
-                                    variant={isFollowing ? "outline" : "default"}
+                                <FollowButton
+                                    userId={profileUserId}
+                                    initialIsFollowing={isFollowing}
                                     size="sm"
-                                    onClick={handleFollowClick}
-                                    disabled={isToggling}
-                                    className={cn("h-9 gap-2 min-w-[120px]",
+                                    className={cn("h-9 min-w-[120px]",
                                         !isFollowing && "bg-indigo-600 hover:bg-indigo-700 text-white"
                                     )}
-                                >
-                                    {isFollowing ? <Check className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                                    {isFollowing ? "Đang theo dõi" : "Theo dõi"}
-                                </Button>
+                                    onFollowChange={(newIsFollowing) => {
+                                        setFollowState((prev) =>
+                                            prev ? { ...prev, isFollowing: newIsFollowing } : prev
+                                        );
+                                        dispatch(
+                                            usersApi.util.invalidateTags([
+                                                { type: 'Users', id: `OVERVIEW_${profileUserId}` },
+                                            ])
+                                        );
+                                    }}
+                                />
                                 {/* Added Message Button for non-owners */}
                                 <Button
                                     variant="outline"

@@ -1,57 +1,45 @@
 import { useState } from 'react';
 import { useDeleteBookMutation, useGetAdminBooksQuery } from '@/features/books/api/bookApi';
-import { BackendPagination, BookForAdmin } from '@/features/books/types/book.interface';
-import { useDebounce } from '@/hooks/useDebounce';
-import { toast } from 'sonner';
+import { BookForAdmin } from '@/features/books/types/book.interface';
 import { useModalStore } from '@/store/useModalStore';
+import { useAdminListPage } from '@/features/admin/hooks/shared/useAdminListPage';
 
 type BookStatus = 'draft' | 'published' | 'completed';
 type StatusFilter = BookStatus | 'all';
 
 export function useBookManagement() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 500);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const { openDeleteBook } = useModalStore();
 
-  const { data, isLoading, isFetching, error, refetch } = useGetAdminBooksQuery({
-    page,
-    limit: 15,
-    search: debouncedSearch || undefined,
-    status: statusFilter === 'all' ? undefined : statusFilter,
-  }, {
-    refetchOnMountOrArgChange: true,
+  const {
+    page, setPage,
+    search, setSearch,
+    items: books,
+    meta: pagination,
+    isLoading, isFetching, isDeleting,
+    error,
+    handleDelete,
+  } = useAdminListPage<BookForAdmin>({
+    useListQuery: useGetAdminBooksQuery as never,
+    useDeleteMutation: useDeleteBookMutation as never,
+    searchKey: 'search',
+    successMessage: 'Xóa sách thành công',
+    errorMessage: 'Xóa sách thất bại',
+    extraParams: {
+      status: statusFilter === 'all' ? undefined : statusFilter,
+    },
   });
 
-  const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
-  const { openDeleteBook } = useModalStore();
-  const books: BookForAdmin[] = data?.data || [];
-  const pagination: BackendPagination | undefined = data?.meta;
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteBook(id).unwrap();
-      toast.success('Xóa sách thành công');
-      refetch();
-    } catch {
-      toast.error('Xóa sách thất bại');
-    }
-  };
-
   return {
-    page,
-    setPage,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
+    page, setPage,
+    search, setSearch,
+    statusFilter, setStatusFilter,
     books,
     pagination,
-    isLoading,
-    isFetching,
+    isLoading, isFetching,
     error,
     isDeleting,
     handleDelete,
-    openDeleteBook
+    openDeleteBook,
   };
 }

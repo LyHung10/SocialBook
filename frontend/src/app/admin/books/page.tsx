@@ -1,18 +1,13 @@
 'use client';
 
-import { useDeleteBookMutation, useGetAdminBooksQuery } from '@/features/books/api/bookApi';
-import { BackendPagination, BookForAdmin } from '@/features/books/types/book.interface';
-import { useDebounce } from '@/hooks/useDebounce';
+import { BookForAdmin, BookStatus } from '@/features/books/types/book.interface';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { BookOpen, BookText, ChevronLeft, ChevronRight, Edit, Eye, Filter, Loader2, Plus, Search, Trash2 } from 'lucide-react';
+import { BookOpen, BookText, Edit, Eye, Filter, Loader2, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useModalStore } from '@/store/useModalStore';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -25,8 +20,11 @@ import {
 } from '@/components/ui/table';
 
 import { useBookManagement } from '@/features/admin/hooks/books/useBookManagement';
+import { AdminSearchBar } from '@/features/admin/components/AdminSearchBar';
+import { AdminPagination } from '@/features/admin/components/AdminPagination';
 
 export default function AdminBooksPage() {
+  const router = useRouter();
   const {
     page,
     setPage,
@@ -44,7 +42,6 @@ export default function AdminBooksPage() {
     openDeleteBook
   } = useBookManagement();
 
-  type BookStatus = 'draft' | 'published' | 'completed';
   type StatusFilter = BookStatus | 'all';
 
   const getStatusBadge = (status: BookStatus) => {
@@ -62,63 +59,42 @@ export default function AdminBooksPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 rounded-lg">
-      {/* Header & Filters Card */}
-      <div className="bg-white rounded-lg border border-slate-200 mb-6 overflow-hidden shadow-sm">
-        {/* Top Header */}
-        <div className="px-6 py-6 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">Quản lý sách</h1>
-            <p className="text-xs text-slate-500 mt-1 font-medium">
-                Tìm thấy <span className="text-indigo-600 font-bold">{pagination?.total?.toLocaleString() || 0}</span> cuốn sách trong kho
-            </p>
-          </div>
-          <Link href="/admin/books/new">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg font-semibold transition-all shadow-sm active:scale-95">
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm sách mới
-            </Button>
-          </Link>
+      <AdminSearchBar
+        title="Quản lý sách"
+        totalItems={pagination?.total || 0}
+        totalLabel="cuốn sách"
+        searchPlaceholder="Tìm tên sách hoặc tác giả..."
+        searchValue={search}
+        onSearchChange={(val) => {
+          setSearch(val);
+          setPage(1);
+        }}
+        onAddClick={() => router.push('/admin/books/new')}
+        addLabel="Thêm sách mới"
+      >
+        <div className="flex items-center gap-2 w-full sm:w-auto font-medium">
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value as StatusFilter);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="min-w-[180px] h-10 bg-white rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500/10 text-sm font-medium">
+              <div className="flex items-center">
+                <Filter className="w-3.5 h-3.5 text-slate-500 mr-2" />
+                <SelectValue placeholder="Trạng thái" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-lg border-slate-100 shadow-lg font-medium">
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="draft">Bản nháp</SelectItem>
+              <SelectItem value="published">Đang phát hành</SelectItem>
+              <SelectItem value="completed">Hoàn thành</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-
-        {/* Filters Bar */}
-        <div className="px-6 py-4 bg-slate-50/50 flex flex-col sm:flex-row gap-4 items-center">
-          <div className="flex-1 w-full relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Tìm tên sách hoặc tác giả..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="pl-10 h-10 bg-white border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm"
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value as StatusFilter);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="min-w-[180px] h-10 bg-white rounded-lg border-slate-200 focus:ring-2 focus:ring-indigo-500/10 text-sm font-medium">
-                <div className="flex items-center">
-                  <Filter className="w-3.5 h-3.5 text-slate-500 mr-2" />
-                  <SelectValue placeholder="Trạng thái" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="rounded-lg border-slate-100 shadow-lg">
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="draft">Bản nháp</SelectItem>
-                <SelectItem value="published">Đang phát hành</SelectItem>
-                <SelectItem value="completed">Hoàn thành</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
+      </AdminSearchBar>
 
       {/* Loading (Initial) */}
       {isLoading && (
@@ -128,8 +104,8 @@ export default function AdminBooksPage() {
       )}
 
       {/* Error State */}
-      {!isLoading && error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center my-8">
+      {!isLoading && !!error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center my-8 font-medium">
           <p className="text-red-700 font-medium mb-4">Đã có lỗi xảy ra khi tải danh sách sách.</p>
           <Button onClick={() => window.location.reload()} variant="outline" className="border-red-200 text-red-700 hover:bg-red-100">
             Thử lại
@@ -140,7 +116,7 @@ export default function AdminBooksPage() {
       {/* Table */}
       {!isLoading && !error && (
         <div className="py-0">
-        <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-opacity duration-200 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
+          <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-opacity duration-200 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader className="bg-gray-50">
@@ -164,7 +140,7 @@ export default function AdminBooksPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    books.map((book, index) => (
+                    books.map((book: BookForAdmin, index) => (
                       <TableRow key={`${book.id}-${index}`}>
                         <TableCell className="px-6 py-4">
                           <div className="w-16 h-20 relative rounded-lg overflow-hidden shadow-md">
@@ -189,7 +165,7 @@ export default function AdminBooksPage() {
                                 <Badge
                                   key={`${book.id}-${g.id || g.name}`}
                                   variant="secondary"
-                                  className="bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold"
                                 >
                                   {g.name}
                                 </Badge>
@@ -202,12 +178,12 @@ export default function AdminBooksPage() {
                         <TableCell className="text-center font-medium">
                           {getStatusBadge(book.status)}
                         </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center font-medium">
                           <span className="font-bold text-lg text-gray-800 bg-gray-100 px-3 py-1 rounded-lg">
                             {book.stats?.chapterCount || 0}
                           </span>
                         </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center font-medium">
                           <div className="flex items-center justify-center gap-1.5 text-blue-600 bg-blue-50 px-3 py-1 rounded-lg w-fit mx-auto">
                             <Eye className="w-4 h-4" />
                             <span className="font-bold">{(book.stats?.views || 0).toLocaleString()}</span>
@@ -251,23 +227,14 @@ export default function AdminBooksPage() {
               </Table>
             </div>
 
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between text-sm">
-                <div className="text-gray-600">
-                  Hiển thị {(page - 1) * 15 + 1} - {Math.min(page * 15, pagination.total)} trong {pagination.total.toLocaleString()} sách
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-                  <span className="font-medium px-2">Trang {page} / {pagination.totalPages}</span>
-                  <Button variant="outline" size="icon" onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))} disabled={page === pagination.totalPages}>
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
+            <AdminPagination
+              page={page}
+              totalPages={pagination?.totalPages || 0}
+              totalItems={pagination?.total || 0}
+              pageSize={15}
+              itemLabel="sách"
+              onPageChange={setPage}
+            />
           </div>
         </div>
       )}

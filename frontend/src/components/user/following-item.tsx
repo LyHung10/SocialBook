@@ -1,52 +1,16 @@
-'use client'
 import { Button } from "@/components/ui/button";
-import {
-    FollowingUser,
-    useGetFollowStatusQuery,
-    useToggleFollowMutation,
-    useUnfollowMutation,
-} from "@/features/follows/api/followApi";
-import { toast } from "sonner";
-import { UserCheck, UserPlus } from "lucide-react";
-import Image from "next/image";
+import { FollowingUser } from "@/features/follows/api/followApi";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useAppAuth } from "@/features/auth/hooks/useAppAuth";
 import { useModalStore } from "@/store/useModalStore";
+import { UserAvatar } from "@/components/common/UserAvatar";
+import { FollowButton } from "@/components/user/FollowButton";
+import Image from "next/image";
 
 const FollowingItem = (props: FollowingUser) => {
     const auth = useAppAuth();
     const router = useRouter();
     const { closeFollowers } = useModalStore();
-    
-    const [isFollowing, setIsFollowing] = useState(props.isFollowedByCurrentUser);
-
-    const { data: statusData } = useGetFollowStatusQuery(props.targetId, {
-        skip: !auth.isAuthenticated || auth?.user?.id === props.targetId,
-    });
-
-    useEffect(() => {
-        if (statusData) {
-            setIsFollowing(statusData.isFollowing);
-        }
-    }, [statusData]);
-
-    const [toggleFollow, { isLoading: isFollowLoading }] = useToggleFollowMutation();
-    const [unfollow, { isLoading: isUnfollowLoading }] = useUnfollowMutation();
-    const isToggling = isFollowLoading || isUnfollowLoading;
-
-    const handleToggleFollow = async () => {
-        try {
-            if (isFollowing) {
-                await unfollow(props.targetId).unwrap();
-            } else {
-                await toggleFollow(props.targetId).unwrap();
-            }
-            setIsFollowing((prev) => !prev);
-        } catch (e) {
-            toast.error("Không thể thay đổi trạng thái theo dõi");
-        }
-    };
 
     return (
         <div
@@ -75,25 +39,15 @@ const FollowingItem = (props: FollowingUser) => {
             <div className="px-3 pb-2 pt-12 relative flex-1 flex flex-col items-center text-center">
                 {/* Avatar */}
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2">
-                    <div
+                    <UserAvatar
+                        src={props.image}
+                        name={props.username}
                         onClick={() => {
                             closeFollowers();
                             router.push(`/users/${props.targetId}`);
                         }}
-                        className="
-                            cursor-pointer h-20 w-20 rounded-full overflow-hidden
-                            border-4 border-white dark:border-gray-800
-                            shadow-md
-                            bg-card
-                        ">
-                        <Image
-                            src={props.image || "/user.png"}
-                            alt={props.username}
-                            width={80}
-                            height={80}
-                            className="h-full w-full object-cover"
-                        />
-                    </div>
+                        className="h-20 w-20 border-4 border-white dark:border-gray-800 shadow-md bg-card"
+                    />
                 </div>
 
                 {/* User Info */}
@@ -121,38 +75,12 @@ const FollowingItem = (props: FollowingUser) => {
                         Xem hồ sơ
                     </Button>
                 ) : (
-                    <Button
-                        variant="ghost"
-                        disabled={isToggling}
-                        onClick={handleToggleFollow}
-                        className={`w-full rounded-md text-xs font-medium tracking-wide transition-all
-                        ${isFollowing
-                                    ? `
-                        bg-primary text-primary-foreground
-                        hover:bg-primary/90
-                        dark:bg-primary dark:hover:bg-primary/80
-                        shadow-sm
-                        `
-                                : `
-                        bg-card
-                        border border-border
-                        text-foreground
-                        hover:bg-secondary
-                        `
-                        }`}
-                    >
-                        {isFollowing ? (
-                            <>
-                                <UserCheck className="mr-2 h-3.5 w-3.5" />
-                                Đang theo dõi
-                            </>
-                        ) : (
-                            <>
-                                <UserPlus className="mr-2 h-3.5 w-3.5" />
-                                Theo dõi
-                            </>
-                        )}
-                    </Button>
+                    <FollowButton
+                        userId={props.targetId}
+                        initialIsFollowing={props.isFollowedByCurrentUser}
+                        size="sm"
+                        className="w-full rounded-md text-xs font-medium tracking-wide"
+                    />
                 )}
             </div>
 

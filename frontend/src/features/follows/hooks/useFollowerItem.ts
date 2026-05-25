@@ -1,6 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import {
     useGetFollowStatusQuery,
     useToggleFollowMutation,
@@ -52,7 +53,7 @@ export const useFollowerItem = ({
             }
             setIsFollowing((prev) => !prev);
         } catch (e) {
-            toast.error('Không thể thay đổi trạng thái theo dõi');
+            toast.error(MESSAGES.FOLLOW_TOGGLE_FAILED);
         }
     };
 

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
+import {
+  NotFoundDomainException,
+  BadRequestDomainException,
+} from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { ReadingRoom } from '@/domain/reading-rooms/entities/reading-room.entity';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
@@ -21,6 +24,10 @@ export class CreateRoomUseCase {
     );
     if (!book) {
       throw new NotFoundDomainException('Book not found');
+    }
+
+    if (!book.chapterCount || book.chapterCount === 0) {
+      throw new BadRequestDomainException('Sách chưa có chương nào, không thể tạo phòng đọc');
     }
 
     const room = ReadingRoom.create({

@@ -13,7 +13,7 @@ import React from 'react';
 import ListComments from './ListComments';
 import { useCommentActions } from '@/features/comments/hooks/useCommentActions';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -73,15 +73,13 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
 
     return (
         <div className="group flex w-full animate-in fade-in items-start gap-3 duration-300">
-            <Avatar className="mt-1 h-8 w-8 shrink-0 border border-border">
-                <AvatarImage
-                    src={comment.user.image}
-                    alt={comment.user.username}
-                />
-                <AvatarFallback className="text-[10px] font-bold">
-                    {comment.user.username?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+                src={comment.user.image}
+                name={comment.user.username}
+                size="sm"
+                className="mt-1 shrink-0 border border-border"
+                fallbackClassName="text-[10px]"
+            />
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center">

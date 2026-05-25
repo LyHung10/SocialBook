@@ -4,7 +4,8 @@ import { useAppAuth } from '@/features/auth/hooks';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Users, BookOpen, FileText, MessageSquare, BarChart2, LogOut, PenLine, Shapes, AlertTriangle } from 'lucide-react';
+import { Menu, X, Home, Users, BookOpen, FileText, MessageSquare, BarChart2, LogOut, PenLine, Shapes, AlertTriangle, ShieldAlert } from 'lucide-react';
+import LoginWall from '@/components/auth/LoginWall';
 
 const navItems = [
   { name: 'Dashboard', icon: Home, href: '/admin/dashboard' },
@@ -20,8 +21,18 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAppAuth();
+  const { user, isAuthenticated } = useAppAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <LoginWall
+        icon={<ShieldAlert size={40} className="text-blue-600 dark:text-blue-400" />}
+        title="Khu vực quản trị"
+        description="Đăng nhập bằng tài khoản quản trị viên để truy cập trang quản lý."
+      />
+    );
+  }
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col md:flex-row overflow-hidden">

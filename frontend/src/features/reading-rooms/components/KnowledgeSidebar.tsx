@@ -17,6 +17,7 @@ import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { motion } from 'framer-motion';
+import { GlassCard } from '@/components/common/GlassCard';
 
 
 interface KnowledgeSidebarProps {
@@ -75,7 +76,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const [askChapterAI, { isLoading: isSoloPending }] = useAskChapterAIMutation();
 
   const { chatMessages: roomChatMessages } = useReadingRoomStore();
-  const chatMessages = roomId ? roomChatMessages : localChatMessages;
+  const chatMessages = roomId ? roomChatMessages.filter(m => m.role === 'ai') : localChatMessages;
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -127,19 +128,19 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const summary = data?.summary;
 
   return (
-    <div className="flex flex-col h-[75vh] bg-background/40 backdrop-blur-xl border border-border rounded-3xl overflow-hidden shadow-xl">
+    <GlassCard className="flex flex-col h-[75vh]">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
         <div className="px-3 pt-3 flex items-center justify-between">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl h-10 bg-muted/50 p-1">
-            <TabsTrigger value="knowledge" className="rounded-xl text-[10px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsList variant="pill" className="grid w-full grid-cols-3 rounded-2xl h-10">
+            <TabsTrigger value="knowledge" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
               <BookOpen className="w-3 h-3 mr-1.5" />
               Kiến thức
             </TabsTrigger>
-            <TabsTrigger value="graph" className="rounded-xl text-[10px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="graph" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
               <Network className="w-3 h-3 mr-1.5" />
               Sơ đồ
             </TabsTrigger>
-            <TabsTrigger value="chat" className="rounded-xl text-[10px] font-black uppercase tracking-wider transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="chat" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
               <MessageSquare className="w-3 h-3 mr-1.5" />
               Thảo luận
             </TabsTrigger>
@@ -301,7 +302,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
               )}
               {chatMessages.map((msg, i) => (
                 <div
-                  key={i}
+                  key={`${msg.userId || msg.role || 'msg'}-${msg.createdAt || i}-${i}`}
                   className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'
                     }`}
                 >
@@ -350,7 +351,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </GlassCard>
   );
 };
 

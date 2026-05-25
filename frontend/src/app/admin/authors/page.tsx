@@ -1,17 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useGetAuthorsQuery, useDeleteAuthorMutation } from '@/features/authors/api/authorApi';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Search, Plus, Loader2, Edit, Trash2, User, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Author } from '@/features/authors/types/author.interface';
+import { Loader2, Edit, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
-import { toast } from 'sonner';
 
 import { useAuthorManagement } from '@/features/admin/hooks/authors/useAuthorManagement';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -20,6 +15,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { AdminSearchBar } from '@/features/admin/components/AdminSearchBar';
+import { AdminPagination } from '@/features/admin/components/AdminPagination';
 
 export default function AdminAuthorsPage() {
     const {
@@ -40,40 +37,19 @@ export default function AdminAuthorsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header & Search Card */}
-            <div className="bg-white rounded-lg border border-slate-200 mb-6 overflow-hidden shadow-sm">
-                <div className="px-6 py-6 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900">Quản lý tác giả</h1>
-                        <p className="text-xs text-slate-500 mt-1 font-medium">
-                            Tìm thấy <span className="text-indigo-600 font-bold">{meta?.total?.toLocaleString() || 0}</span> tác giả trong hệ thống
-                        </p>
-                    </div>
-                    <Button
-                        onClick={() => openAuthorModal({ onSuccess: refetch })}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 h-10 rounded-lg font-semibold transition-all shadow-sm active:scale-95"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Thêm tác giả
-                    </Button>
-                </div>
-
-                <div className="bg-slate-50/50 px-6 py-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        <Input
-                            type="text"
-                            placeholder="Tìm kiếm theo tên tác giả..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                            className="pl-10 h-11 bg-white border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm"
-                        />
-                    </div>
-                </div>
-            </div>
+            <AdminSearchBar
+                title="Quản lý tác giả"
+                totalItems={meta?.total || 0}
+                totalLabel="tác giả"
+                searchPlaceholder="Tìm kiếm theo tên tác giả..."
+                searchValue={search}
+                onSearchChange={(val) => {
+                    setSearch(val);
+                    setPage(1);
+                }}
+                onAddClick={() => openAuthorModal({ onSuccess: refetch })}
+                addLabel="Thêm tác giả"
+            />
 
             {/* Loading */}
             {(isLoading || isFetching) && (
@@ -86,7 +62,7 @@ export default function AdminAuthorsPage() {
             {!(isLoading || isFetching) && (
                 <div className="py-0">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                           <Table>
+                        <Table>
                             <TableHeader className="bg-gray-50 border-b border-gray-200">
                                 <TableRow>
                                     <TableHead className="w-[80px]">Ảnh</TableHead>
@@ -176,36 +152,15 @@ export default function AdminAuthorsPage() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
-                        {meta && meta.totalPages > 1 && (
-                            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between text-sm">
-                                <div className="text-gray-600">
-                                    Hiển thị {(page - 1) * 15 + 1} – {Math.min(page * 15, meta.total)} trong {meta.total.toLocaleString()} tác giả
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        className="rounded-xl"
-                                    >
-                                        <ChevronLeft className="w-5 h-5" />
-                                    </Button>
-                                    <span className="font-medium px-2">Trang {page} / {meta.totalPages}</span>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
-                                        disabled={page === meta.totalPages}
-                                        className="rounded-xl"
-                                    >
-                                        <ChevronRight className="w-5 h-5" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <AdminPagination
+                        page={page}
+                        totalPages={meta?.totalPages || 0}
+                        totalItems={meta?.total || 0}
+                        pageSize={15}
+                        itemLabel="tác giả"
+                        onPageChange={setPage}
+                    />
+                </div>
             )}
         </div>
     );

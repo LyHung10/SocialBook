@@ -5,14 +5,11 @@ import { useModalStore } from '@/store/useModalStore';
 import { getErrorMessage } from '@/lib/utils';
 import {
     CheckCircle,
-    ChevronLeft,
-    ChevronRight,
     Mail,
     Shield,
     XCircle,
     Loader2,
 } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +23,8 @@ import {
 } from '@/components/ui/table';
 
 import { useUserManagement } from '@/features/admin/hooks/users/useUserManagement';
+import { AdminSearchBar } from '@/features/admin/components/AdminSearchBar';
+import { AdminPagination } from '@/features/admin/components/AdminPagination';
 
 const UsersPage = () => {
     const {
@@ -44,6 +43,12 @@ const UsersPage = () => {
 
     return (
         <div className="min-h-screen rounded-lg bg-gray-50">
+            <AdminSearchBar
+                title="Quản lý người dùng"
+                totalItems={total}
+                totalLabel="người dùng"
+            />
+
             {(isLoading || isFetching) && (
                 <div className="flex items-center justify-center py-32">
                     <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
@@ -51,7 +56,7 @@ const UsersPage = () => {
             )}
 
             {!(isLoading || isFetching) && (
-                <div className="py-6">
+                <div className="py-0">
                     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                         <Table>
                             <TableHeader className="border-b border-gray-200 bg-gray-50">
@@ -147,44 +152,19 @@ const UsersPage = () => {
                             </TableBody>
                         </Table>
 
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 text-sm font-medium">
-                                <div className="text-gray-600">
-                                    Hiển thị {(page - 1) * pageSize + 1} –{' '}
-                                    {Math.min(page * pageSize, total)} trong{' '}
-                                    {total.toLocaleString()} người dùng
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setPage((c) => Math.max(1, c - 1))}
-                                        disabled={page === 1}
-                                        className="rounded-xl"
-                                    >
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </Button>
-                                    <span className="px-2">
-                                        Trang {page} / {totalPages}
-                                    </span>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => setPage((c) => Math.min(totalPages, c + 1))}
-                                        disabled={page === totalPages}
-                                        className="rounded-xl"
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-
-                        </div>
+                        <AdminPagination
+                            page={page}
+                            totalPages={totalPages}
+                            totalItems={total}
+                            pageSize={pageSize}
+                            itemLabel="người dùng"
+                            onPageChange={setPage}
+                        />
                     </div>
-                )}
-            </div>
-        );
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default UsersPage;

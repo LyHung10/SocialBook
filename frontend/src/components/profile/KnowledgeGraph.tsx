@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { Loader2, ZoomIn, ZoomOut, Maximize2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { LoadingOverlay } from '@/components/common/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ComponentType } from 'react';
 
@@ -129,11 +130,8 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[600px] w-full bg-slate-50/50 dark:bg-zinc-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-zinc-800">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Đang kiến tạo bản đồ tri thức...</p>
-        </div>
+      <div className="h-[600px] w-full bg-slate-50/50 dark:bg-zinc-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-zinc-800">
+        <LoadingOverlay>Đang kiến tạo bản đồ tri thức...</LoadingOverlay>
       </div>
     );
   }

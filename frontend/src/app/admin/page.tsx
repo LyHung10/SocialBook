@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
-import { Users, BookOpen, FileText, MessageSquare, BarChart2, Download } from 'lucide-react';
+import { Users, BookOpen, FileText, MessageSquare, BarChart2, Download, ShieldAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { StatCard } from '@/components/admin/dashboard/StatCard';
 import { TimeRangeSelector } from '@/components/admin/dashboard/TimeRangeSelector';
@@ -13,15 +13,18 @@ import { PopularBooksTable } from '@/components/admin/dashboard/PopularBooksTabl
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { EmptyState } from '@/components/common/EmptyState';
+import LoginWall from '@/components/auth/LoginWall';
 
 const UserGrowthChart = dynamic(
   () => import('@/components/admin/dashboard/UserGrowthChart').then((mod) => mod.UserGrowthChart),
-  { ssr: false, loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-800 h-[300px] rounded-xl flex justify-center items-center">Loading chart...</div> }
+  { ssr: false, loading: () => <div className="h-[300px] rounded-xl flex justify-center items-center"><LoadingSpinner /></div> }
 );
 
 const GenreDistributionChart = dynamic(
   () => import('@/components/admin/dashboard/GenreDistributionChart').then((mod) => mod.GenreDistributionChart),
-  { ssr: false, loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-800 h-[300px] rounded-xl flex justify-center items-center">Loading chart...</div> }
+  { ssr: false, loading: () => <div className="h-[300px] rounded-xl flex justify-center items-center"><LoadingSpinner /></div> }
 );
 
 export default function AdminPage() {
@@ -33,60 +36,48 @@ export default function AdminPage() {
   const { stats, growthData, bookStats, loading, error, refetch } = useDashboardData(timeRange, viewType);
   const { exportCSV, exporting } = useExportStatistics(timeRange);
 
-  // Reset time range when view type changes
   const handleViewTypeChange = (newViewType: ViewType) => {
     setViewType(newViewType);
-    // Set appropriate default time range for new view type
     switch (newViewType) {
-      case 'day':
-        setTimeRange('30');
-        break;
-      case 'month':
-        setTimeRange('180'); // 6 months
-        break;
-      case 'year':
-        setTimeRange('1095'); // 3 years
-        break;
+      case 'day':  setTimeRange('30');   break;
+      case 'month': setTimeRange('180'); break;
+      case 'year':  setTimeRange('1095'); break;
     }
   };
 
-  useEffect(() => {
-    if (isAuthLoading) return;
+  if (!isAuthLoading && !isAuthenticated) {
+    return (
+      <LoginWall
+        icon={<ShieldAlert size={40} className="text-blue-600 dark:text-blue-400" />}
+        title="Khu vực quản trị"
+        description="Đăng nhập bằng tài khoản quản trị viên để truy cập trang quản lý."
+      />
+    );
+  }
 
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    if (isAuthenticated && !isAdmin) {
-      router.push('/');
-      return;
-    }
-  }, [isAuthenticated, isAuthLoading, isAdmin, router]);
+  if (!isAuthLoading && isAuthenticated && !isAdmin) {
+    router.replace('/');
+    return null;
+  }
 
   if (isAuthLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-          <p className="text-gray-600 font-medium">Loading Dashboard...</p>
-        </div>
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 font-medium mb-4">{error}</p>
-          <button
-            onClick={refetch}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Retry
-          </button>
-        </div>
+      <div className="min-h-screen">
+        <EmptyState
+          icon={ShieldAlert}
+          title="Lỗi tải dữ liệu"
+          description={error}
+          action={<Button onClick={refetch}>Thử lại</Button>}
+          iconClassName="text-red-500"
+        />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { NESTJS_USERS_ENDPOINTS } from '@/constants/server-endpoints';
 import { axiosBaseQuery } from '@/lib/nestjs-client-api';
 import { mapPaginatedResponse } from '@/lib/api-response';
 import { createApi } from '@reduxjs/toolkit/query/react';
+import { buildFormData } from '@/lib/utils';
 import {
     SearchUsersParams,
     SearchUsersRawItem,
@@ -50,16 +51,11 @@ export const usersApi = createApi({
             UserOverviewResponse,
             { file: File; userId: string }
         >({
-            query: ({ file }) => {
-                const formData = new FormData();
-                formData.append("file", file);
-
-                return {
-                    url: `/users/me/avatar`,
-                    method: "PATCH",
-                    body: formData,
-                };
-            },
+            query: ({ file }) => ({
+                url: `/users/me/avatar`,
+                method: "PATCH",
+                body: buildFormData({ file }),
+            }),
             invalidatesTags: (result, error, { userId }) => [
                 { type: "Users", id: `OVERVIEW_${userId}` },
             ],

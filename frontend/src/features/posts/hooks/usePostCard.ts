@@ -12,10 +12,7 @@ interface UsePostCardOptions {
 }
 
 export function usePostCard({ post }: UsePostCardOptions) {
-    const { openEditPost, openSharePost, openPostComment } = useModalStore();
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
-    const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+    const { openEditPost, openSharePost, openPostComment, openConfirm } = useModalStore();
     const { user } = useAppAuth();
 
     const { likeCount, isLiked, isDeleting, toggleLike, deletePost, deleteImage } = usePostActions({
@@ -30,30 +27,17 @@ export function usePostCard({ post }: UsePostCardOptions) {
     const isOwner = post.user?.id === user?.id;
     const displayedCommentCount = post.totalComments ?? 0;
 
-    const handleDelete = useCallback(async () => {
-        try {
-            await deletePost();
-            setShowDeleteConfirm(false);
-        } catch {
-            // Error handled in hook
-        }
-    }, [deletePost]);
-
     const openDeleteImageConfirm = useCallback((imageUrl: string) => {
-        setImageToDelete(imageUrl);
-        setShowDeleteImageConfirm(true);
-    }, []);
-
-    const handleDeleteImage = useCallback(async () => {
-        if (!imageToDelete) return;
-        try {
-            await deleteImage(imageToDelete);
-            setShowDeleteImageConfirm(false);
-            setImageToDelete(null);
-        } catch {
-            // Error handled in hook
-        }
-    }, [imageToDelete, deleteImage]);
+        openConfirm({
+            title: "Xóa ảnh này?",
+            description: "Bạn có chắc chắn muốn xóa ảnh này khỏi bài viết không?",
+            confirmText: "Xóa",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deleteImage(imageUrl);
+            }
+        });
+    }, [openConfirm, deleteImage]);
 
     const handleOpenShare = useCallback(() => {
         openSharePost({ postUrl, shareTitle, shareMedia });
@@ -70,7 +54,18 @@ export function usePostCard({ post }: UsePostCardOptions) {
     }, [openPostComment, post, toggleLike, displayedCommentCount, isLiked, likeCount]);
 
     const handleOpenEdit = useCallback(() => openEditPost({ post }), [openEditPost, post]);
-    const openDeleteConfirm = useCallback(() => setShowDeleteConfirm(true), []);
+    
+    const openDeleteConfirm = useCallback(() => {
+        openConfirm({
+            title: "Xóa bài viết?",
+            description: "Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa bài viết này chứ?",
+            confirmText: "Xóa",
+            variant: "destructive",
+            onConfirm: async () => {
+                await deletePost();
+            }
+        });
+    }, [openConfirm, deletePost]);
 
     return {
         isOwner,
@@ -78,20 +73,13 @@ export function usePostCard({ post }: UsePostCardOptions) {
         isLiked,
         likeCount,
         isDeleting,
-        showDeleteConfirm,
-        showDeleteImageConfirm,
-        imageToDelete,
         actions: {
             toggleLike,
-            handleDelete,
             openDeleteImageConfirm,
-            handleDeleteImage,
             handleOpenShare,
             handleOpenComment,
             handleOpenEdit,
             openDeleteConfirm,
-            setShowDeleteConfirm,
-            setShowDeleteImageConfirm,
         },
     };
 }

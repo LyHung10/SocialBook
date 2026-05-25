@@ -64,10 +64,6 @@ export function normalizeArrayResponse<T>(
   };
 }
 
-export function extractArrayData<T>(response: ArrayResponse<T>): T[] {
-  return normalizeArrayResponse(response).data;
-}
-
 export function mapPaginatedResponse<TInput, TOutput>(
   response: ArrayResponse<TInput>,
   mapper: (item: TInput) => TOutput

@@ -1,23 +1,11 @@
 'use client';
 
 import { memo } from 'react';
-import { Loader2, AlertTriangle, ShieldAlert, Info } from 'lucide-react';
+import { ShieldAlert, Info } from 'lucide-react';
 import { usePostCard } from '@/features/posts/hooks/usePostCard';
 import { Post } from '@/features/posts/types/post.interface';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { buttonVariants } from '@/components/ui/button';
 import { PostAuthorHeader } from './PostAuthorHeader';
 import { PostActions } from './PostActions';
 import { PostImageGallery } from './PostImageGallery';
@@ -34,8 +22,6 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
         isLiked,
         likeCount,
         isDeleting,
-        showDeleteConfirm,
-        showDeleteImageConfirm,
         actions,
     } = usePostCard({ post });
 
@@ -105,68 +91,6 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
                     onComment={actions.handleOpenComment}
                     onShare={actions.handleOpenShare}
                 />
-
-                <AlertDialog open={showDeleteConfirm} onOpenChange={actions.setShowDeleteConfirm}>
-                    <AlertDialogContent className="bg-card border-border">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="text-xl font-bold text-foreground">
-                                Xóa bài viết?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-muted-foreground">
-                                Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa bài viết này chứ?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-6 gap-3">
-                            <AlertDialogCancel className="rounded-xl border-border hover:bg-slate-50 dark:hover:bg-gray-800">
-                                Hủy
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    actions.handleDelete();
-                                }}
-                                disabled={isDeleting}
-                                className={buttonVariants({ variant: 'destructive' })}
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span>Đang xóa...</span>
-                                    </>
-                                ) : (
-                                    'Xóa'
-                                )}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
-                <AlertDialog open={showDeleteImageConfirm} onOpenChange={actions.setShowDeleteImageConfirm}>
-                    <AlertDialogContent className="bg-card border-border">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="text-xl font-bold text-foreground">
-                                Xóa ảnh này?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-muted-foreground">
-                                Bạn có chắc chắn muốn xóa ảnh này khỏi bài viết không?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-6 gap-3">
-                            <AlertDialogCancel className="rounded-xl border-border hover:bg-slate-50 dark:hover:bg-gray-800">
-                                Hủy
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    actions.handleDeleteImage();
-                                }}
-                                className={buttonVariants({ variant: 'destructive' })}
-                            >
-                                Xóa
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
             </Card>
         </>
     );

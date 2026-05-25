@@ -53,6 +53,14 @@ export class GetBookBySlugUseCase {
     // 4. Gọi hàm tăng view chung ở dưới cùng
     this.eventEmitter.emit('book.viewed', { bookId: viewBookId });
 
+    if (cached) {
+      bookDetail = {
+        ...cached,
+        stats: { ...cached.stats, views: cached.stats.views + 1 },
+      };
+      await this.cache.set(cacheKey, bookDetail, CACHE_TTL.DEFAULT);
+    }
+
     return bookDetail;
   }
 }

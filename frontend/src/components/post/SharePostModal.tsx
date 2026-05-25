@@ -1,6 +1,5 @@
 'use client';
 
-import { toast } from 'sonner';
 import { Facebook, Mail, Twitter, X, Link2, Check } from 'lucide-react';
 import {
   EmailShareButton,
@@ -9,7 +8,6 @@ import {
   TumblrShareButton,
   TwitterShareButton,
 } from 'next-share';
-import { useState, useEffect } from 'react';
 import { useModalStore } from '@/store/useModalStore';
 import { cn } from '@/lib/utils';
 import {
@@ -21,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 
 const PinterestIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -36,26 +35,15 @@ const TumblrIcon = () => (
 
 export default function SharePostModal() {
   const { isSharePostOpen, closeSharePost, sharePostData } = useModalStore();
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!isSharePostOpen) {
-      setCopied(false);
-    }
-  }, [isSharePostOpen]);
+  const { copy, copiedText } = useCopyToClipboard();
+  const copied = !!copiedText;
 
   if (!sharePostData) return null;
 
   const { postUrl, shareTitle, shareMedia } = sharePostData;
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(postUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error('Không thể sao chép liên kết');
-    }
+  const handleCopyLink = () => {
+    copy(postUrl, 'Đã sao chép liên kết bài viết vào bộ nhớ tạm!');
   };
 
   return (

@@ -30,18 +30,9 @@ export interface Book {
   };
 }
 
-export interface Author {
-  id: string;
-  name: string;
-  bio: string;
-}
-
-export interface Genre {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-}
+import type { Author } from '@/features/authors/types/author.interface';
+import type { Genre } from '@/features/genres/types/genre.interface';
+export type { Author, Genre };
 
 export interface Review {
   id: string;

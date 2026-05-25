@@ -6,7 +6,7 @@ import { useHeaderNavigation } from './hooks/useHeaderNavigation';
 import { useHeaderTheme } from './hooks/useHeaderTheme';
 import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users } from 'lucide-react';
 import { memo } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -150,10 +150,12 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onSettings, onKno
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full px-0 hover:bg-transparent border border-border shadow-sm p-0 overflow-hidden ring-offset-background transition-all hover:ring-2 hover:ring-primary/20">
-                    <Avatar className="h-full w-full rounded-full">
-                        <AvatarImage src={avatarUrl || ''} alt={userName} />
-                        <AvatarFallback className="bg-primary/5 text-primary text-[10px] font-black">{userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                        src={avatarUrl}
+                        name={userName}
+                        className="h-full w-full rounded-full"
+                        fallbackClassName="bg-primary/5 text-primary text-[10px] font-black"
+                    />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-64 p-2 rounded-2xl shadow-xl border-border bg-background/95 backdrop-blur-xl" align="end" forceMount>
@@ -220,10 +222,12 @@ function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, o
             <SheetContent side="right" className="w-full sm:w-[350px] p-0 border-l border-border bg-background/95 backdrop-blur-xl">
                 <div className="flex flex-col h-full p-6">
                     <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
-                        <Avatar className="h-14 w-14 border-2 border-background shadow-md">
-                            <AvatarImage src={avatarUrl || ''} />
-                            <AvatarFallback className="bg-primary text-primary-foreground font-black text-lg">{userName.substring(0, 1).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            src={avatarUrl}
+                            name={userName}
+                            className="h-14 w-14 border-2 border-background shadow-md text-lg"
+                            fallbackClassName="bg-primary text-primary-foreground font-black"
+                        />
                         <div className="flex flex-col overflow-hidden">
                             <span className="font-bold text-lg truncate text-foreground">{userName}</span>
                             <span className="text-xs text-muted-foreground truncate">{user.email}</span>

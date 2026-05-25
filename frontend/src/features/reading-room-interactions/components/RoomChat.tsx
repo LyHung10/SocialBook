@@ -6,20 +6,27 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 import { useAppAuth } from '@/features/auth/hooks';
+import { GlassCard } from '@/components/common/GlassCard';
 
 interface RoomChatProps {
   sendChatMessage: (content: string) => void;
+  disabled?: boolean;
 }
 
-export function RoomChat({ sendChatMessage }: RoomChatProps) {
+export function RoomChat({ sendChatMessage, disabled }: RoomChatProps) {
   const [text, setText] = useState('');
   const chatMessages = useReadingRoomStore((s) => s.chatMessages);
   const { user } = useAppAuth();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const viewport = scrollAreaRef.current?.querySelector<HTMLElement>(
+      '[data-radix-scroll-area-viewport]',
+    );
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
   }, [chatMessages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -27,18 +34,18 @@ export function RoomChat({ sendChatMessage }: RoomChatProps) {
     if (!text.trim()) return;
     sendChatMessage(text.trim());
     setText('');
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   };
 
   const userMessages = chatMessages.filter((m) => m.role === 'user');
 
   return (
-    <div className="flex flex-col h-[50vh] bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-border/60 dark:border-border rounded-3xl overflow-hidden shadow-lg dark:shadow-xl">
-      <div className="px-5 py-4 border-b border-border/60 dark:border-border bg-primary/[0.03] dark:bg-muted/30">
-        <h3 className="text-sm font-bold tracking-tight uppercase">Trò chuyện</h3>
-      </div>
+    <GlassCard 
+      className="flex flex-col h-[50vh]"
+      header={<h3 className="text-sm font-bold tracking-tight uppercase">Trò chuyện</h3>}
+    >
 
-      <ScrollArea className="flex-1 p-3">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 p-3">
         {userMessages.length === 0 ? (
           <div className="py-8 text-center text-xs text-muted-foreground italic">
             Chưa có tin nhắn nào
@@ -47,7 +54,7 @@ export function RoomChat({ sendChatMessage }: RoomChatProps) {
           <div className="space-y-2">
             {userMessages.map((msg, i) => (
               <div
-                key={i}
+                key={`${msg.userId}-${msg.createdAt}-${i}`}
                 className="flex items-start gap-2.5 p-2.5 rounded-2xl bg-black/[0.03] dark:bg-white/5 hover:bg-black/[0.05] dark:hover:bg-white/10 transition-colors"
               >
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
@@ -76,7 +83,6 @@ export function RoomChat({ sendChatMessage }: RoomChatProps) {
                 </div>
               </div>
             ))}
-            <div ref={bottomRef} />
           </div>
         )}
       </ScrollArea>
@@ -87,19 +93,20 @@ export function RoomChat({ sendChatMessage }: RoomChatProps) {
             ref={inputRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Nhập tin nhắn..."
+            placeholder={disabled ? 'Phòng đã kết thúc' : 'Nhập tin nhắn...'}
+            disabled={disabled}
             className="h-9 text-xs rounded-xl bg-background dark:bg-black/40 border-border/50 focus-visible:ring-primary/20"
           />
           <Button
             type="submit"
             size="icon"
             className="h-9 w-9 shrink-0 rounded-xl"
-            disabled={!text.trim()}
+            disabled={disabled || !text.trim()}
           >
             <Send size={14} />
           </Button>
         </div>
       </form>
-    </div>
+    </GlassCard>
   );
 }

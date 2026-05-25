@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useUpdateBookMutation, useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetAuthorsQuery, useGetGenresQuery } from '@/features/admin/api/bookRelationApi';
-import { AuthorOption, GenreOption } from '@/features/admin/types/bookRelation.interface';
+import type { Author, Genre } from '@/features/books/types/book.interface';
 import { getErrorMessage } from '@/lib/utils';
 
 const DEFAULT_COVER = '/abstract-book-pattern.png';
@@ -39,8 +39,8 @@ interface EditBookProps {
     bookId: string;
 }
 
-const EMPTY_AUTHORS: AuthorOption[] = [];
-const EMPTY_GENRES: GenreOption[] = [];
+const EMPTY_AUTHORS: Author[] = [];
+const EMPTY_GENRES: Genre[] = [];
 
 export default function EditBook({ bookId }: EditBookProps) {
     const router = useRouter();

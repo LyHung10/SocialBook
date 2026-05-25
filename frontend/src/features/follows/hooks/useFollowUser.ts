@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import { useToggleFollowMutation, useUnfollowMutation } from '@/features/follows/api/followApi';
 
 interface UseFollowUserOptions {
@@ -27,7 +28,7 @@ export function useFollowUser({ userId, initialIsFollowing = false, onFollowChan
             setIsFollowing(newState);
             onFollowChange?.(newState);
         } catch (e) {
-            toast.error('Không thể thay đổi trạng thái theo dõi');
+            toast.error(MESSAGES.FOLLOW_TOGGLE_FAILED);
         }
     }, [isFollowing, userId, toggleFollow, unfollow, onFollowChange]);
 

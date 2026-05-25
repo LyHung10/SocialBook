@@ -10,7 +10,6 @@ import {
     Bell, 
     Palette, 
     Camera, 
-    Loader2, 
     Save, 
     Globe, 
     MapPin, 
@@ -18,8 +17,10 @@ import {
     Mail, 
     Calendar, 
     BadgeCheck,
-    Smartphone
+    Smartphone,
+    Loader2
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { 
     Card, 
     CardContent, 
@@ -46,7 +47,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { toast } from 'sonner';
 import { useAppAuth } from '@/features/auth/hooks';
 import { 
@@ -56,6 +57,7 @@ import {
 } from '@/features/users/api/usersApi';
 import { getErrorMessage } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import LoginWall from '@/components/auth/LoginWall';
 
 const profileSchema = z.object({
     username: z.string().min(3, 'Tên người dùng phải có ít nhất 3 ký tự'),
@@ -67,6 +69,21 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
+    const { isAuthenticated } = useAppAuth();
+
+    if (!isAuthenticated) {
+        return (
+            <LoginWall
+                title="Cài đặt tài khoản"
+                description="Đăng nhập để quản lý hồ sơ công khai, tùy chỉnh giao diện và thiết lập bảo mật tài khoản."
+            />
+        );
+    }
+
+    return <SettingsContent />;
+}
+
+function SettingsContent() {
     const { user: authUser } = useAppAuth();
     const userId = authUser?.id || '';
 
@@ -130,10 +147,10 @@ export default function SettingsPage() {
         }
     };
 
-    if (isOverviewLoading) {
+  if (isOverviewLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <LoadingSpinner />
             </div>
         );
     }
@@ -146,17 +163,17 @@ export default function SettingsPage() {
             </header>
 
             <Tabs defaultValue="profile" className="space-y-8">
-                <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto h-auto flex flex-wrap sm:flex-nowrap">
-                    <TabsTrigger value="profile" className="flex-1 sm:flex-none gap-2 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 shadow-sm transition-all font-bold">
+                <TabsList variant="pill">
+                    <TabsTrigger value="profile" variant="pill">
                         <User className="w-4 h-4" /> Hồ sơ
                     </TabsTrigger>
-                    <TabsTrigger value="account" className="flex-1 sm:flex-none gap-2 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 shadow-sm transition-all font-bold">
+                    <TabsTrigger value="account" variant="pill">
                         <Shield className="w-4 h-4" /> Tài khoản
                     </TabsTrigger>
-                    <TabsTrigger value="notifications" className="flex-1 sm:flex-none gap-2 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 shadow-sm transition-all font-bold opacity-50 cursor-not-allowed">
+                    <TabsTrigger value="notifications" variant="pill" className="opacity-50 cursor-not-allowed">
                         <Bell className="w-4 h-4" /> Thông báo
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="flex-1 sm:flex-none gap-2 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 shadow-sm transition-all font-bold opacity-50 cursor-not-allowed">
+                    <TabsTrigger value="appearance" variant="pill" className="opacity-50 cursor-not-allowed">
                         <Palette className="w-4 h-4" /> Giao diện
                     </TabsTrigger>
                 </TabsList>
@@ -171,14 +188,14 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="flex flex-col items-center pt-8 pb-10">
                                 <div className="relative group cursor-pointer">
-                                    <Avatar className="w-40 h-40 ring-4 ring-white dark:ring-zinc-900 shadow-2xl transition-transform group-hover:scale-[1.02]">
-                                        <AvatarImage src={overview?.image || ''} className="object-cover" />
-                                        <AvatarFallback className="bg-blue-600 text-white text-4xl font-bold">
-                                            {overview?.username?.[0]?.toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <UserAvatar
+                                        src={overview?.image}
+                                        name={overview?.username}
+                                        className="w-40 h-40 ring-4 ring-white dark:ring-zinc-900 shadow-2xl transition-transform group-hover:scale-[1.02] text-4xl font-bold"
+                                        fallbackClassName="bg-blue-600 text-white"
+                                    />
                                     <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity cursor-pointer backdrop-blur-[2px]">
-                                        {isUpdatingAvatar ? <Loader2 className="w-8 h-8 animate-spin" /> : <Camera className="w-8 h-8" />}
+                                        {isUpdatingAvatar ? <LoadingSpinner /> : <Camera className="w-8 h-8" />}
                                     </label>
                                     <input 
                                         id="avatar-upload" 

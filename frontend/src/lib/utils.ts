@@ -28,6 +28,19 @@ export function formatDate(date: Date | string | null | undefined) {
   }).format(d);
 }
 
+export function formatDateTime(date: Date | string | null | undefined) {
+  if (!date) return "";
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+}
+
 export function formatNumber(num?: number): string {
   if (!num) return "0";
   if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
@@ -54,4 +67,36 @@ export function timeAgo(dateString: string) {
   if (diff < 86400) return Math.floor(diff / 3600) + " giờ trước";
 
   return Math.floor(diff / 86400) + " ngày trước";
+}
+
+export function buildFormData(
+  data: Record<string, unknown>,
+  formData: FormData = new FormData()
+): FormData {
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) {
+      return;
+    }
+
+    if (value instanceof File) {
+      formData.append(key, value);
+    } else if (value instanceof Blob) {
+      formData.append(key, value);
+    } else if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item instanceof File || item instanceof Blob) {
+          formData.append(key, item);
+        } else if (typeof item === 'object' && item !== null) {
+          formData.append(key, JSON.stringify(item));
+        } else if (item !== undefined && item !== null) {
+          formData.append(key, String(item));
+        }
+      });
+    } else if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
+    }
+  });
+  return formData;
 }
