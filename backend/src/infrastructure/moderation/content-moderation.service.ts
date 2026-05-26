@@ -1,4 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { IContentModerationService } from '@/domain/content-moderation/interfaces/content-moderation.service.interface';
 import { ModerationResult } from '@/domain/content-moderation/interfaces/moderation-result.interface';
 import { containsVietnameseToxicWords } from '@/domain/content-moderation/utils/vietnamese-profanity';
@@ -12,6 +14,7 @@ export class ContentModerationService implements IContentModerationService {
   constructor(
     @Inject(GEMINI_TOKENS.GEMINI_SERVICE)
     private readonly geminiService: IGeminiService,
+    private readonly configService: ConfigService,
   ) {}
 
   async checkContent(text: string): Promise<ModerationResult> {
@@ -74,7 +77,54 @@ export class ContentModerationService implements IContentModerationService {
         - BLOCK: Vi phạm nghiêm trọng (toxic nặng, hate speech, spam).
       `;
 
-      const result = await this.geminiService.generateJSON<any>(prompt);
+      let result: any;
+      const moderationApiKey = this.configService.get<string>('env.MODERATION_API_KEY');
+
+      if (moderationApiKey) {
+        this.logger.debug('[AI] Sử dụng API Key riêng cho moderation (OpenAI-compatible).');
+        const moderationApiBaseUrl = this.configService.get<string>('env.MODERATION_API_BASE_URL') || 'https://api.beeknoee.com/v1';
+        const moderationModel = this.configService.get<string>('env.MODERATION_MODEL') || 'gemini-2.5-flash';
+        const moderationTimeout = this.configService.get<number>('env.MODERATION_TIMEOUT') || 30000;
+
+        const response = await axios.post(
+          `${moderationApiBaseUrl}/chat/completions`,
+          {
+            model: moderationModel,
+            messages: [
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            response_format: { type: 'json_object' },
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${moderationApiKey}`,
+            },
+            timeout: moderationTimeout,
+          },
+        );
+
+        const responseContent = response.data?.choices?.[0]?.message?.content;
+        if (!responseContent) {
+          throw new Error('Không nhận được nội dung phản hồi từ API kiểm duyệt.');
+        }
+
+        try {
+          result = JSON.parse(responseContent);
+        } catch (parseError) {
+          const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            result = JSON.parse(jsonMatch[0]);
+          } else {
+            throw parseError;
+          }
+        }
+      } else {
+        result = await this.geminiService.generateJSON<any>(prompt);
+      }
 
       const isSafe = result.action === 'ALLOW';
       const isToxic =

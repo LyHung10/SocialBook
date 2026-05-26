@@ -33,6 +33,14 @@ export default registerAs('env', () => ({
   VOICERSS_API_KEY: process.env.VOICERSS_API_KEY || '',
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY || '',
 
+  // Content Moderation API
+  MODERATION_API_KEY: process.env.MODERATION_API_KEY || '',
+  MODERATION_API_BASE_URL: process.env.MODERATION_API_BASE_URL || 'https://api.beeknoee.com/v1',
+  MODERATION_MODEL: process.env.MODERATION_MODEL || 'gemini-2.5-flash-lite',
+  MODERATION_TIMEOUT: parseInt(process.env.MODERATION_TIMEOUT ?? '', 10) || 30000,
+
+
+
   // Chroma
   CHROMA_URL: process.env.CHROMA_URL || 'http://localhost:8000',
   CHROMA_COLLECTION: process.env.CHROMA_COLLECTION || 'socialbook_vectors',
