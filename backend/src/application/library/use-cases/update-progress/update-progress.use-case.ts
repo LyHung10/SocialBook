@@ -55,56 +55,54 @@ export class UpdateProgressUseCase {
       });
     }
 
-    let readingProgress =
-      await this.readingProgressRepository.findByUserIdAndChapterId(
-        userId,
-        chapterId,
-      );
-    if (!readingProgress) {
-      readingProgress = ReadingProgress.create({
-        id: this.idGenerator.generate(),
-        userId: command.userId,
-        bookId: command.bookId,
-        chapterId: command.chapterId,
-        progress: command.progress,
-      });
-    } else {
-      readingProgress.updateProgress(command.progress);
-    }
+    const [readingProgress, book] = await Promise.all([
+      this.readingProgressRepository
+        .findByUserIdAndChapterId(userId, chapterId)
+        .then((rp) => {
+          if (!rp) {
+            return ReadingProgress.create({
+              id: this.idGenerator.generate(),
+              userId: command.userId,
+              bookId: command.bookId,
+              chapterId: command.chapterId,
+              progress: command.progress,
+            });
+          }
+          rp.updateProgress(command.progress);
+          return rp;
+        }),
+      !readingList.isCompleted()
+        ? this.bookRepository.findById(DomainBookId.create(command.bookId))
+        : Promise.resolve(null),
+    ]);
 
     readingList.updateLastReadChapter(command.chapterId);
 
-    if (!readingList.isCompleted()) {
-      const book = await this.bookRepository.findById(
-        DomainBookId.create(command.bookId),
+    if (book && book.status.toString() === 'completed') {
+      const [totalChapters, allProgresses] = await Promise.all([
+        this.chapterRepository.countByBook(
+          ChapterBookId.create(command.bookId),
+        ),
+        this.readingProgressRepository.findByUserIdAndBookId(userId, bookId),
+      ]);
+
+      const completedChapterIds = new Set(
+        allProgresses
+          .filter((p) => p.status === ChapterStatus.COMPLETED)
+          .map((p) => p.chapterId.toString()),
       );
 
-      if (book && book.status.toString() === 'completed') {
-        const [totalChapters, allProgresses] = await Promise.all([
-          this.chapterRepository.countByBook(
-            ChapterBookId.create(command.bookId),
-          ),
-          this.readingProgressRepository.findByUserIdAndBookId(userId, bookId),
-        ]);
+      if (readingProgress.isCompleted()) {
+        completedChapterIds.add(command.chapterId);
+      }
 
-        const completedChapterIds = new Set(
-          allProgresses
-            .filter((p) => p.status === ChapterStatus.COMPLETED)
-            .map((p) => p.chapterId.toString()),
-        );
-
-        if (readingProgress.isCompleted()) {
-          completedChapterIds.add(command.chapterId);
-        }
-
-        if (totalChapters > 0 && completedChapterIds.size >= totalChapters) {
-          readingList.updateStatus(ReadingStatus.COMPLETED);
-        } else {
-          readingList.updateStatus(ReadingStatus.READING);
-        }
+      if (totalChapters > 0 && completedChapterIds.size >= totalChapters) {
+        readingList.updateStatus(ReadingStatus.COMPLETED);
       } else {
         readingList.updateStatus(ReadingStatus.READING);
       }
+    } else if (!readingList.isCompleted()) {
+      readingList.updateStatus(ReadingStatus.READING);
     }
 
     await Promise.all([

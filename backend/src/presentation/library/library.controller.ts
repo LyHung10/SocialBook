@@ -1,4 +1,4 @@
-import { ReadingStatusResult } from '@/application/library/dto/library.dto';
+import { ReadingStatus } from '@/domain/library/entities/reading-list.entity';
 import { GetBookLibraryInfoQuery } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.query';
 import { GetBookLibraryInfoUseCase } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.use-case';
 import { GetChapterProgressQuery } from '@/application/library/use-cases/get-chapter-progress/get-chapter-progress.query';
@@ -66,13 +66,13 @@ export class LibraryController {
     @Query('status') status?: string,
     @Query('limit') limit?: string,
   ) {
-    let readingStatuses: ReadingStatusResult | ReadingStatusResult[];
+    let readingStatuses: ReadingStatus | ReadingStatus[];
     if (status) {
       readingStatuses = status.includes(',')
-        ? status.split(',').map((s) => s.trim() as ReadingStatusResult)
-        : (status as ReadingStatusResult);
+        ? status.split(',').map((s) => s.trim() as ReadingStatus)
+        : (status as ReadingStatus);
     } else {
-      readingStatuses = ReadingStatusResult.READING;
+      readingStatuses = ReadingStatus.READING;
     }
 
     const limitNumber = limit ? parseInt(limit, 10) : undefined;

@@ -5,15 +5,46 @@ import {
 } from '@/features/library/api/libraryApi';
 import throttle from 'lodash/throttle';
 
+function getContentProgress(contentEl: HTMLElement): number {
+  const rect = contentEl.getBoundingClientRect();
+  const contentTop = rect.top + window.scrollY;
+  const contentHeight = contentEl.offsetHeight;
+  const viewportHeight = window.innerHeight;
+
+  const scrolledPast = Math.max(0, window.scrollY - contentTop);
+  const totalScrollable = contentHeight - viewportHeight;
+
+  if (totalScrollable <= 0) {
+    return window.scrollY >= contentTop ? 100 : 0;
+  }
+  return Math.min(100, Math.round((scrolledPast / totalScrollable) * 100));
+}
+
+function getContentTargetScroll(
+  savedProgress: number,
+  contentEl: HTMLElement,
+): number {
+  const rect = contentEl.getBoundingClientRect();
+  const contentTop = rect.top + window.scrollY;
+  const contentHeight = contentEl.offsetHeight;
+  const viewportHeight = window.innerHeight;
+
+  const totalScrollable = contentHeight - viewportHeight;
+  if (totalScrollable <= 0) return contentTop;
+
+  return contentTop + (savedProgress / 100) * totalScrollable;
+}
+
 export function useReadingProgress(
   bookId: string,
   chapterId: string,
-  enabled: boolean = true
+  enabled: boolean = true,
+  contentRef?: React.RefObject<HTMLElement | null>,
 ) {
   const [updateProgress] = useUpdateReadingProgressMutation();
   const { data: progressData, isLoading } = useGetChapterProgressQuery(
     { bookId, chapterId },
-    { skip: !enabled || !bookId || !chapterId }
+    { skip: !enabled || !bookId || !chapterId },
   );
 
   const lastProgressRef = useRef(0);
@@ -21,30 +52,35 @@ export function useReadingProgress(
 
   const restoreScroll = useCallback(() => {
     if (savedProgress > 0) {
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const targetScrollY = (savedProgress / 100) * docHeight;
-
-      window.scrollTo({
-        top: targetScrollY,
-        behavior: 'smooth',
-      });
+      if (contentRef?.current) {
+        const targetScrollY = getContentTargetScroll(savedProgress, contentRef.current);
+        window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+      } else {
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const targetScrollY = (savedProgress / 100) * docHeight;
+        window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+      }
 
       lastProgressRef.current = savedProgress;
     }
-  }, [savedProgress]);
+  }, [savedProgress, contentRef]);
 
   useEffect(() => {
     if (!enabled || !bookId || !chapterId) return;
 
     const handleScroll = throttle(() => {
-      const scrollTop = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
+      let progress: number;
 
-      if (docHeight <= 0) return;
-
-      const progress = Math.round((scrollTop / docHeight) * 100);
+      if (contentRef?.current) {
+        progress = getContentProgress(contentRef.current);
+      } else {
+        const scrollTop = window.scrollY;
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight <= 0) return;
+        progress = Math.round((scrollTop / docHeight) * 100);
+      }
 
       if (
         Math.abs(progress - lastProgressRef.current) > 5 ||
@@ -60,7 +96,7 @@ export function useReadingProgress(
       window.removeEventListener('scroll', handleScroll);
       handleScroll.cancel();
     };
-  }, [bookId, chapterId, enabled, updateProgress]);
+  }, [bookId, chapterId, enabled, updateProgress, contentRef]);
 
   return {
     savedProgress,

@@ -1,50 +1,64 @@
-import { useGetBookBySlugQuery, useLikeBookMutation } from '@/features/books/api/bookApi';
+import { useGetBookBySlugQuery, useLikeBookMutation, useRecordViewMutation, booksApi } from '@/features/books/api/bookApi';
+import { useEffect, useRef } from 'react';
 import { useCreatePostMutation } from '@/features/posts/api/postApi';
 import { getErrorMessage } from '@/lib/utils';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { useAppAuth } from '@/features/auth/hooks';
+import { useAppDispatch } from '@/store/hooks';
 
 export const useBookDetail = (bookSlug: string) => {
   const { data: book, isLoading, error } = useGetBookBySlugQuery({ bookSlug });
   const { user } = useAppAuth();
+  const dispatch = useAppDispatch();
 
   const [likeBook, { isLoading: isLiking }] = useLikeBookMutation();
   const [createPost, { isLoading: isCreatingPost }] = useCreatePostMutation();
+  const [recordView] = useRecordViewMutation();
+  const hasRecordedView = useRef(false);
 
-  // Derive initial isLiked and likesCount from the book data
-  const derivedIsLiked = useMemo(() => {
+  useEffect(() => {
+    if (book?.slug && !hasRecordedView.current) {
+      hasRecordedView.current = true;
+      recordView(book.slug).unwrap().then(() => {
+        dispatch(
+          booksApi.util.updateQueryData('getBookBySlug', { bookSlug: book.slug }, (draft) => {
+            if (draft.stats) {
+              draft.stats.views += 1;
+            }
+          }),
+        );
+      });
+    }
+  }, [book?.slug, recordView, dispatch]);
+
+  const isLiked = useMemo(() => {
     if (!user?.id || !book?.likedBy) return false;
     return book.likedBy.includes(user.id);
   }, [book?.likedBy, user?.id]);
 
-  const derivedLikesCount = book?.stats?.likes ?? 0;
-
-  // Use local state so the UI updates immediately from the API response
-  const [isLiked, setIsLiked] = useState(derivedIsLiked);
-  const [likesCount, setLikesCount] = useState(derivedLikesCount);
-
-  // Sync local state when book data changes (e.g. on initial load)
-  useEffect(() => {
-    setIsLiked(derivedIsLiked);
-  }, [derivedIsLiked]);
-
-  useEffect(() => {
-    setLikesCount(derivedLikesCount);
-  }, [derivedLikesCount]);
+  const likesCount = book?.stats?.likes ?? 0;
 
   const handleToggleLike = async () => {
-    if (!book?.id) return;
+    if (!book?.slug || !user?.id) return;
     try {
       const result = await likeBook(book.slug).unwrap();
-      // Immediately update UI from the API response
-      setIsLiked(result.isLiked);
-      setLikesCount(result.likes);
-    } catch (error) {
-      const apiError = error as { status?: number };
-      if (apiError.status !== 401) {
-        toast.error('Không thể thích sách này');
-      }
+      dispatch(
+        booksApi.util.updateQueryData('getBookBySlug', { bookSlug: book.slug }, (draft) => {
+          if (result.isLiked) {
+            if (!draft.likedBy.includes(user.id)) {
+              draft.likedBy.push(user.id);
+            }
+          } else {
+            draft.likedBy = draft.likedBy.filter((id) => id !== user.id);
+          }
+          if (draft.stats) {
+            draft.stats.likes = result.likes;
+          }
+        }),
+      );
+    } catch {
+      toast.error('Không thể thích sách này');
     }
   };
 
@@ -67,10 +81,7 @@ export const useBookDetail = (bookSlug: string) => {
       }
       return true;
     } catch (err) {
-      const apiError = err as { status?: number };
-      if (apiError.status !== 401) {
-        toast.error(getErrorMessage(err));
-      }
+      toast.error(getErrorMessage(err));
       return false;
     }
   };
@@ -79,7 +90,7 @@ export const useBookDetail = (bookSlug: string) => {
     if (!book || !book.title) return '';
     const authorName = book.authorId.name || 'Không rõ';
     const title = book.title || '';
-    
+
     return `Mọi người ơi, mình vừa tìm thấy cuốn sách này hay cực: "${title}" của tác giả ${authorName}. 📖✨
 
 Bạn nào mê đọc sách thì ghé qua SocialBook xem thử cùng mình nhé!

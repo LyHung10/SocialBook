@@ -8,6 +8,7 @@ export enum ReadingStatus {
   READING = 'READING',
   COMPLETED = 'COMPLETED',
   ARCHIVED = 'ARCHIVED',
+  NONE = 'NONE',
 }
 
 import { BaseSchema } from '@/shared/schemas/base.schema';

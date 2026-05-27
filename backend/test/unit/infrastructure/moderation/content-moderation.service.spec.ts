@@ -28,7 +28,10 @@ describe('ContentModerationService (Unit)', () => {
       get: jest.fn(),
     } as any;
 
-    service = new ContentModerationService(mockGeminiService, mockConfigService);
+    service = new ContentModerationService(
+      mockGeminiService,
+      mockConfigService,
+    );
   });
 
   describe('Regex check (Vietnamese Profanity)', () => {
@@ -41,7 +44,6 @@ describe('ContentModerationService (Unit)', () => {
       expect(mockGeminiService.generateJSON).not.toHaveBeenCalled();
       expect(mockedAxios.post).not.toHaveBeenCalled();
     });
-
 
     it('should allow empty or whitespace-only text immediately', async () => {
       const result = await service.checkContent('   ');
@@ -80,7 +82,8 @@ describe('ContentModerationService (Unit)', () => {
     it('should call Custom HTTP endpoint and parse OpenAI-completions response', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'env.MODERATION_API_KEY') return 'mock-beeknoee-key';
-        if (key === 'env.MODERATION_API_BASE_URL') return 'https://api.beeknoee.com/v1';
+        if (key === 'env.MODERATION_API_BASE_URL')
+          return 'https://api.beeknoee.com/v1';
         if (key === 'env.MODERATION_MODEL') return 'gemini-2.5-flash';
         return null;
       });
@@ -134,7 +137,8 @@ describe('ContentModerationService (Unit)', () => {
           choices: [
             {
               message: {
-                content: '```json\n{\n  "action": "ALLOW",\n  "category": "none",\n  "score": 5,\n  "reason": ""\n}\n```',
+                content:
+                  '```json\n{\n  "action": "ALLOW",\n  "category": "none",\n  "score": 5,\n  "reason": ""\n}\n```',
               },
             },
           ],
@@ -160,7 +164,9 @@ describe('ContentModerationService (Unit)', () => {
 
       expect(result.isSafe).toBe(false);
       expect(result.action).toBe('REVIEW');
-      expect(result.reason).toContain('Hệ thống kiểm duyệt AI tạm thời gián đoạn');
+      expect(result.reason).toContain(
+        'Hệ thống kiểm duyệt AI tạm thời gián đoạn',
+      );
     });
   });
 });

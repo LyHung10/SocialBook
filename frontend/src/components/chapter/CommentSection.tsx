@@ -7,7 +7,7 @@ import { useAppAuth } from '@/features/auth/hooks';
 import { getErrorMessage } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { toast } from 'sonner';
 import { MESSAGES } from '@/constants/messages';
 import CommentInput from './CommentInput';
@@ -29,7 +29,7 @@ interface CommentSectionProps {
     className?: string;
 }
 
-export default function CommentSection({
+const CommentSection = memo(function CommentSection({
     targetId,
     className = '',
 }: CommentSectionProps) {
@@ -103,4 +103,6 @@ export default function CommentSection({
             </div>
         </section>
     );
-}
+});
+
+export default CommentSection;

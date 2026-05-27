@@ -71,16 +71,21 @@ export function useAddToLibrary({
     }, [isOpen]);
 
     const handleStatusChange = useCallback(async (status: LibraryStatus) => {
-        setSelectedStatus(status);
+        const isRemove = status === selectedStatus;
+        const previousStatus = selectedStatus;
+        setSelectedStatus(isRemove ? null : status);
+
         try {
-            await updateStatus({ bookId, status }).unwrap();
-        } catch (error) {
-            const apiError = error as { status?: number };
-            if (apiError.status !== 401) {
-                toast.error('Cập nhật trạng thái thất bại');
+            if (isRemove) {
+                await updateStatus({ bookId, status: LibraryStatus.NONE }).unwrap();
+            } else {
+                await updateStatus({ bookId, status }).unwrap();
             }
+        } catch (error) {
+            setSelectedStatus(previousStatus);
+            toast.error('Cập nhật trạng thái thất bại');
         }
-    }, [bookId, updateStatus]);
+    }, [bookId, selectedStatus, updateStatus]);
 
     const handleToggleCollection = useCallback(async (collectionId: string) => {
         const isSelected = selectedCollections.includes(collectionId);
@@ -98,10 +103,7 @@ export function useAddToLibrary({
             await updateCollections({ bookId, collectionIds: newIds }).unwrap();
         } catch (error) {
             setSelectedCollections(selectedCollections);
-            const apiError = error as { status?: number };
-            if (apiError.status !== 401) {
-                toast.error('Cập nhật bộ sưu tập thất bại');
-            }
+            toast.error('Cập nhật bộ sưu tập thất bại');
         }
     }, [bookId, selectedCollections, updateCollections]);
 
@@ -116,10 +118,7 @@ export function useAddToLibrary({
             setNewCollectionName('');
             setIsCreating(false);
         } catch (error) {
-            const apiError = error as { status?: number };
-            if (apiError.status !== 401) {
-                toast.error('Tạo danh sách thất bại');
-            }
+            toast.error('Tạo danh sách thất bại');
         }
     }, [newCollectionName, handleToggleCollection, createCollection]);
 

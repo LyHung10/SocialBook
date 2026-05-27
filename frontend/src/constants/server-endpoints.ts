@@ -39,6 +39,7 @@ export const NESTJS_BOOKS_ENDPOINTS = {
     deleteBook: (bookId: string) => `/books/${bookId}`,
     getAllBookForAdmin: '/books/admin/all',
     like: (bookSlug: string) => `/books/${bookSlug}/like`,
+    recordView: (bookSlug: string) => `/books/${bookSlug}/views`,
     getFilters: '/books/filters/all',
 };
 

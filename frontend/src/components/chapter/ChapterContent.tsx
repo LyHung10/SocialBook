@@ -14,7 +14,7 @@ import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingR
 import { useAppAuth } from '@/features/auth/hooks';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
 import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { toast } from 'sonner';
@@ -37,7 +37,7 @@ interface ChapterContentProps {
 }
 
 
-export function ChapterContent({
+export const ChapterContent = memo(function ChapterContent({
     paragraphs,
     chapterId,
     bookId,
@@ -425,7 +425,7 @@ export function ChapterContent({
             />
         </TooltipProvider>
     );
-}
+});
 
 const ChapterTextRenderer = ({
     content,

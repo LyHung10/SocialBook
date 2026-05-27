@@ -47,8 +47,9 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const { isAuthenticated: isLoggedIn } = useAppAuth();
 
-  const { openCreatePost, openAddToLibrary, openChapterSummary } =
-    useModalStore();
+  const openCreatePost = useModalStore(s => s.openCreatePost);
+  const openAddToLibrary = useModalStore(s => s.openAddToLibrary);
+  const openChapterSummary = useModalStore(s => s.openChapterSummary);
   const {
     data: chapterData,
     isLoading,
@@ -64,6 +65,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const chapters = chaptersData?.chapters || [];
   const totalChapters = chaptersData?.total || 0;
+  const paragraphs = useMemo(() => chapter?.paragraphs || [], [chapter?.paragraphs]);
 
   const {
     viewMode,
@@ -76,11 +78,13 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   } = useReadingView();
 
   const [showAISidebar, setShowAISidebar] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const { savedProgress, restoreScroll } = useReadingProgress(
     book?.id || "",
     chapter?.id || "",
     !isLoading && !!chapter && viewMode === "read" && isLoggedIn,
+    contentRef,
   );
 
   useEffect(() => {
@@ -97,6 +101,20 @@ export default function ChapterPage({ params }: ChapterPageProps) {
       }, 1000);
     }
   }, [savedProgress, restoreScroll]);
+
+  const goToPreviousChapter = useCallback(() => {
+    navigation?.previous &&
+      router.push(
+        `/books/${bookSlug}/chapters/${navigation.previous.slug}`,
+      );
+  }, [navigation?.previous, bookSlug, router]);
+
+  const goToNextChapter = useCallback(() => {
+    navigation?.next &&
+      router.push(
+        `/books/${bookSlug}/chapters/${navigation.next.slug}`,
+      );
+  }, [navigation?.next, bookSlug, router]);
 
   const defaultShareContent = useMemo(() => {
     if (!book || !chapter) return "";
@@ -137,10 +155,7 @@ ${book.description?.slice(0, 100)}...
             toast.success("Chia sẻ thành công!");
           }
         } catch (error) {
-          const apiError = error as { status?: number };
-          if (apiError.status !== 401) {
-            toast.error(getErrorMessage(error));
-          }
+          toast.error(getErrorMessage(error));
         }
       },
     });
@@ -247,31 +262,23 @@ ${book.description?.slice(0, 100)}...
               viewsCount={chapter.viewsCount}
             />
 
-            <ChapterContent
-              paragraphs={chapter.paragraphs}
-              chapterId={chapter.id}
-              bookId={book.id}
-              bookSlug={bookSlug}
-              bookCoverImage={book.coverUrl}
-              bookTitle={book.title}
-            />
+            <div ref={contentRef}>
+              <ChapterContent
+                paragraphs={paragraphs}
+                chapterId={chapter.id}
+                bookId={book.id}
+                bookSlug={bookSlug}
+                bookCoverImage={book.coverUrl}
+                bookTitle={book.title}
+              />
+            </div>
 
             <div className="mt-12 pt-8 border-t border-border">
               <ChapterNavigation
                 hasPrevious={!!navigation?.previous}
                 hasNext={!!navigation?.next}
-                onPrevious={() =>
-                  navigation?.previous &&
-                  router.push(
-                    `/books/${bookSlug}/chapters/${navigation.previous.slug}`,
-                  )
-                }
-                onNext={() =>
-                  navigation?.next &&
-                  router.push(
-                    `/books/${bookSlug}/chapters/${navigation.next.slug}`,
-                  )
-                }
+                onPrevious={goToPreviousChapter}
+                onNext={goToNextChapter}
               />
             </div>
 

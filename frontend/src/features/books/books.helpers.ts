@@ -41,19 +41,10 @@ export function buildUpdateBookInvalidationTags(
 }
 
 export function buildLikeBookInvalidationTags(
-    result: LikeResult | undefined,
+    _result: LikeResult | undefined,
     bookId: string
 ) {
-    const tags: Array<{ type: BookTagType; id: string }> = [
+    return [
         { type: BOOK_TAGS.BOOK_STATS, id: bookId },
     ];
-
-    if (result?.slug) {
-        tags.push({
-            type: BOOK_TAGS.BOOK_DETAIL,
-            id: result.slug,
-        });
-    }
-
-    return tags;
 }

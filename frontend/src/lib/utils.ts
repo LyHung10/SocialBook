@@ -57,6 +57,15 @@ export const getErrorMessage = (error: unknown): string => {
   return err?.data?.message || err?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
 };
 
+export const NEW_BOOK_DAYS_THRESHOLD = 14;
+
+export function isNewBook(createdAt: string): boolean {
+  const created = new Date(createdAt).getTime();
+  const now = Date.now();
+  const diffDays = (now - created) / (1000 * 60 * 60 * 24);
+  return diffDays <= NEW_BOOK_DAYS_THRESHOLD;
+}
+
 export function timeAgo(dateString: string) {
   const date = new Date(dateString);
   const now = Date.now();

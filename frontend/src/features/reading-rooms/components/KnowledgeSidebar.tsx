@@ -50,6 +50,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const [graphOpen, setGraphOpen] = useState(false);
   const [localChatMessages, setLocalChatMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 
   // Load local messages from localStorage on mount
@@ -79,7 +80,21 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const chatMessages = roomId ? roomChatMessages.filter(m => m.role === 'ai') : localChatMessages;
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current && scrollRef.current) {
+      const viewport = scrollContainerRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]',
+      );
+      if (viewport instanceof HTMLElement) {
+        const refBottom = scrollRef.current.getBoundingClientRect().bottom;
+        const viewportBottom = viewport.getBoundingClientRect().bottom;
+        if (refBottom > viewportBottom) {
+          viewport.scrollBy({
+            top: refBottom - viewportBottom,
+            behavior: 'smooth',
+          });
+        }
+      }
+    }
   }, [chatMessages, isSoloPending]);
 
   const handleAskAI = async (e: React.FormEvent) => {
@@ -287,7 +302,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
 
 
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0">
-          <ScrollArea className="flex-1 px-4 py-4">
+          <ScrollArea ref={scrollContainerRef} className="flex-1 px-4 py-4">
             <div className="space-y-4">
               {chatMessages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">

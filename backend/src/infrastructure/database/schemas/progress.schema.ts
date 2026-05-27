@@ -43,6 +43,7 @@ export const ProgressSchema = SchemaFactory.createForClass(Progress);
 
 ProgressSchema.index({ userId: 1, chapterId: 1 }, { unique: true });
 
+ProgressSchema.index({ userId: 1, bookId: 1 });
 ProgressSchema.index({ lastReadAt: 1 });
 ProgressSchema.index({ userId: 1, lastReadAt: -1 });
 ProgressSchema.index({ bookId: 1, lastReadAt: -1 });

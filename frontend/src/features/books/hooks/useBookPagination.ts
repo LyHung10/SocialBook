@@ -35,8 +35,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             tags: params.tags.join(','),
             sortBy: params.sortBy as BookOrderField,
             order: params.order as 'asc' | 'desc',
-        },
-        { refetchOnMountOrArgChange: true }
+        }
     );
 
     useEffect(() => {

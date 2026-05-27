@@ -1,15 +1,22 @@
-import { Book } from '../../books/types/book.interface';
-
 export enum LibraryStatus {
   READING = 'READING',
   ARCHIVED = 'ARCHIVED',
   COMPLETED = 'COMPLETED',
+  NONE = 'NONE',
+}
+
+export interface BookSummary {
+  id: string;
+  title: string;
+  slug: string;
+  coverUrl: string;
+  authorName: string;
 }
 
 export interface LibraryItem {
   id: string;
   userId: string;
-  bookId: Book;
+  bookId: BookSummary;
   status: LibraryStatus;
   lastReadChapterId?: {
     id: string;

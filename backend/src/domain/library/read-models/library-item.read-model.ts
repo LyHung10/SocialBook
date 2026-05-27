@@ -1,9 +1,11 @@
+import { ReadingStatus } from '@/domain/library/enums/reading-status.enum';
+
 export interface LibraryBookSummary {
   id: string;
   title: string;
   slug: string;
   coverUrl: string;
-  authorId: string;
+  authorName: string;
 }
 
 export interface LibraryChapterSummary {
@@ -17,7 +19,7 @@ export interface LibraryItemReadModel {
   id: string;
   userId: string;
   bookId: LibraryBookSummary;
-  status: string;
+  status: ReadingStatus;
   lastReadChapterId: LibraryChapterSummary | null;
   collectionIds: string[];
   createdAt: Date;

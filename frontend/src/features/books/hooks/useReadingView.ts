@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export type ViewMode = 'read' | 'listen';
 
@@ -17,22 +17,36 @@ export function useReadingView(): UseReadingViewResult {
     const [showTOC, setShowTOC] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [isControlsVisible, setIsControlsVisible] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const lastScrollYRef = useRef(0);
+    const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                setIsControlsVisible(false);
-            } else {
-                setIsControlsVisible(true);
-            }
-            setLastScrollY(currentScrollY);
+            if (rafRef.current !== null) return;
+
+            rafRef.current = requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+                const isScrollingDown = currentScrollY > lastScrollYRef.current;
+                lastScrollYRef.current = currentScrollY;
+
+                if (isScrollingDown && currentScrollY > 100) {
+                    setIsControlsVisible(false);
+                } else {
+                    setIsControlsVisible(true);
+                }
+
+                rafRef.current = null;
+            });
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [lastScrollY]);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (rafRef.current !== null) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
+    }, []);
 
     return {
         viewMode,

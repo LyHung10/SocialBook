@@ -27,12 +27,17 @@ export interface ReadingListPersistence {
   updatedAt: Date;
 }
 
+export interface PopulatedAuthor {
+  _id: Types.ObjectId;
+  name: string;
+}
+
 export interface PopulatedBook {
   _id: Types.ObjectId;
   title: string;
   slug: string;
   coverUrl: string;
-  authorId: Types.ObjectId;
+  authorId: PopulatedAuthor;
 }
 
 export interface PopulatedChapter {
@@ -73,7 +78,7 @@ export class LibraryMapper {
         title: doc.bookId.title,
         slug: doc.bookId.slug,
         coverUrl: doc.bookId.coverUrl,
-        authorId: doc.bookId.authorId.toString(),
+        authorName: doc.bookId.authorId.name,
       },
       status: doc.status,
       lastReadChapterId: doc.lastReadChapterId

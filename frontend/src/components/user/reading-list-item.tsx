@@ -48,7 +48,7 @@ export function ReadingListItem(props: ReadingListItemProps) {
                         bookImage={c.bookId.coverUrl}
                         bookId={c.bookId.id}
                         bookName={c.bookId.title}
-                        authorName={c.bookId.authorId.name}
+                        authorName={c.bookId.authorName}
                         showStats={false}
                     />
                 ))}

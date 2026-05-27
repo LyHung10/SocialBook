@@ -1,7 +1,4 @@
-import {
-  ScrapedBookData,
-  ScrapedChapterData,
-} from './scraped-data.model';
+import { ScrapedBookData, ScrapedChapterData } from './scraped-data.model';
 
 export interface IScraperStrategy {
   scrapeBook(url: string): Promise<ScrapedBookData>;

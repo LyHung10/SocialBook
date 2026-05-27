@@ -37,6 +37,8 @@ import { UpdateBookUseCase } from '@/application/books/use-cases/update-book/upd
 import { IntelligentSearchUseCase } from '@/application/search/use-cases/intelligent-search.use-case';
 import { IntelligentSearchQuery } from '@/application/search/use-cases/intelligent-search.query';
 import { ToggleBookLikeUseCase } from '@/application/books/use-cases/toggle-book-like/toggle-book-like.use-case';
+import { RecordBookViewUseCase } from '@/application/books/use-cases/record-book-view/record-book-view.use-case';
+import { RecordBookViewCommand } from '@/application/books/use-cases/record-book-view/record-book-view.command';
 import { ToggleBookLikeCommand } from '@/application/books/use-cases/toggle-book-like/toggle-book-like.command';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -55,6 +57,7 @@ export class BooksController {
     private readonly getBookFiltersUseCase: GetBookFiltersUseCase,
     private readonly toggleBookLikeUseCase: ToggleBookLikeUseCase,
     private readonly intelligentSearchUseCase: IntelligentSearchUseCase,
+    private readonly recordBookViewUseCase: RecordBookViewUseCase,
   ) {}
 
   @Post()
@@ -169,7 +172,7 @@ export class BooksController {
     const command = new ToggleBookLikeCommand({
       bookId: book.id,
       userId,
-      bookSlug: book.slug,
+      bookSlug: slug,
     });
     const result = await this.toggleBookLikeUseCase.execute(command);
 
@@ -180,6 +183,15 @@ export class BooksController {
         isLiked: result.isLiked,
         likes: result.likes,
       },
+    };
+  }
+
+  @Post(':slug/views')
+  @Public()
+  async recordView(@Param('slug') slug: string) {
+    await this.recordBookViewUseCase.execute(new RecordBookViewCommand(slug));
+    return {
+      message: 'Recorded view successfully',
     };
   }
 

@@ -1,7 +1,7 @@
+import { ReadingStatus } from '@/domain/library/entities/reading-list.entity';
 import {
   ReadingListResult,
   ReadingProgressResult,
-  ReadingStatusResult,
 } from '@/application/library/dto/library.dto';
 import { CollectionResult } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.use-case';
 import { LibraryItemReadModel } from '@/domain/library/read-models/library-item.read-model';
@@ -18,25 +18,38 @@ type CollectionInput = {
 };
 
 export class BookLibraryInfoResponseDto {
-  status: ReadingStatusResult | null;
+  status: ReadingStatus | null;
   collections: CollectionResponseDto[];
+  completedChaptersCount: number;
+  totalChapters: number;
 
   constructor(
     readingList: ReadingListResult | null,
     collections: CollectionResponseDto[],
+    completedChaptersCount: number,
+    totalChapters: number,
   ) {
-    this.status = readingList?.status || null;
+    this.status = readingList?.status === 'NONE' ? null : (readingList?.status || null);
     this.collections = collections;
+    this.completedChaptersCount = completedChaptersCount;
+    this.totalChapters = totalChapters;
   }
 
   static fromResult(result: {
     readingList: ReadingListResult | null;
     collections: CollectionInput[];
+    completedChaptersCount: number;
+    totalChapters: number;
   }): BookLibraryInfoResponseDto {
     const collectionDtos = result.collections.map((c) =>
       CollectionResponseDto.fromResult(c),
     );
-    return new BookLibraryInfoResponseDto(result.readingList, collectionDtos);
+    return new BookLibraryInfoResponseDto(
+      result.readingList,
+      collectionDtos,
+      result.completedChaptersCount,
+      result.totalChapters,
+    );
   }
 }
 
@@ -157,9 +170,9 @@ export class LibraryItemResponseDto {
     title: string;
     slug: string;
     coverUrl: string;
-    authorId: string;
+    authorName: string;
   };
-  status: ReadingStatusResult;
+  status: ReadingStatus;
   lastReadChapterId: {
     id: string;
     title: string;
@@ -174,7 +187,7 @@ export class LibraryItemResponseDto {
     this.id = readModel.id;
     this.userId = readModel.userId;
     this.bookId = readModel.bookId;
-    this.status = readModel.status as ReadingStatusResult;
+    this.status = readModel.status;
     this.lastReadChapterId = readModel.lastReadChapterId;
     this.collectionIds = readModel.collectionIds;
     this.createdAt = readModel.createdAt;

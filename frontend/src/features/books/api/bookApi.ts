@@ -1,8 +1,8 @@
 import { NESTJS_BOOKS_ENDPOINTS } from '@/constants/server-endpoints';
 import { axiosBaseQuery } from '@/lib/nestjs-client-api';
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { buildLikeBookInvalidationTags, buildListTags, buildUpdateBookInvalidationTags } from '../books.helpers';
-import { AdminBooksData, Book, BookForAdmin, BookStats, FiltersData, GetAdminBooksParams, GetBookParams, GetBooksParams, PaginatedData, UpdateBookParams } from '../types/book.interface';
+import { buildListTags, buildUpdateBookInvalidationTags } from '../books.helpers';
+import { AdminBooksData, Book, BookForAdmin, BookStats, FiltersData, GetAdminBooksParams, GetBookParams, GetBooksParams, LikeResult, PaginatedData, UpdateBookParams } from '../types/book.interface';
 
 export const BOOK_TAGS = {
   BOOKS: 'Books',
@@ -116,16 +116,21 @@ export const booksApi = createApi({
       ],
     }),
 
-    likeBook: builder.mutation<
-      { slug: string; isLiked: boolean; likes: number },
-      string
-    >({
-      query: (bookId) => ({
-        url: NESTJS_BOOKS_ENDPOINTS.like(bookId),
+    likeBook: builder.mutation<LikeResult, string>({
+      query: (bookSlug) => ({
+        url: NESTJS_BOOKS_ENDPOINTS.like(bookSlug),
         method: 'PATCH',
       }),
-      invalidatesTags: (result, error, bookId) =>
-        buildLikeBookInvalidationTags(result, bookId),
+      invalidatesTags: [
+        { type: BOOK_TAGS.BOOKS, id: 'LIST' },
+      ],
+    }),
+
+    recordView: builder.mutation<void, string>({
+      query: (bookSlug) => ({
+        url: NESTJS_BOOKS_ENDPOINTS.recordView(bookSlug),
+        method: 'POST',
+      }),
     }),
   }),
 });
@@ -140,5 +145,6 @@ export const {
   useUpdateBookMutation,
   useDeleteBookMutation,
   useLikeBookMutation,
+  useRecordViewMutation,
   useGetFiltersQuery,
 } = booksApi;

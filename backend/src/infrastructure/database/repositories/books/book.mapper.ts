@@ -195,6 +195,8 @@ export class BookMapper {
         views: doc.views || 0,
         likes: doc.likes || 0,
         chapterCount: (doc.chapters || []).length,
+        averageRating: 0,
+        totalRatings: 0,
       },
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
