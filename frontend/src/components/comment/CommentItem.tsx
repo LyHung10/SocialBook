@@ -8,6 +8,7 @@ import {
     MessageCircle,
     MoreVertical,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import ListComments from './ListComments';
@@ -24,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { CommentItem } from '@/features/comments/types/comment.interface';
+import { useModalStore } from '@/store/useModalStore';
 
 interface CommentItemProps {
     comment: CommentItem;
@@ -42,6 +44,8 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
     onReplyAdded,
     onReplyRemoved,
 }) => {
+    const router = useRouter();
+    const { closePostComment } = useModalStore();
     const { user } = useAppAuth();
     const userId = user?.id;
 
@@ -89,13 +93,23 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
                 size="sm"
                 className="mt-1 shrink-0 border border-border"
                 fallbackClassName="text-[10px]"
+                onClick={() => {
+                    closePostComment();
+                    router.push(`/users/${comment.user.id}`);
+                }}
             />
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center">
                     <div className="relative rounded-2xl bg-muted/50 px-3 py-2">
                         <div className="pr-6">
-                            <span className="mb-0.5 block text-sm font-bold text-foreground">
+                            <span
+                                onClick={() => {
+                                    closePostComment();
+                                    router.push(`/users/${comment.user.id}`);
+                                }}
+                                className="mb-0.5 block text-sm font-bold text-foreground cursor-pointer hover:underline"
+                            >
                                 {comment.user.username}
                             </span>
 
