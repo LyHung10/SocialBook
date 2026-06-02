@@ -439,6 +439,25 @@ export class ChapterRepository
       .exec();
   }
 
+  async incrementViewsBySlug(
+    bookSlug: string,
+    chapterSlug: string,
+  ): Promise<void> {
+    const book = await this.bookModel
+      .findOne({ slug: bookSlug })
+      .select('_id')
+      .lean()
+      .exec();
+    if (!book) return;
+
+    await this.chapterModel
+      .findOneAndUpdate(
+        { slug: chapterSlug, bookId: book._id },
+        { $inc: { viewsCount: 1 }, updatedAt: new Date() },
+      )
+      .exec();
+  }
+
   async countByBook(bookId: BookId): Promise<number> {
     return await this.chapterModel
       .countDocuments({

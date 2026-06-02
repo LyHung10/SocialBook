@@ -14,8 +14,8 @@ export default registerAs('env', () => ({
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
 
   // JWT
-  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'access-secret',
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || '',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || '',
   JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',
   JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
 
@@ -34,9 +34,7 @@ export default registerAs('env', () => ({
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY || '',
 
   // Content Moderation API
-  MODERATION_API_KEY:
-    process.env.MODERATION_API_KEY ||
-    'sk-bee-852181c95b49cdc07dd99f8965c722d95a52e1e14c38d8cc291de1cda15a51bf',
+  MODERATION_API_KEY: process.env.MODERATION_API_KEY || '',
   MODERATION_API_BASE_URL:
     process.env.MODERATION_API_BASE_URL || 'https://platform.beeknoee.com/v1',
   MODERATION_MODEL: process.env.MODERATION_MODEL || 'gemini-2.5-flash-lite',

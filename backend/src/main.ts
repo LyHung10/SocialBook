@@ -46,6 +46,7 @@ async function bootstrap() {
 
   // Cấu hình cookie-parser
   app.use(cookieParser());
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
   // Cấu hình CORS
   const origin = frontendUrl.includes(',')

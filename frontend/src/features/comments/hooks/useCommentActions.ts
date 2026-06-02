@@ -125,7 +125,7 @@ export function useCommentActions({
 
             if (apiError?.status === 400 && apiError?.data?.message) {
                 toast.error(`Sửa thất bại: ${apiError.data.message}`);
-            } else if (apiError?.status !== 401) {
+            } else {
                 toast.error(getErrorMessage(error));
             }
         }
@@ -143,9 +143,7 @@ export function useCommentActions({
                 onReplyRemoved();
             }
         } catch (error: unknown) {
-            if ((error as { status?: number })?.status !== 401) {
-                toast.error(getErrorMessage(error));
-            }
+            toast.error(getErrorMessage(error));
         }
     }, [comment.id, comment.parentId, targetId, deleteComment, onReplyRemoved]);
 

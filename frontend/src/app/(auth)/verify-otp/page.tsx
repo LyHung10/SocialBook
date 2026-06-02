@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, CheckCircle, ArrowLeft } from 'lucide-react';
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/features/auth/api/authApi';
 import { getErrorMessage } from '@/lib/utils';
 
-export default function VerifyOtpPage() {
+function VerifyOtpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
@@ -227,5 +227,13 @@ export default function VerifyOtpPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function VerifyOtpPageWrapper() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="size-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" /></div>}>
+      <VerifyOtpPage />
+    </Suspense>
   );
 }

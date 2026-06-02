@@ -182,7 +182,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                               <img
                                 key={p.userId}
                                 src={p.avatarUrl}
-                                alt=""
+                                alt="Avatar"
                                 className="w-6 h-6 rounded-full border-2 border-background"
                               />
                             ) : (

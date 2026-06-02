@@ -19,3 +19,4 @@ export type FollowDocument = HydratedDocument<Follow>;
 export const FollowSchema = SchemaFactory.createForClass(Follow);
 
 FollowSchema.index({ userId: 1, targetId: 1 }, { unique: true });
+FollowSchema.index({ targetId: 1, status: 1 });

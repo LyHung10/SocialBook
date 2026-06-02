@@ -12,6 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 // Use Cases
 import { ForgotPasswordCommand } from '@/application/auth/use-cases/forgot-password/forgot-password.command';
@@ -75,6 +76,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() req: { user: User }, @Body() dto: LoginDto) {
@@ -103,6 +105,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @Post('signup')
   async signup(@Body() dto: SignupLocalDto) {
     const command = new RegisterCommand(dto.email, dto.username, dto.password);
@@ -114,6 +117,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @Post('verify-otp')
   async verifyOtp(@Body() body: VerifyOtpDto) {
     try {
@@ -126,6 +130,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 3 } })
   @Post('resend-otp')
   async resendOtp(@Body() body: ResendOtpDto) {
     try {
@@ -178,6 +183,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 3 } })
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     const command = new ForgotPasswordCommand(dto.email);

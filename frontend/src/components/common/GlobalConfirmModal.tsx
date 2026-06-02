@@ -36,17 +36,26 @@ export default function GlobalConfirmModal() {
 
     return (
         <AlertDialog open={isConfirmOpen} onOpenChange={(open) => !open && closeConfirm()}>
-            <AlertDialogContent className="max-w-[400px] rounded-xl border border-border shadow-lg p-6">
-                <AlertDialogHeader className="space-y-2">
-                    <AlertDialogTitle className="text-lg font-bold text-foreground">
-                        {confirmData.title}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed">
-                        {confirmData.description}
-                    </AlertDialogDescription>
+            <AlertDialogContent className="sm:max-w-[400px] bg-card p-0 gap-0 border-border overflow-hidden">
+                <AlertDialogHeader className="sr-only">
+                    <AlertDialogTitle>{confirmData.title}</AlertDialogTitle>
+                    <AlertDialogDescription>{confirmData.description}</AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter className="mt-6 gap-2 sm:gap-0">
-                    <AlertDialogCancel 
+
+                <div className="px-6 py-4 border-b border-border">
+                    <h2 className="text-base font-semibold text-foreground">
+                        {confirmData.title}
+                    </h2>
+                </div>
+
+                <div className="px-6 py-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        {confirmData.description}
+                    </p>
+                </div>
+
+                <AlertDialogFooter className="px-6 py-4 border-t border-border sm:justify-end gap-2">
+                    <AlertDialogCancel
                         disabled={isLoading}
                         className="rounded-lg border-border hover:bg-muted font-medium text-sm"
                     >
@@ -58,8 +67,8 @@ export default function GlobalConfirmModal() {
                             handleConfirm();
                         }}
                         disabled={isLoading}
-                        className={buttonVariants({ 
-                            variant: confirmData.variant || "default", 
+                        className={buttonVariants({
+                            variant: confirmData.variant || "default",
                             className: "rounded-lg font-bold px-6 text-sm shadow-sm"
                         })}
                     >

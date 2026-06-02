@@ -50,3 +50,4 @@ export class Review extends BaseSchema {
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 
 ReviewSchema.index({ userId: 1, bookId: 1 }, { unique: true });
+ReviewSchema.index({ bookId: 1, createdAt: -1 });

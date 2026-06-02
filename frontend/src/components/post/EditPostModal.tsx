@@ -150,10 +150,7 @@ export default function EditPostModal() {
             }
             closeEditPost();
         } catch (error) {
-            const apiError = error as { status?: number } | null;
-            if (apiError?.status !== 401) {
-                toast.error(getErrorMessage(error));
-            }
+            toast.error(getErrorMessage(error));
         }
     };
 

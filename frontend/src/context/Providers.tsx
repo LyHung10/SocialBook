@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <SessionProvider refetchOnWindowFocus={true} refetchInterval={300}>
+    <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
       <SessionBridge />
       <Provider store={store}>
           <QueryClientProvider client={queryClient}>

@@ -47,6 +47,8 @@ export const NESTJS_CHAPTERS_ENDPOINTS = {
     // Public endpoints
     getChapterBySlug: (bookSlug: string, chapterSlug: string) =>
         `/books/${bookSlug}/chapters/${chapterSlug}`,
+    recordChapterView: (bookSlug: string, chapterSlug: string) =>
+        `/books/${bookSlug}/chapters/${chapterSlug}/view`,
     getChapters: (bookSlug: string) => `/books/${bookSlug}/chapters`,
     getChapterById: (bookSlug: string, chapterId: string) =>
         `/books/${bookSlug}/chapters/id/${chapterId}`,

@@ -19,6 +19,7 @@ import {
 import {
   useGetChapterQuery,
   useGetChaptersQuery,
+  useRecordChapterViewMutation,
 } from "@/features/chapters/api/chaptersApi";
 import { useCreatePostMutation } from "@/features/posts/api/postApi";
 import { useModalStore } from "@/store/useModalStore";
@@ -57,7 +58,14 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   } = useGetChapterQuery({ bookSlug, chapterSlug });
 
   const { data: chaptersData } = useGetChaptersQuery({ bookSlug });
+  const [recordChapterView] = useRecordChapterViewMutation();
   const [createPost] = useCreatePostMutation();
+
+  useEffect(() => {
+    if (chapterData) {
+      recordChapterView({ bookSlug, chapterSlug });
+    }
+  }, [chapterData, bookSlug, chapterSlug, recordChapterView]);
 
   const book = chapterData?.book;
   const chapter = chapterData?.chapter;
@@ -261,6 +269,15 @@ ${book.description?.slice(0, 100)}...
               chapterOrder={chapter.orderIndex}
               viewsCount={chapter.viewsCount}
             />
+
+            <div className="mb-8">
+              <ChapterNavigation
+                hasPrevious={!!navigation?.previous}
+                hasNext={!!navigation?.next}
+                onPrevious={goToPreviousChapter}
+                onNext={goToNextChapter}
+              />
+            </div>
 
             <div ref={contentRef}>
               <ChapterContent

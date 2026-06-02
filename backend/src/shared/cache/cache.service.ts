@@ -35,6 +35,29 @@ export class CacheService {
     }
   }
 
+  async setIfNotExists(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    try {
+      const result = await this.redis.call(
+        'SET',
+        key,
+        value,
+        'NX',
+        'EX',
+        ttlSeconds,
+      );
+      return result === 'OK';
+    } catch (error) {
+      this.logger.error(
+        `Failed to set nx cache key ${key}: ${(error as Error).message}`,
+      );
+      return false;
+    }
+  }
+
   async del(key: string): Promise<void> {
     try {
       await this.redis.del(key);

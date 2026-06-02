@@ -94,12 +94,6 @@ export default function LibraryPage() {
                 <Folder size={20} className="text-yellow-500" />
                 Bộ sưu tập
               </h2>
-              <button
-                onClick={() => openCreateCollection({ onSuccess: refetchCollections })}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-              >
-                <Plus size={16} /> Tạo mới
-              </button>
             </div>
 
             {isLoadingCollections ? (
@@ -119,7 +113,7 @@ export default function LibraryPage() {
                 >
                   <Plus size={24} />
                   <span className="text-xs font-medium mt-1">
-                    Tạo danh sách
+                    Tạo bộ sưu tập
                   </span>
                 </button>
 

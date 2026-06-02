@@ -43,3 +43,4 @@ export const ReadingListSchema = SchemaFactory.createForClass(ReadingList);
 ReadingListSchema.index({ userId: 1, bookId: 1 }, { unique: true });
 
 ReadingListSchema.index({ userId: 1, status: 1, updatedAt: -1 });
+ReadingListSchema.index({ collectionIds: 1, updatedAt: -1 });

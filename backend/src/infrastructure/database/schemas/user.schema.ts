@@ -92,3 +92,6 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.index({ createdAt: -1 });
 UserSchema.index({ provider: 1 });
+UserSchema.index({ isBanned: 1 });
+UserSchema.index({ isVerified: 1 });
+UserSchema.index({ roleId: 1 });

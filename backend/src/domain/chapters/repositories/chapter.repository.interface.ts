@@ -76,6 +76,10 @@ export abstract class IChapterRepository {
   ): Promise<boolean>;
 
   abstract incrementViews(id: ChapterId): Promise<void>;
+  abstract incrementViewsBySlug(
+    bookSlug: string,
+    chapterSlug: string,
+  ): Promise<void>;
 
   abstract countByBook(bookId: BookId): Promise<number>;
   abstract getTotalViewsByBook(bookId: BookId): Promise<number>;

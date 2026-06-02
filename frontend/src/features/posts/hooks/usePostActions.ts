@@ -46,9 +46,7 @@ export function usePostActions(options: UsePostActionsOptions): UsePostActionsRe
       await deletePostMutation(postId).unwrap();
       toast.success(MESSAGES.POST_DELETE_SUCCESS);
     } catch (error) {
-      if ((error as { status?: number })?.status !== 401) {
-        toast.error(getErrorMessage(error));
-      }
+      toast.error(getErrorMessage(error));
       throw error;
     } finally {
       setIsDeleting(false);
@@ -64,9 +62,7 @@ export function usePostActions(options: UsePostActionsOptions): UsePostActionsRe
         }).unwrap();
         toast.success(MESSAGES.POST_IMAGE_DELETE_SUCCESS);
       } catch (error) {
-        if ((error as { status?: number })?.status !== 401) {
-          toast.error(getErrorMessage(error));
-        }
+        toast.error(getErrorMessage(error));
         throw error;
       }
     },

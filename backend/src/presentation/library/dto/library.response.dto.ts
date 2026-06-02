@@ -29,7 +29,8 @@ export class BookLibraryInfoResponseDto {
     completedChaptersCount: number,
     totalChapters: number,
   ) {
-    this.status = readingList?.status === 'NONE' ? null : (readingList?.status || null);
+    this.status =
+      readingList?.status === 'NONE' ? null : readingList?.status || null;
     this.collections = collections;
     this.completedChaptersCount = completedChaptersCount;
     this.totalChapters = totalChapters;

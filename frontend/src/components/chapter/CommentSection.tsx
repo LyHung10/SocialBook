@@ -66,10 +66,7 @@ const CommentSection = memo(function CommentSection({
             }).unwrap();
 
         } catch (error) {
-            const apiError = error as { status?: number } | null;
-            if (apiError?.status !== 401) {
-                toast.error(getErrorMessage(error));
-            }
+            toast.error(getErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }
