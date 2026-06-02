@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { SearchQuery as VectorSearchQuery } from '@/domain/chroma/entities/search-query.entity';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
+import { CACHE_SERVICE } from '@/domain/shared/interfaces/cache.service.interface';
+import type { ICacheService } from '@/domain/shared/interfaces/cache.service.interface';
 
 export interface RankedCandidate {
   id: string;
@@ -16,10 +18,9 @@ export class SearchRankingService {
 
   private static readonly SEMANTIC_THRESHOLD = 0.5;
   private static readonly SEMANTIC_SEARCH_LIMIT = 50;
-  private static readonly TITLE_KEYWORD_BOOST = 0.2;
-  private static readonly CONTENT_KEYWORD_BOOST = 0.08;
   private static readonly TITLE_NGRAM_BOOST = 0.3;
   private static readonly CONTENT_NGRAM_BOOST = 0.15;
+  private static readonly EMBEDDING_CACHE_TTL = 86400; // 24h
 
   /** Từ hư từ tiếng Việt — lọc bỏ khi tính keyword boost */
   private static readonly VIETNAMESE_STOPWORDS = new Set([
@@ -60,6 +61,7 @@ export class SearchRankingService {
   constructor(
     private readonly vectorRepository: IVectorRepository,
     private readonly idGenerator: IIdGenerator,
+    @Inject(CACHE_SERVICE) private readonly cacheService: ICacheService,
   ) {}
 
   /**
@@ -72,7 +74,7 @@ export class SearchRankingService {
     originalQuery: string,
   ): Promise<RankedCandidate[]> {
     try {
-      const embedding = await this.vectorRepository.embedQuery(expandedQuery);
+      const embedding = await this.getEmbedding(expandedQuery);
       const searchQuery = VectorSearchQuery.create({
         id: this.idGenerator.generate(),
         query: expandedQuery,
@@ -140,6 +142,23 @@ export class SearchRankingService {
       );
       return [];
     }
+  }
+
+  private async getEmbedding(text: string): Promise<number[]> {
+    const cacheKey = `embedding:${text.trim().toLowerCase()}`;
+    const cached = await this.cacheService.get<number[]>(cacheKey);
+    if (cached) {
+      this.logger.debug(`[Embedding] Cache HIT: "${text.substring(0, 30)}"`);
+      return cached;
+    }
+    const embedding = await this.vectorRepository.embedQuery(text);
+    await this.cacheService.set(
+      cacheKey,
+      embedding,
+      SearchRankingService.EMBEDDING_CACHE_TTL,
+    );
+    this.logger.debug(`[Embedding] Cache SET: "${text.substring(0, 30)}"`);
+    return embedding;
   }
 
   private extractSignificantTokens(query: string): string[] {

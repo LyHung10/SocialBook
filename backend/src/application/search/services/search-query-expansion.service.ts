@@ -28,6 +28,14 @@ export class SearchQueryExpansionService {
    * Bắt buộc giữ thực thể gốc, không abstract hóa.
    * Kết quả được cache Redis 24h.
    */
+  private isSimpleQuery(query: string): boolean {
+    const trimmed = query.trim();
+    if (trimmed.length <= 3) return true;
+    const words = trimmed.split(/\s+/);
+    if (words.length <= 2 && trimmed.length <= 40) return true;
+    return false;
+  }
+
   async expand(query: string): Promise<QueryAnalysis | null> {
     const cacheKey = `rag:expansion:${query.trim().toLowerCase()}`;
 
@@ -35,6 +43,16 @@ export class SearchQueryExpansionService {
     if (cached) {
       this.logger.debug(`[RAG] Cache HIT: "${query}"`);
       return cached;
+    }
+
+    if (this.isSimpleQuery(query)) {
+      this.logger.debug(`[RAG] Skipping Gemini for simple query: "${query}"`);
+      return {
+        expandedQuery: query,
+        targetGenres: [],
+        themes: [],
+        intent: 'simple_search',
+      };
     }
 
     try {

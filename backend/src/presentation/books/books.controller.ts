@@ -1,3 +1,4 @@
+import { SkipThrottle } from '@nestjs/throttler';
 import { RequireAuth } from '@/common/decorators/auth-swagger.decorator';
 import { ApiFileUpload, Public } from '@/common/decorators/custom.decorator';
 import {
@@ -45,6 +46,7 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @Controller('books')
+@SkipThrottle({ global: true })
 export class BooksController {
   constructor(
     private readonly createBookUseCase: CreateBookUseCase,
@@ -62,6 +64,7 @@ export class BooksController {
 
   @Post()
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   @ApiFileUpload('coverUrl', CreateBookDto)
   async create(
     @Body() createBookDto: CreateBookDto,
@@ -86,6 +89,7 @@ export class BooksController {
 
   @Get('admin/all')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   async findAllAdmin(@Query() filter: FilterBookDto) {
     const query = new GetBooksQuery({
       ...filter,
@@ -162,6 +166,7 @@ export class BooksController {
   @Patch(':slug/like')
   @RequireAuth()
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle({ global: false })
   async toggleLike(
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
@@ -209,6 +214,7 @@ export class BooksController {
 
   @Put(':id')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   @ApiFileUpload('coverUrl', UpdateBookDto)
   async update(
     @Param('id') id: string,
@@ -235,6 +241,7 @@ export class BooksController {
 
   @Delete(':id')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   async remove(@Param('id') id: string) {
     const command = new DeleteBookCommand(id);
     await this.deleteBookUseCase.execute(command);

@@ -11,6 +11,27 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { configSwagger } from './config/swagger.config';
 
+const REQUIRED_ENV_VARS = [
+  'JWT_ACCESS_SECRET',
+  'JWT_REFRESH_SECRET',
+  'MONGO_URI',
+];
+
+function validateEnv(configService: ConfigService): void {
+  const missing: string[] = [];
+  for (const key of REQUIRED_ENV_VARS) {
+    const val = configService.get<string>(`env.${key}`);
+    if (!val || val.startsWith('your-')) {
+      missing.push(key);
+    }
+  }
+  if (missing.length > 0) {
+    console.warn(
+      `[WARN] Missing or placeholder env vars: ${missing.join(', ')}`,
+    );
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -24,6 +45,8 @@ async function bootstrap() {
 
   // Lấy ConfigService từ application context
   const configService = app.get(ConfigService);
+
+  validateEnv(configService);
 
   // Sử dụng ConfigService để lấy các biến môi trường
   const frontendUrl = configService.get<string>(
@@ -46,7 +69,7 @@ async function bootstrap() {
 
   // Cấu hình cookie-parser
   app.use(cookieParser());
-  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  void app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
   // Cấu hình CORS
   const origin = frontendUrl.includes(',')
@@ -80,4 +103,4 @@ async function bootstrap() {
   const logger = app.get(Logger);
   logger.log(`Backend running on ${await app.getUrl()}`);
 }
-bootstrap();
+void bootstrap();
