@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "prepare": "husky",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "analyze": "cross-env ANALYZE=true next build --webpack"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
@@ -22,7 +23,6 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
-
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -50,11 +50,9 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@reduxjs/toolkit": "^2.9.0",
-    "@tanstack/react-query": "^5.89.0",
-    "@types/lodash": "^4.17.20",
+    "@tanstack/react-virtual": "^3.14.2",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.2",
-
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -67,8 +65,7 @@
     "geist": "^1.5.1",
     "input-otp": "^1.4.2",
     "jwt-decode": "^4.0.0",
-    "lodash": "^4.17.21",
-    "lodash.debounce": "^4.0.8",
+    "lodash": "^4.18.1",
     "lucide-react": "^0.544.0",
     "next": "^16.1.6",
     "next-auth": "^4.24.13",
@@ -86,7 +83,6 @@
     "react-resizable-panels": "^3.0.6",
     "react-tooltip": "^5.30.0",
     "recharts": "^2.15.4",
-    "redux-persist": "^6.0.0",
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
@@ -97,17 +93,17 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@next/bundle-analyzer": "^16.2.7",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/d3": "^7.4.3",
     "@types/d3-scale": "^4.0.9",
-    "@types/lodash.debounce": "^4.0.9",
-
+    "@types/lodash": "^4.17.24",
     "@types/node": "^20.19.16",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/redux-persist": "^4.0.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.1.4",
     "eslint-config-prettier": "^10.1.8",

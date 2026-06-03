@@ -3,8 +3,9 @@ import { FollowingUser } from '@/features/follows/api/followApi';
 import { useFollowerItem } from '@/features/follows/hooks/useFollowerItem';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { FollowButton } from '@/components/user/FollowButton';
+import { memo } from 'react';
 
-const FollowerItem = (props: FollowingUser) => {
+const FollowerItem = memo((props: FollowingUser) => {
     const {
         isCurrentUser,
         isToggling,
@@ -65,6 +66,6 @@ const FollowerItem = (props: FollowingUser) => {
             )}
         </div>
     );
-};
+});
 
 export default FollowerItem;

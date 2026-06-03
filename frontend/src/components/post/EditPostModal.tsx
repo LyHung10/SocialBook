@@ -227,6 +227,7 @@ export default function EditPostModal() {
                                                             src={url}
                                                             alt={`Existing ${index + 1}`}
                                                             fill
+                                                            sizes="(max-width: 640px) 33vw, 25vw"
                                                             className="object-cover"
                                                         />
                                                         <Button
@@ -260,6 +261,7 @@ export default function EditPostModal() {
                                                         <img
                                                             src={preview}
                                                             alt={`New ${index + 1}`}
+                                                            loading="lazy"
                                                             className="object-cover w-full h-full"
                                                         />
                                                         <Button

@@ -36,7 +36,7 @@ interface CommentItemProps {
     onReplyRemoved?: () => void;
 }
 
-const CommentItemCard: React.FC<CommentItemProps> = ({
+const CommentItemCard: React.FC<CommentItemProps> = React.memo(({
     comment,
     targetId,
     targetType,
@@ -299,6 +299,6 @@ const CommentItemCard: React.FC<CommentItemProps> = ({
             </div>
         </div>
     );
-};
+});
 
 export default CommentItemCard;

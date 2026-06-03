@@ -286,7 +286,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
             <Card className="p-5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-primary/20 shadow-2xl rounded-3xl">
               <div className="flex flex-col gap-4">
                 {selectedNode.img && (
-                  <img src={selectedNode.img} alt={selectedNode.label} className="w-full h-40 object-cover rounded-2xl shadow-md" />
+                  <img src={selectedNode.img} alt={selectedNode.label} loading="lazy" width={288} height={160} className="w-full h-40 object-cover rounded-2xl shadow-md" />
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">

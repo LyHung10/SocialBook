@@ -1,7 +1,22 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Send, Bot, BookOpen, Users, MapPin, Lightbulb, ChevronDown, ChevronRight, Info, Loader2, Network, Maximize2, RefreshCw } from 'lucide-react';
 
-import { KnowledgeGraph } from './KnowledgeGraph';
+import dynamic from 'next/dynamic';
+
+const KnowledgeGraph = dynamic(
+  () => import('./KnowledgeGraph').then((mod) => mod.KnowledgeGraph),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full min-h-[300px]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-muted-foreground">Đang tải sơ đồ...</p>
+        </div>
+      </div>
+  ),
+});
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 

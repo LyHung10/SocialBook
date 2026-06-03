@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import PostList from '@/components/post/PostList';
 import { useAppAuth } from '@/features/auth/hooks';
 import { PenSquare } from 'lucide-react';
@@ -41,6 +41,7 @@ export default function Post() {
     const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
     const currentUserImage = user?.image || '/abstract-book-pattern.png';
+    const feedRef = useRef<HTMLDivElement>(null);
 
     const goToFollowing = useCallback(() => {
         if (currentUserId) {
@@ -68,16 +69,13 @@ export default function Post() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">
+        <div className="fixed inset-0 top-16 overflow-hidden bg-slate-50 dark:bg-neutral-950">
 
-            {/* HEADER */}
-            <header className="border-b border-border backdrop-blur"></header>
-
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-4 flex justify-center gap-4 pb-4">
+            <main className="h-full max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-center gap-4">
 
                 {/* LEFT SIDEBAR */}
-                <aside className="hidden lg:block w-[22%]">
-                    <div className="sticky top-20 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto thin-scrollbar pr-1">
+                <aside className="hidden lg:block w-[22%] h-full">
+                    <div className="h-full space-y-4 overflow-y-auto thin-scrollbar pr-1">
 
                         {/* USER BOX */}
                         <div
@@ -118,49 +116,51 @@ export default function Post() {
                     </div>
                 </aside>
 
-                {/* FEED AREA */}
-                <section className="w-full lg:w-[56%]">
+                {/* FEED AREA — scroll nguyên khối như FB, ẩn scrollbar */}
+                <section ref={feedRef} className="w-full lg:w-[56%] h-full overflow-y-auto scrollbar-hide">
+                    <div className="min-h-0 space-y-4">
 
-                    {/* CREATE POST BOX */}
-                    <div
-                        className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-border p-4 mb-4">
-                        <div className="flex items-center gap-3 mb-3">
-                            <Image
-                                src={currentUserImage}
-                                alt={currentUserName}
-                                width={36}
-                                height={36}
-                                onClick={() => {
-                                    router.push(`/users/${currentUserId}`)
-                                }}
-                                className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700"
-                            />
-                            <button
-                                onClick={() => openCreatePost()}
-                                className="flex-1 text-left text-sm text-muted-foreground bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-full px-4 py-2 transition"
-                            >
-                                {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
-                            </button>
-                        </div>
-
+                        {/* CREATE POST BOX */}
                         <div
-                            className="flex justify-between items-center border-t border-border pt-3">
-                            <button
-                                onClick={() => openCreatePost()}
-                                className="inline-flex items-center gap-2 bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-sky-700"
-                            >
-                                <PenSquare size={14} />
-                                <span>Đăng bài</span>
-                            </button>
-                        </div>
-                    </div>
+                            className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-border p-4">
+                            <div className="flex items-center gap-3 mb-3">
+                                <Image
+                                    src={currentUserImage}
+                                    alt={currentUserName}
+                                    width={36}
+                                    height={36}
+                                    onClick={() => {
+                                        router.push(`/users/${currentUserId}`)
+                                    }}
+                                    className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700"
+                                />
+                                <button
+                                    onClick={() => openCreatePost()}
+                                    className="flex-1 text-left text-sm text-muted-foreground bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-full px-4 py-2 transition"
+                                >
+                                    {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
+                                </button>
+                            </div>
 
-                    <PostList />
+                            <div
+                                className="flex justify-between items-center border-t border-border pt-3">
+                                <button
+                                    onClick={() => openCreatePost()}
+                                    className="inline-flex items-center gap-2 bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-sky-700"
+                                >
+                                    <PenSquare size={14} />
+                                    <span>Đăng bài</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <PostList scrollRef={feedRef} />
+                    </div>
                 </section>
 
                 {/* RIGHT SIDEBAR */}
-                <aside className="hidden lg:block w-[22%]">
-                    <div className="sticky top-20 space-y-4">
+                <aside className="hidden lg:block w-[22%] h-full">
+                    <div className="h-full space-y-4">
                         <RecommendedBooks />
                     </div>
                 </aside>

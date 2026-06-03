@@ -1,13 +1,13 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+let nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         port: '',
-        pathname: '/**', // Cho phép tất cả các đường dẫn con
+        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         port: '',
-        pathname: '/**', // Cho phép tất cả các đường dẫn con
+        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -51,8 +51,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
-
 };
+
+if (process.env.ANALYZE === 'true') {
+  const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: true,
+  });
+  nextConfig = withBundleAnalyzer(nextConfig);
+}
 
 export default nextConfig;
