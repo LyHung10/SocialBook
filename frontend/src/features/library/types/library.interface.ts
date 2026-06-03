@@ -80,6 +80,7 @@ export interface GraphNode {
   color?: string;
   isGap?: boolean;
   reason?: string;
+  slug?: string;
 }
 
 

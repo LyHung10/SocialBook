@@ -41,7 +41,10 @@ export default function Post() {
     const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
     const currentUserImage = user?.image || '/abstract-book-pattern.png';
-    const feedRef = useRef<HTMLDivElement>(null);
+    const feedRef = useRef<any>(null);
+    if (typeof window !== 'undefined') {
+        feedRef.current = document.documentElement;
+    }
 
     const goToFollowing = useCallback(() => {
         if (currentUserId) {
@@ -69,12 +72,12 @@ export default function Post() {
     }
 
     return (
-        <div className="fixed inset-0 top-16 overflow-hidden bg-slate-50 dark:bg-neutral-950">
+        <div className="w-full min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-neutral-950">
 
-            <main className="h-full max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-center gap-4">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-center gap-4">
 
                 {/* LEFT SIDEBAR */}
-                <aside className="hidden lg:block w-[22%] h-full">
+                <aside className="hidden lg:block w-[22%] sticky top-20 h-[calc(100vh-6rem)] self-start">
                     <div className="h-full space-y-4 overflow-y-auto thin-scrollbar pr-1">
 
                         {/* USER BOX */}
@@ -117,7 +120,7 @@ export default function Post() {
                 </aside>
 
                 {/* FEED AREA — scroll nguyên khối như FB, ẩn scrollbar */}
-                <section ref={feedRef} className="w-full lg:w-[56%] h-full overflow-y-auto scrollbar-hide">
+                <section className="w-full lg:w-[56%] h-fit">
                     <div className="min-h-0 space-y-4">
 
                         {/* CREATE POST BOX */}
@@ -159,7 +162,7 @@ export default function Post() {
                 </section>
 
                 {/* RIGHT SIDEBAR */}
-                <aside className="hidden lg:block w-[22%] h-full">
+                <aside className="hidden lg:block w-[22%] sticky top-20 h-[calc(100vh-6rem)] self-start">
                     <div className="h-full space-y-4">
                         <RecommendedBooks />
                     </div>

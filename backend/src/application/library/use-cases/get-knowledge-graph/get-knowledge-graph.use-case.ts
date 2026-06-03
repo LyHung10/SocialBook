@@ -9,6 +9,7 @@ import { GetKnowledgeGraphQuery } from './get-knowledge-graph.query';
 import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import { IGenreRepository } from '@/domain/genres/repositories/genre.repository.interface';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
+import slugify from 'slugify';
 
 export interface GraphNode {
   id: string;
@@ -19,6 +20,7 @@ export interface GraphNode {
   color?: string;
   isGap?: boolean;
   reason?: string;
+  slug?: string;
 }
 
 export interface GraphLink {
@@ -105,6 +107,7 @@ export class GetKnowledgeGraphUseCase {
         val: 15,
         img: book.coverUrl,
         color: '#10b981', // emerald-500
+        slug: book.slug,
       });
 
       // Link User -> Book
@@ -195,13 +198,17 @@ export class GetKnowledgeGraphUseCase {
             For each gap, explain why it provides a "mental balance" to their current reading (e.g., if they read Tech, suggest Philosophy for ethics).
             Also suggest 1 specific famous book title for each gap.
             
+            CRITICAL REQUIREMENTS:
+            - The "reason" field MUST be written in Vietnamese (tiếng Việt).
+            - The "suggestedBook" field MUST be the title of the book in Vietnamese if it is commonly translated, or in its original language, but the text must be in Vietnamese.
+            
             CRITICAL: Respond ONLY with a valid JSON object in this format:
             {
               "gaps": [
                 {
                   "genre": "Genre Name",
-                  "reason": "Why this balances their current knowledge",
-                  "suggestedBook": "Book Title"
+                  "reason": "Giải thích chi tiết bằng tiếng Việt lý do tại sao thể loại này giúp cân bằng tư duy cho người đọc",
+                  "suggestedBook": "Tên một cuốn sách nổi tiếng tương ứng"
                 }
               ]
             }`;
@@ -266,6 +273,7 @@ export class GetKnowledgeGraphUseCase {
             color: '#f472b6', // pink-400
             isGap: true,
             reason: `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn.`,
+            slug: slugify(gap.suggestedBook, { lower: true, strict: true, locale: 'vi' }),
           });
 
           // Links

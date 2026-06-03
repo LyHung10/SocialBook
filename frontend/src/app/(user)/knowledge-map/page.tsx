@@ -39,7 +39,7 @@ export default function KnowledgeMapPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl font-serif font-bold text-foreground"
+              className="text-4xl md:text-5xl font-sans font-bold text-foreground"
             >
               Vũ trụ Tri thức <span className="text-primary">Của Bạn</span>
             </motion.h1>
