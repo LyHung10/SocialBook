@@ -150,10 +150,7 @@ export default function EditPostModal() {
             }
             closeEditPost();
         } catch (error) {
-            const apiError = error as { status?: number } | null;
-            if (apiError?.status !== 401) {
-                toast.error(getErrorMessage(error));
-            }
+            toast.error(getErrorMessage(error));
         }
     };
 
@@ -230,6 +227,7 @@ export default function EditPostModal() {
                                                             src={url}
                                                             alt={`Existing ${index + 1}`}
                                                             fill
+                                                            sizes="(max-width: 640px) 33vw, 25vw"
                                                             className="object-cover"
                                                         />
                                                         <Button
@@ -263,6 +261,7 @@ export default function EditPostModal() {
                                                         <img
                                                             src={preview}
                                                             alt={`New ${index + 1}`}
+                                                            loading="lazy"
                                                             className="object-cover w-full h-full"
                                                         />
                                                         <Button

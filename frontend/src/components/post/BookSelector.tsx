@@ -4,17 +4,37 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
 import { useGetLibraryBooksQuery } from '@/features/library/api/libraryApi';
 import { Book, BookOrderField } from '@/features/books/types/book.interface';
-import { LibraryStatus } from '@/features/library/types/library.interface';
+import { BookSummary } from '@/features/library/types/library.interface';
 import { ChevronDown, Search, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
+interface SelectableBook {
+  id: string;
+  title: string;
+  slug: string;
+  coverUrl: string;
+  authorName: string;
+  publishedYear?: string;
+}
+
 interface BookSelectorProps {
   value: string | undefined;
-  onChange: (bookId: string, book?: Book) => void;
+  onChange: (bookId: string, book?: SelectableBook) => void;
   disabled?: boolean;
   placeholder?: string;
   onlyLibrary?: boolean;
+}
+
+function toSelectable(book: Book | BookSummary): SelectableBook {
+  return {
+    id: book.id,
+    title: book.title,
+    slug: book.slug,
+    coverUrl: book.coverUrl,
+    authorName: 'authorName' in book ? book.authorName : book.authorId.name,
+    publishedYear: 'publishedYear' in book ? book.publishedYear : undefined,
+  };
 }
 
 export default function BookSelector({
@@ -27,7 +47,7 @@ export default function BookSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const [allBooks, setAllBooks] = useState<SelectableBook[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -53,9 +73,9 @@ export default function BookSelector({
 
   const books = useMemo(() => {
     if (onlyLibrary) {
-      return libraryData?.map(item => item.bookId) || [];
+      return (libraryData?.map(item => item.bookId) || []).map(toSelectable);
     }
-    return normalBooksData?.data || [];
+    return (normalBooksData?.data || []).map(toSelectable);
   }, [onlyLibrary, normalBooksData, libraryData]);
 
   const meta = normalBooksData?.meta;
@@ -65,7 +85,7 @@ export default function BookSelector({
   useEffect(() => {
     if (books.length > 0) {
       setAllBooks((prev) => {
-        if (page === 1 || onlyLibrary) { // Reset if first page or in library mode (which is not paginated on frontend yet)
+        if (page === 1 || onlyLibrary) {
           return books;
         }
         const uniqueBooks = books.filter(
@@ -77,7 +97,7 @@ export default function BookSelector({
       if (meta) {
         setHasMore(meta.current < meta.totalPages);
       } else if (onlyLibrary) {
-        setHasMore(false); // Library list is usually all-in-one in this API
+        setHasMore(false);
       }
     }
   }, [books, page, meta, onlyLibrary]);
@@ -86,7 +106,7 @@ export default function BookSelector({
   const filteredBooks = allBooks.filter(
     (book) =>
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.authorId.name.toLowerCase().includes(searchQuery.toLowerCase())
+      book.authorName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
@@ -123,7 +143,7 @@ export default function BookSelector({
     [isFetching, hasMore, searchQuery]
   );
 
-  const handleSelect = (book: Book) => {
+  const handleSelect = (book: SelectableBook) => {
     onChange(book.id, book);
     setIsOpen(false);
     setSearchQuery('');
@@ -178,7 +198,7 @@ export default function BookSelector({
                   {selectedBook.title}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
-                  {selectedBook.authorId.name}
+                   {selectedBook.authorName}
                 </p>
               </div>
             </>
@@ -272,7 +292,7 @@ export default function BookSelector({
                             {book.title}
                           </p>
                           <p className="text-[11px] text-muted-foreground truncate">
-                            {book.authorId.name}
+                            {book.authorName}
                           </p>
                           <p className="text-[10px] text-muted-foreground inline-flex items-center gap-1.5 mt-1">
                             {book.publishedYear}

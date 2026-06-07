@@ -89,7 +89,10 @@ export class ReadingListRepository implements IReadingListRepository {
   ): Promise<LibraryItemReadModel[]> {
     const docs = await this.readingListModel
       .find({ collectionIds: new Types.ObjectId(collectionId) })
-      .populate('bookId')
+      .populate({
+        path: 'bookId',
+        populate: { path: 'authorId', select: 'name' },
+      })
       .populate('lastReadChapterId')
       .sort({ updatedAt: -1 })
       .lean()
@@ -109,7 +112,10 @@ export class ReadingListRepository implements IReadingListRepository {
         userId: new Types.ObjectId(userId.toString()),
         bookId: new Types.ObjectId(bookId.toString()),
       })
-      .populate('bookId')
+      .populate({
+        path: 'bookId',
+        populate: { path: 'authorId', select: 'name' },
+      })
       .populate('lastReadChapterId')
       .lean()
       .exec();
@@ -140,7 +146,10 @@ export class ReadingListRepository implements IReadingListRepository {
 
     let queryBuilder = this.readingListModel
       .find(query)
-      .populate('bookId')
+      .populate({
+        path: 'bookId',
+        populate: { path: 'authorId', select: 'name' },
+      })
       .populate('lastReadChapterId')
       .sort({ updatedAt: -1 });
 

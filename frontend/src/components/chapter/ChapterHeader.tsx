@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 import { Eye, BookOpen } from 'lucide-react';
 
@@ -11,7 +12,7 @@ interface ChapterHeaderProps {
   className?: string;
 }
 
-export default function ChapterHeader({
+const ChapterHeader = memo(function ChapterHeader({
   bookTitle,
   bookSlug,
   chapterTitle,
@@ -50,4 +51,6 @@ export default function ChapterHeader({
       <div className="w-16 h-px bg-gray-200 dark:bg-white/10 mx-auto" />
     </header>
   );
-}
+});
+
+export default ChapterHeader;

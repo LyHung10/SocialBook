@@ -66,9 +66,7 @@ export default function ParagraphCommentDrawer({
 
             setCommentText('');
         } catch (error: unknown) {
-            if ((error as { status?: number })?.status !== 401) {
-                toast.error(getErrorMessage(error));
-            }
+            toast.error(getErrorMessage(error));
         }
     };
 

@@ -26,6 +26,8 @@ export interface BookDetailReadModel {
     views: number;
     likes: number;
     chapterCount: number;
+    averageRating: number;
+    totalRatings: number;
   };
   createdAt: Date;
   updatedAt: Date;

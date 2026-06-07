@@ -6,8 +6,9 @@ import { useModalStore } from "@/store/useModalStore";
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { FollowButton } from "@/components/user/FollowButton";
 import Image from "next/image";
+import { memo } from "react";
 
-const FollowingItem = (props: FollowingUser) => {
+const FollowingItem = memo((props: FollowingUser) => {
     const auth = useAppAuth();
     const router = useRouter();
     const { closeFollowers } = useModalStore();
@@ -30,6 +31,7 @@ const FollowingItem = (props: FollowingUser) => {
                     src="/img_1.png"
                     alt={`${props.username} cover`}
                     fill
+                    sizes="(max-width: 768px) 100vw, 200px"
                     className=" object-cover transition-transform duration-700 grayscale-[20%] group-hover:grayscale-0"
                 />
                 <div className="absolute inset-0 bg-black/0 dark:bg-black/20" />
@@ -118,6 +120,6 @@ const FollowingItem = (props: FollowingUser) => {
             </div>
         </div>
     );
-};
+});
 
 export default FollowingItem;

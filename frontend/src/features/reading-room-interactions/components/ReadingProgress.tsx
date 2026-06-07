@@ -17,7 +17,7 @@ export function ReadingProgress({ userId, displayName, avatarUrl }: ReadingProgr
     <div className="relative shrink-0" title={`${displayName}: ${Math.round(progress)}%`}>
       <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary overflow-hidden shadow-inner">
         {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+          <img src={avatarUrl} alt="Avatar" loading="lazy" width={40} height={40} className="w-full h-full object-cover" />
         ) : (
           displayName.charAt(0).toUpperCase()
         )}

@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 import type { FollowStateResponse } from '@/features/follows/api/followApi';
 import { followServerApi } from '@/features/follows/api/followServerApi';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth.config';
 import { userServerApi } from '@/features/users/api/usersServerApi';
 
 export default async function UserLayout({

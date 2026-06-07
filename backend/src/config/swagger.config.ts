@@ -10,10 +10,10 @@ export const configSwagger = (app: INestApplication) => {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
-    jsonDocumentUrl: '/api/openApi.json',
+    jsonDocumentUrl: '/docs/openApi.json',
   });
 };

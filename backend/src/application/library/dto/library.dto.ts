@@ -1,10 +1,4 @@
-export enum ReadingStatusResult {
-  READING = 'reading',
-  COMPLETED = 'completed',
-  DROPPED = 'dropped',
-  ON_HOLD = 'on_hold',
-  PLAN_TO_READ = 'plan_to_read',
-}
+import { ReadingStatus } from '@/domain/library/entities/reading-list.entity';
 
 export enum ChapterStatusResult {
   UNREAD = 'unread',
@@ -16,7 +10,7 @@ export interface ReadingListResult {
   id: string;
   userId: string;
   bookId: string;
-  status: ReadingStatusResult;
+  status: ReadingStatus;
   lastReadChapterId: string | null;
   collectionIds: string[];
   createdAt: Date;

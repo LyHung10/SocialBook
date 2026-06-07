@@ -10,6 +10,14 @@ import { TokenService } from '../../services/token.service';
 import { IRoleRepository } from '@/domain/roles/repositories/role.repository.interface';
 import { RefreshTokenCommand } from './refresh-token.command';
 
+interface TokenPayload {
+  sub: string;
+  email: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
+
 @Injectable()
 export class RefreshTokenUseCase {
   constructor(
@@ -49,13 +57,12 @@ export class RefreshTokenUseCase {
     );
   }
 
-  async validateRefreshToken(token: string) {
+  async validateRefreshToken(token: string): Promise<TokenPayload | false> {
     try {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      });
+      }) as TokenPayload;
 
-      // Check DB
       const id = UserId.create(payload.sub);
       const user = await this.userRepository.findById(id);
       if (!user || !user.hashedRt) return false;

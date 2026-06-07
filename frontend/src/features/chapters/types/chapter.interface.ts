@@ -23,6 +23,11 @@ export interface GetChapterParams {
   chapterSlug: string;
 }
 
+export interface RecordChapterViewParams {
+  bookSlug: string;
+  chapterSlug: string;
+}
+
 export interface GetChaptersParams {
   bookSlug: string;
   page?: number;

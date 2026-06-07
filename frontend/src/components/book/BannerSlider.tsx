@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Book } from '@/features/books/types/book.interface';
-import { formatCompact } from '@/lib/utils';
+import { formatCompact, isNewBook } from '@/lib/utils';
 import { BookOpen, ChevronLeft, ChevronRight, Eye, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -65,9 +65,9 @@ export function BannerSlider({ books }: BannerSliderProps) {
 
           <div className="flex flex-wrap items-center gap-2 mb-4 drop-shadow-md transition-colors duration-300">
             {currentBook.genres?.map((genre) => (
-              <Badge key={genre.id} variant="secondary" className="bg-background/50 hover:bg-background/80 backdrop-blur-sm">
+              <span key={genre.id} className="inline-flex px-3 py-1 rounded-full border border-white/20 text-white/90 text-xs font-medium backdrop-blur-sm hover:bg-white/10 transition-all">
                 {genre.name}
-              </Badge>
+              </span>
             ))}
           </div>
 
@@ -77,11 +77,13 @@ export function BannerSlider({ books }: BannerSliderProps) {
           </p>
 
           <div className="flex items-center gap-4 text-sm text-foreground/80 mb-8 transition-colors duration-300">
-            <div className="flex items-center gap-2">
-              <Badge variant="destructive" className="rounded-sm px-1.5 py-0 text-xs font-bold">
-                NEW
-              </Badge>
-            </div>
+            {isNewBook(currentBook.createdAt) && (
+              <div className="flex items-center gap-2">
+                <Badge variant="destructive" className="rounded-sm px-1.5 py-0 text-xs font-bold">
+                  NEW
+                </Badge>
+              </div>
+            )}
             <div className="flex items-center gap-2 font-medium">
               <Eye size={16} /> {formatCompact(currentBook.stats?.views || 0)}
             </div>

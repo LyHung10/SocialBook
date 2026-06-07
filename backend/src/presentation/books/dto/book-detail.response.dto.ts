@@ -71,8 +71,8 @@ export class BookDetailResponseDto {
       views: readModel.stats.views,
       likes: readModel.stats.likes,
       chapterCount: readModel.stats.chapterCount,
-      averageRating: 0,
-      totalRatings: 0,
+      averageRating: readModel.stats.averageRating,
+      totalRatings: readModel.stats.totalRatings,
     };
     this.createdAt = readModel.createdAt;
     this.updatedAt = readModel.updatedAt;

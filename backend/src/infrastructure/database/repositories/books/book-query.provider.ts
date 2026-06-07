@@ -232,6 +232,18 @@ export class BookQueryProvider implements IBookQueryProvider {
             from: 'chapters',
             localField: '_id',
             foreignField: 'bookId',
+            pipeline: [
+              {
+                $project: {
+                  title: 1,
+                  slug: 1,
+                  orderIndex: 1,
+                  viewsCount: 1,
+                  createdAt: 1,
+                  updatedAt: 1,
+                },
+              },
+            ],
             as: 'chapters',
           },
         },

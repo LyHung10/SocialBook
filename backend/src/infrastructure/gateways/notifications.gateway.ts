@@ -16,7 +16,10 @@ import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   namespace: '/notifications',
-  cors: { origin: '*' },
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+  },
   maxHttpBufferSize: 1e6,
 })
 export class NotificationsGateway

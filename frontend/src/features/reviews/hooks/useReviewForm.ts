@@ -63,14 +63,11 @@ export function useReviewForm({
             resetForm();
             toast.success('Đánh giá thành công!');
         } catch (err) {
-            const apiError = err as { status?: number };
-            if (apiError.status !== 401) {
-                const message = getErrorMessage(err);
-                if (message.includes('cần đọc ít nhất')) {
-                    toast.info(message);
-                } else {
-                    toast.error(message);
-                }
+            const message = getErrorMessage(err);
+            if (message.includes('cần đọc ít nhất')) {
+                toast.info(message);
+            } else {
+                toast.error(message);
             }
         }
     }, [bookId, bookSlug, content, rating, createReview, dispatch, resetForm]);
@@ -79,10 +76,7 @@ export function useReviewForm({
         try {
             await toggleLikeReview({ id: reviewId, bookId }).unwrap();
         } catch (error) {
-            const apiError = error as { status?: number };
-            if (apiError.status !== 401) {
-                toast.error('Lỗi khi thích đánh giá');
-            }
+            toast.error('Lỗi khi thích đánh giá');
         }
     }, [bookId, toggleLikeReview]);
 

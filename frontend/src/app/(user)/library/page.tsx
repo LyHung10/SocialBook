@@ -94,12 +94,6 @@ export default function LibraryPage() {
                 <Folder size={20} className="text-yellow-500" />
                 Bộ sưu tập
               </h2>
-              <button
-                onClick={() => openCreateCollection({ onSuccess: refetchCollections })}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-              >
-                <Plus size={16} /> Tạo mới
-              </button>
             </div>
 
             {isLoadingCollections ? (
@@ -119,7 +113,7 @@ export default function LibraryPage() {
                 >
                   <Plus size={24} />
                   <span className="text-xs font-medium mt-1">
-                    Tạo danh sách
+                    Tạo bộ sưu tập
                   </span>
                 </button>
 
@@ -176,10 +170,19 @@ export default function LibraryPage() {
           </div>
 
           <div className="min-h-[300px]">
-            {isLoadingLibrary || isFetchingLibrary ? (
+            {isLoadingLibrary ? (
               <LibrarySkeleton />
             ) : books?.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              <div className="relative">
+                {isFetchingLibrary && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      Đang tải...
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {books?.map((item) => (
                   <div key={item.id} className="group relative flex flex-col">
                     <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-md dark:shadow-black/50 mb-3 group-hover:shadow-xl dark:group-hover:shadow-black/70 transition-all duration-300 bg-gray-200 dark:bg-white/5">
@@ -232,6 +235,7 @@ export default function LibraryPage() {
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 rounded-2xl border border-dashed border-gray-200 dark:border-white/10">

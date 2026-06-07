@@ -2,6 +2,7 @@ import { Public } from '@/common/decorators/custom.decorator';
 import { JwtRefreshAuthGuard } from '@/common/guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from '@/common/guards/local-auth.guard';
 import { User } from '@/domain/users/entities/user.entity';
+import type { JwtValidatedUser } from '@/infrastructure/auth/strategies/jwt.strategy';
 import {
   Body,
   Controller,
@@ -12,6 +13,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 // Use Cases
 import { ForgotPasswordCommand } from '@/application/auth/use-cases/forgot-password/forgot-password.command';
@@ -75,9 +77,10 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: { user: User }, @Body() dto: LoginDto) {
+  async login(@Req() req: { user: User }, @Body() _dto: LoginDto) {
     const command = new LoginCommand(req.user);
     const result = await this.loginUseCase.execute(command);
 
@@ -92,8 +95,15 @@ export class AuthController {
   }
 
   @Get('profile')
-  getProfile(@Req() req: { user: User }) {
-    return req.user;
+  getProfile(@Req() req: { user: JwtValidatedUser }) {
+    const { id, email, role } = req.user;
+    return {
+      data: {
+        id,
+        email,
+        role,
+      },
+    };
   }
 
   @Post('logout')
@@ -103,6 +113,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @Post('signup')
   async signup(@Body() dto: SignupLocalDto) {
     const command = new RegisterCommand(dto.email, dto.username, dto.password);
@@ -114,32 +125,26 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ global: { limit: 5 } })
   @Post('verify-otp')
   async verifyOtp(@Body() body: VerifyOtpDto) {
-    try {
-      const command = new VerifyOtpCommand(body.email, body.otp);
-      const result = await this.verifyOtpUseCase.execute(command);
-      return { message: result };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+    const command = new VerifyOtpCommand(body.email, body.otp);
+    const result = await this.verifyOtpUseCase.execute(command);
+    return { message: result };
   }
 
   @Public()
+  @Throttle({ global: { limit: 3 } })
   @Post('resend-otp')
   async resendOtp(@Body() body: ResendOtpDto) {
-    try {
-      const command = new ResendOtpCommand(body.email);
-      const result = await this.resendOtpUseCase.execute(command);
-      return {
-        message: 'Gửi lại mã OTP thành công',
-        data: {
-          resendCooldown: result.resendCooldown,
-        },
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+    const command = new ResendOtpCommand(body.email);
+    const result = await this.resendOtpUseCase.execute(command);
+    return {
+      message: 'Gửi lại mã OTP thành công',
+      data: {
+        resendCooldown: result.resendCooldown,
+      },
+    };
   }
 
   @UseGuards(JwtRefreshAuthGuard)
@@ -154,30 +159,32 @@ export class AuthController {
       );
     }
 
-    try {
-      const payload =
-        await this.refreshTokenUseCase.validateRefreshToken(refreshToken);
-
-      const command = new RefreshTokenCommand(payload.sub, refreshToken);
-      const { accessToken, refreshToken: newRefreshToken } =
-        await this.refreshTokenUseCase.execute(command);
-
-      return {
-        message: 'Làm mới token thành công',
-        data: {
-          accessToken,
-          refreshToken: newRefreshToken,
-        },
-      };
-    } catch (error) {
+    const payload = await this.refreshTokenUseCase.validateRefreshToken(
+      refreshToken,
+    );
+    if (!payload) {
       throw new HttpException(
         'Refresh token không hợp lệ',
         HttpStatus.UNAUTHORIZED,
       );
     }
+    const sub: string = payload.sub;
+
+    const command = new RefreshTokenCommand(sub, refreshToken);
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.refreshTokenUseCase.execute(command);
+
+    return {
+      message: 'Làm mới token thành công',
+      data: {
+        accessToken,
+        refreshToken: newRefreshToken,
+      },
+    };
   }
 
   @Public()
+  @Throttle({ global: { limit: 3 } })
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     const command = new ForgotPasswordCommand(dto.email);

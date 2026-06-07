@@ -26,7 +26,6 @@ export default function BookDetailClient({ bookSlug }: BookDetailClientProps) {
     isLoading,
     error,
     isLiked,
-    likesCount,
     isLiking,
     isCreatingPost,
     handleToggleLike,
@@ -91,7 +90,6 @@ export default function BookDetailClient({ bookSlug }: BookDetailClientProps) {
           <BookHero
             book={book}
             isLiked={isLiked}
-            likesCount={likesCount}
             isLiking={isLiking}
             onToggleLike={handleToggleLike}
             onOpenLibrary={() => openAddToLibrary({ bookId: book.id })}

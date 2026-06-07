@@ -4,7 +4,8 @@ import React, { useCallback, useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { KnowledgeGraphData, GraphNode } from '@/features/library/types/library.interface';
 import { useTheme } from 'next-themes';
-import { Loader2, ZoomIn, ZoomOut, Maximize2, Info } from 'lucide-react';
+import { Loader2, ZoomIn, ZoomOut, Maximize2, Info, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { LoadingOverlay } from '@/components/common/LoadingSpinner';
@@ -31,6 +32,7 @@ interface KnowledgeGraphProps {
 export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
   const { theme } = useTheme();
   const fgRef = useRef<GraphRef>(null);
+  const router = useRouter();
   const imgCache = useRef<Record<string, HTMLImageElement>>({});
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [showGaps, setShowGaps] = useState(true);
@@ -286,7 +288,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
             <Card className="p-5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-primary/20 shadow-2xl rounded-3xl">
               <div className="flex flex-col gap-4">
                 {selectedNode.img && (
-                  <img src={selectedNode.img} alt={selectedNode.label} className="w-full h-40 object-cover rounded-2xl shadow-md" />
+                  <img src={selectedNode.img} alt={selectedNode.label} loading="lazy" width={288} height={160} className="w-full h-40 object-cover rounded-2xl shadow-md" />
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -295,7 +297,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
                     </span>
                     {selectedNode.isGap && (
                       <span className="text-[10px] px-2 py-0.5 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full font-bold">
-                        AI Suggestion
+                        Đề xuất
                       </span>
                     )}
                   </div>
@@ -304,7 +306,17 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
                 <p className="text-xs text-muted-foreground leading-relaxed italic">
                   {selectedNode.reason || getNodeDescription(selectedNode)}
                 </p>
-                <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => setSelectedNode(null)}>
+                {selectedNode.type === 'book' && selectedNode.slug && (
+                  <Button 
+                    className="w-full cursor-pointer rounded-xl gap-2 hover:bg-primary/95  font-bold" 
+                    onClick={() => {
+                      router.push(`/books/${selectedNode.slug}`);
+                    }}
+                  >
+                    Truy cập sách
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" className="w-full cursor-pointer rounded-xl" onClick={() => setSelectedNode(null)}>
                   Đóng
                 </Button>
 

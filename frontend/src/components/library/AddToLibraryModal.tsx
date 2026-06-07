@@ -86,7 +86,7 @@ export default function AddToLibraryModal() {
         <div className="bg-muted/30 p-6 flex items-center gap-4 border-b border-border">
           <div className="relative w-14 h-20 flex-shrink-0 shadow-md rounded overflow-hidden">
             {book?.coverUrl ? (
-              <Image src={book.coverUrl} alt={book.title} fill className="object-cover" />
+              <Image src={book.coverUrl} alt={book.title} fill sizes="56px" className="object-cover" />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <Library className="w-5 h-5 text-muted-foreground" />

@@ -3,13 +3,18 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Query,
@@ -53,6 +58,8 @@ import { GetChapterKnowledgeQuery } from '@/application/chapters/use-cases/get-c
 import { AskChapterAIUseCase } from '@/application/chapters/use-cases/ask-ai/ask-chapter-ai.use-case';
 import { AskChapterAICommand } from '@/application/chapters/use-cases/ask-ai/ask-chapter-ai.command';
 import { ChapterKnowledgeResponseDto } from './dto/chapter-knowledge.response.dto';
+import { RecordChapterViewUseCase } from '@/application/chapters/use-cases/record-chapter-view/record-chapter-view.use-case';
+import { RecordChapterViewQuery } from '@/application/chapters/use-cases/record-chapter-view/record-chapter-view.query';
 
 @Controller('books/:bookSlug/chapters')
 export class ChaptersController {
@@ -68,6 +75,7 @@ export class ChaptersController {
     private readonly getChaptersImportStatusUseCase: GetChaptersImportStatusUseCase,
     private readonly getChapterKnowledgeUseCase: GetChapterKnowledgeUseCase,
     private readonly askChapterAIUseCase: AskChapterAIUseCase,
+    private readonly recordChapterViewUseCase: RecordChapterViewUseCase,
   ) {}
 
   @Get(':chapterId/knowledge')
@@ -111,9 +119,22 @@ export class ChaptersController {
     }),
   )
   @HttpCode(HttpStatus.OK)
-  async importPreview(@UploadedFile() file: Express.Multer.File) {
+  async importPreview(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 20 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType:
+              /^(application\/epub\+zip|application\/zip|application\/x-zip-compressed)$/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
     if (!file) {
-      throw new Error('No file uploaded');
+      throw new BadRequestException('No file uploaded');
     }
     const result = await this.importEpubPreviewUseCase.execute(
       file.buffer,
@@ -245,6 +266,27 @@ export class ChaptersController {
     return {
       message: 'Get chapter successfully',
       data: result,
+    };
+  }
+
+  @Public()
+  @Post(':chapterSlug/view')
+  @HttpCode(HttpStatus.OK)
+  async recordChapterView(
+    @Param('chapterSlug') chapterSlug: string,
+    @Param('bookSlug') bookSlug: string,
+    @CurrentUser('id') userId?: string,
+    @Ip() clientIp?: string,
+  ) {
+    const query = new RecordChapterViewQuery(
+      bookSlug,
+      chapterSlug,
+      userId,
+      clientIp,
+    );
+    await this.recordChapterViewUseCase.execute(query);
+    return {
+      message: 'View recorded successfully',
     };
   }
 

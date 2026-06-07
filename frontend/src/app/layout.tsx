@@ -1,24 +1,26 @@
 import './globals.css';
+import dynamic from 'next/dynamic';
 import ScrollToTop from '@/components/common/ScrollToTop';
 import { Providers } from '../context/Providers';
 import { Toaster } from 'sonner';
 import { inter, merriweather, notoSans } from '@/components/book/Fonts';
-import CreatePostModal from '@/components/post/CreatePostModal';
-import EditPostModal from '@/components/post/EditPostModal';
-import SharePostModal from '@/components/post/SharePostModal';
-import ModalPostComment from '@/components/post/ModalPostComment';
-import AddToLibraryModal from '@/components/library/AddToLibraryModal';
 import { FollowersModal } from '@/components/user/FollowersModal';
-import ChapterSummaryModal from '@/components/chapter/ChapterSummaryModal';
-import DeleteBookModal from '@/components/admin/book/DeleteBookModal';
-import CreateCollectionModal from '@/components/library/CreateCollectionModal';
-import EditCollectionModal from '@/components/library/EditCollectionModal';
 import GlobalConfirmModal from '@/components/common/GlobalConfirmModal';
-import GenreModal from '@/components/admin/genre/GenreModal';
-import AuthorModal from '@/components/admin/author/AuthorModal';
-import ManageChapterModal from '@/components/admin/chapter/ManageChapterModal';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+
+const CreatePostModal = dynamic(() => import('@/components/post/CreatePostModal'));
+const EditPostModal = dynamic(() => import('@/components/post/EditPostModal'));
+const SharePostModal = dynamic(() => import('@/components/post/SharePostModal'));
+const ModalPostComment = dynamic(() => import('@/components/post/ModalPostComment'));
+const AddToLibraryModal = dynamic(() => import('@/components/library/AddToLibraryModal'));
+const ChapterSummaryModal = dynamic(() => import('@/components/chapter/ChapterSummaryModal'));
+const DeleteBookModal = dynamic(() => import('@/components/admin/book/DeleteBookModal'));
+const CreateCollectionModal = dynamic(() => import('@/components/library/CreateCollectionModal'));
+const EditCollectionModal = dynamic(() => import('@/components/library/EditCollectionModal'));
+const GenreModal = dynamic(() => import('@/components/admin/genre/GenreModal'));
+const AuthorModal = dynamic(() => import('@/components/admin/author/AuthorModal'));
+const ManageChapterModal = dynamic(() => import('@/components/admin/chapter/ManageChapterModal'));
 
 export const metadata = {
   title: 'SocialBook',

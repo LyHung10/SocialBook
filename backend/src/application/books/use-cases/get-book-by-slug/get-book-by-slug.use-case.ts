@@ -1,12 +1,12 @@
 import { ErrorMessages } from '@/common/constants/error-messages';
 import { BookDetailReadModel } from '@/domain/books/read-models/book-detail.read-model';
 import { IBookQueryProvider } from '@/domain/books/repositories/book-query.provider.interface';
+import { IReviewRepository } from '@/domain/reviews/repositories/review.repository.interface';
 import { Injectable, Inject } from '@nestjs/common';
 import {
   BadRequestDomainException,
   NotFoundDomainException,
 } from '@/shared/domain/common-exceptions';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { ICacheService } from '@/domain/shared/interfaces/cache.service.interface';
 import { CACHE_SERVICE } from '@/domain/shared/interfaces/cache.service.interface';
 import { CACHE_TTL } from '@/common/constants/cache.constants';
@@ -16,8 +16,8 @@ import { GetBookBySlugQuery } from './get-book-by-slug.query';
 export class GetBookBySlugUseCase {
   constructor(
     private readonly bookQueryProvider: IBookQueryProvider,
-    private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+    private readonly reviewRepository: IReviewRepository,
   ) {}
 
   async execute(query: GetBookBySlugQuery): Promise<BookDetailReadModel> {
@@ -27,40 +27,27 @@ export class GetBookBySlugUseCase {
 
     const cacheKey = `books:slug:${query.slug}`;
 
-    let viewBookId: string;
-    let bookDetail: BookDetailReadModel;
-
-    // 1. Kiểm tra cache trước
     const cached = await this.cache.get<BookDetailReadModel>(cacheKey);
 
     if (cached) {
-      bookDetail = cached;
-      viewBookId = cached.id;
-    } else {
-      // 2. Không có cache thì query DB
-      const book = await this.bookQueryProvider.findDetailBySlug(query.slug);
-
-      if (!book) {
-        throw new NotFoundDomainException(ErrorMessages.BOOK_NOT_FOUND);
-      }
-
-      // 3. Set vào cache
-      await this.cache.set(cacheKey, book, CACHE_TTL.DEFAULT);
-      bookDetail = book;
-      viewBookId = book.id;
+      return cached;
     }
 
-    // 4. Gọi hàm tăng view chung ở dưới cùng
-    this.eventEmitter.emit('book.viewed', { bookId: viewBookId });
+    const book = await this.bookQueryProvider.findDetailBySlug(query.slug);
 
-    if (cached) {
-      bookDetail = {
-        ...cached,
-        stats: { ...cached.stats, views: cached.stats.views + 1 },
-      };
-      await this.cache.set(cacheKey, bookDetail, CACHE_TTL.DEFAULT);
+    if (!book) {
+      throw new NotFoundDomainException(ErrorMessages.BOOK_NOT_FOUND);
     }
 
-    return bookDetail;
+    const ratingStats = await this.reviewRepository.getStatsForBooks([book.id]);
+    const stats = ratingStats.get(book.id);
+    if (stats) {
+      book.stats.averageRating = stats.rating;
+      book.stats.totalRatings = stats.count;
+    }
+
+    await this.cache.set(cacheKey, book, CACHE_TTL.DEFAULT);
+
+    return book;
   }
 }

@@ -43,7 +43,7 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
     @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
     @InjectModel(UserPreference.name)
     private preferenceModel: Model<UserPreferenceDocument>,
-  ) { }
+  ) {}
 
   async getInteractionCount(userId: string): Promise<number> {
     const userObjectId = new Types.ObjectId(userId);

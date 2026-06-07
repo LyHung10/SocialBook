@@ -3,6 +3,7 @@ import { Eye, Heart, List } from "lucide-react";
 import { useGetBookStatsQuery } from "@/features/books/api/bookApi";
 import { formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { memo } from "react";
 
 interface BookItemProps {
     bookId: string;
@@ -13,7 +14,7 @@ interface BookItemProps {
     showStats?: boolean;
 }
 
-export function BookItem(props: BookItemProps) {
+export const BookItem = memo(function BookItem(props: BookItemProps) {
     const { data: stats } = useGetBookStatsQuery(props.bookId, {
         skip: props.showStats === false,
     });
@@ -92,4 +93,4 @@ export function BookItem(props: BookItemProps) {
             </div>
         </div>
     );
-}
+});

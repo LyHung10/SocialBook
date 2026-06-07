@@ -78,13 +78,22 @@ export class ContentModerationService implements IContentModerationService {
       `;
 
       let result: any;
-      const moderationApiKey = this.configService.get<string>('env.MODERATION_API_KEY');
+      const moderationApiKey = this.configService.get<string>(
+        'env.MODERATION_API_KEY',
+      );
 
       if (moderationApiKey) {
-        this.logger.debug('[AI] Sử dụng API Key riêng cho moderation (OpenAI-compatible).');
-        const moderationApiBaseUrl = this.configService.get<string>('env.MODERATION_API_BASE_URL') || 'https://api.beeknoee.com/v1';
-        const moderationModel = this.configService.get<string>('env.MODERATION_MODEL') || 'gemini-2.5-flash';
-        const moderationTimeout = this.configService.get<number>('env.MODERATION_TIMEOUT') || 30000;
+        this.logger.debug(
+          '[AI] Sử dụng API Key riêng cho moderation (OpenAI-compatible).',
+        );
+        const moderationApiBaseUrl =
+          this.configService.get<string>('env.MODERATION_API_BASE_URL') ||
+          'https://api.beeknoee.com/v1';
+        const moderationModel =
+          this.configService.get<string>('env.MODERATION_MODEL') ||
+          'gemini-2.5-flash';
+        const moderationTimeout =
+          this.configService.get<number>('env.MODERATION_TIMEOUT') || 30000;
 
         const response = await axios.post(
           `${moderationApiBaseUrl}/chat/completions`,
@@ -109,7 +118,9 @@ export class ContentModerationService implements IContentModerationService {
 
         const responseContent = response.data?.choices?.[0]?.message?.content;
         if (!responseContent) {
-          throw new Error('Không nhận được nội dung phản hồi từ API kiểm duyệt.');
+          throw new Error(
+            'Không nhận được nội dung phản hồi từ API kiểm duyệt.',
+          );
         }
 
         try {

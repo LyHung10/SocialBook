@@ -6,11 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useReviewForm } from '@/features/reviews/hooks/useReviewForm';
 import { UserAvatar } from '@/components/common/UserAvatar';
-import { Heart, Loader2, MessageCircle, Star } from 'lucide-react';
+import { Heart, Info, Loader2, MessageCircle, Star } from 'lucide-react';
 import { useAppAuth } from '@/features/auth/hooks';
+import { useGetBookLibraryInfoQuery } from '@/features/library/api/libraryApi';
 
 export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: string }) => {
     const { isAuthenticated } = useAppAuth();
+    const { data: libraryInfo } = useGetBookLibraryInfoQuery(bookId, { skip: !isAuthenticated });
+
+    const completedCount = libraryInfo?.completedChaptersCount || 0;
+    const totalChapters = libraryInfo?.totalChapters || 0;
+    const requiredChapters = Math.min(10, totalChapters);
+    const hasEnoughChapters = !!libraryInfo && completedCount >= requiredChapters;
 
     const {
         reviews,
@@ -76,16 +83,25 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                             placeholder="Chia sẻ cảm nhận của bạn về cuốn sách..."
                         />
 
-                        <div className="flex justify-end">
-                            <Button
-                                type="submit"
-                                disabled={isCreating}
-                                size="sm"
-                                className="h-8 bg-primary text-primary-foreground font-bold text-xs px-5"
-                            >
-                                {isCreating ? 'ĐANG GỬI...' : 'GỬI ĐÁNH GIÁ'}
-                            </Button>
-                        </div>
+                        {!hasEnoughChapters && !!libraryInfo && (
+                            <div className="mb-3 flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-3 py-2 rounded-md">
+                                <Info size={14} />
+                                <span>Đọc thêm {requiredChapters - completedCount} chương nữa để gửi đánh giá ({completedCount}/{requiredChapters})</span>
+                            </div>
+                        )}
+
+                        {hasEnoughChapters && (
+                            <div className="flex justify-end">
+                                <Button
+                                    type="submit"
+                                    disabled={isCreating}
+                                    size="sm"
+                                    className="h-8 bg-primary text-primary-foreground font-bold text-xs px-5"
+                                >
+                                    {isCreating ? 'ĐANG GỬI...' : 'GỬI ĐÁNH GIÁ'}
+                                </Button>
+                            </div>
+                        )}
                     </form>
                 )}
 

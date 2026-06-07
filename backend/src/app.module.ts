@@ -105,8 +105,8 @@ import { PresentationModule } from './presentation/presentation.module';
     ThrottlerModule.forRoot([
       {
         name: 'global',
-        ttl: 60,
-        limit: 10,
+        ttl: 60_000,
+        limit: 100,
       },
     ]),
     EventEmitterModule.forRoot(),

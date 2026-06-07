@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,7 @@ export default function EditCollectionModal() {
         id: editCollectionData.collectionId,
         data: { name: name.trim() },
       }).unwrap();
-      
+
       toast.success('Đã cập nhật tên bộ sưu tập');
       editCollectionData.onSuccess?.();
       closeEditCollection();
@@ -44,17 +45,21 @@ export default function EditCollectionModal() {
   };
 
   return (
-    <Dialog open={isEditCollectionOpen} onOpenChange={closeEditCollection}>
-      <DialogContent className="sm:max-w-[350px] rounded-xl p-5 bg-card border-border shadow-lg">
-        <DialogHeader className="mb-2">
-          <DialogTitle className="text-base font-semibold text-foreground">Đổi tên bộ sưu tập</DialogTitle>
+    <Dialog open={isEditCollectionOpen} onOpenChange={(open) => !open && closeEditCollection()}>
+      <DialogContent className="sm:max-w-[400px] bg-card p-0 gap-0 border-border overflow-hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Đổi tên bộ sưu tập</DialogTitle>
+          <DialogDescription>Đổi tên bộ sưu tập sách</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">Đổi tên bộ sưu tập</h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 flex gap-2">
           <Input
             autoFocus
-            placeholder="Nhập tên mới..."
-            className="flex-1 rounded-lg border-input focus-visible:ring-1 focus-visible:ring-primary h-9 bg-background text-sm"
+            placeholder="Tên bộ sưu tập..."
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isLoading}
@@ -62,7 +67,6 @@ export default function EditCollectionModal() {
           <Button
             type="submit"
             disabled={isLoading || !name.trim() || name === editCollectionData?.currentName}
-            className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 text-sm font-medium shadow-sm"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Lưu'}
           </Button>

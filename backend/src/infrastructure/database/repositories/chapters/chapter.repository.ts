@@ -62,6 +62,14 @@ export class ChapterRepository
     return document ? this.mapToEntity(document) : null;
   }
 
+  async findByParagraphId(paragraphId: string): Promise<ChapterEntity | null> {
+    const document = (await this.chapterModel
+      .findOne({ 'paragraphs._id': new Types.ObjectId(paragraphId) })
+      .lean()
+      .exec()) as unknown as RawChapterDocument | null;
+    return document ? this.mapToEntity(document) : null;
+  }
+
   async findBySlug(
     slug: string,
     bookId: BookId,
@@ -428,6 +436,25 @@ export class ChapterRepository
         $inc: { viewsCount: 1 },
         updatedAt: new Date(),
       })
+      .exec();
+  }
+
+  async incrementViewsBySlug(
+    bookSlug: string,
+    chapterSlug: string,
+  ): Promise<void> {
+    const book = await this.bookModel
+      .findOne({ slug: bookSlug })
+      .select('_id')
+      .lean()
+      .exec();
+    if (!book) return;
+
+    await this.chapterModel
+      .findOneAndUpdate(
+        { slug: chapterSlug, bookId: book._id },
+        { $inc: { viewsCount: 1 }, updatedAt: new Date() },
+      )
       .exec();
   }
 

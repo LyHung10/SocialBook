@@ -54,6 +54,7 @@ export class ReadingRoomGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(ReadingRoomGateway.name);
+  private readonly eventTimestamps = new Map<string, number>();
 
   @WebSocketServer() server: Server;
 
@@ -428,6 +429,22 @@ export class ReadingRoomGateway
     }
   }
 
+  private isRateLimited(
+    socket: Socket,
+    event: string,
+    maxPerMinute = 30,
+  ): boolean {
+    const key = `${socket.id}:${event}`;
+    const now = Date.now();
+    const last = this.eventTimestamps.get(key) || 0;
+    const minInterval = 60_000 / maxPerMinute;
+    if (now - last < minInterval) {
+      return true;
+    }
+    this.eventTimestamps.set(key, now);
+    return false;
+  }
+
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,
@@ -439,6 +456,7 @@ export class ReadingRoomGateway
       progress?: number;
     },
   ) {
+    if (this.isRateLimited(socket, 'heartbeat', 30)) return;
     const userId = socket.data.userId as string;
     const { displayName, avatarUrl } = socket.data;
 
@@ -498,6 +516,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { roomId: string; question: string },
   ) {
+    if (this.isRateLimited(socket, 'ask_ai', 5)) return;
     const userId = socket.data.userId as string;
 
     try {
@@ -534,6 +553,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { roomId: string; content: string },
   ) {
+    if (this.isRateLimited(socket, 'send_chat_message', 10)) return;
     const userId = socket.data.userId as string;
     const displayName = socket.data.displayName || 'User';
     const avatarUrl = socket.data.avatarUrl || '';

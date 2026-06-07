@@ -5,7 +5,6 @@ import {
   ToggleLikeUseCase,
   ToggleLikeRequest,
 } from '@/application/likes/use-cases/toggle-like/toggle-like.use-case';
-import { GetLikeCountUseCase } from '@/application/likes/use-cases/get-like-count/get-like-count.use-case';
 import { TargetType } from '@/domain/likes/value-objects/target-type.vo';
 import { BOOK_CACHE_SERVICE } from '@/domain/books/interfaces/book-cache.service.interface';
 import type { IBookCacheService } from '@/domain/books/interfaces/book-cache.service.interface';
@@ -23,7 +22,6 @@ export class ToggleBookLikeUseCase {
   constructor(
     private readonly bookRepository: IBookRepository,
     private readonly toggleLikeUseCase: ToggleLikeUseCase,
-    private readonly getLikeCountUseCase: GetLikeCountUseCase,
     @Inject(BOOK_CACHE_SERVICE) private readonly bookCache: IBookCacheService,
   ) {}
 
@@ -47,10 +45,8 @@ export class ToggleBookLikeUseCase {
         await this.bookRepository.removeLike(bookId, command.userId);
       }
 
-      const likesCount = await this.getLikeCountUseCase.execute({
-        targetId: command.bookId,
-        targetType: TargetType.BOOK,
-      });
+      const updatedBook = await this.bookRepository.findById(bookId);
+      const newLikesCount = updatedBook?.likes ?? 0;
 
       this.logger.log(
         `Book ${command.bookId} like toggled by user ${command.userId}: ${likeResult.isLiked}`,
@@ -60,7 +56,7 @@ export class ToggleBookLikeUseCase {
 
       return {
         isLiked: likeResult.isLiked,
-        likes: likesCount.count,
+        likes: newLikesCount,
       };
     } catch (error) {
       this.logger.error(

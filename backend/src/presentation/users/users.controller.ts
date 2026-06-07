@@ -1,8 +1,11 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
   Put,
@@ -190,7 +193,17 @@ export class UsersController {
   )
   async updateMyAvatar(
     @CurrentUser('id') userId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType: /^(image\/jpeg|image\/png|image\/webp|image\/avif)$/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
   ) {
     const command = new UpdateUserImageCommand(userId);
     const result = await this.updateUserImageUseCase.execute(command, file);

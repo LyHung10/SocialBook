@@ -1,3 +1,4 @@
+import { SkipThrottle } from '@nestjs/throttler';
 import { RequireAuth } from '@/common/decorators/auth-swagger.decorator';
 import { ApiFileUpload, Public } from '@/common/decorators/custom.decorator';
 import {
@@ -37,12 +38,15 @@ import { UpdateBookUseCase } from '@/application/books/use-cases/update-book/upd
 import { IntelligentSearchUseCase } from '@/application/search/use-cases/intelligent-search.use-case';
 import { IntelligentSearchQuery } from '@/application/search/use-cases/intelligent-search.query';
 import { ToggleBookLikeUseCase } from '@/application/books/use-cases/toggle-book-like/toggle-book-like.use-case';
+import { RecordBookViewUseCase } from '@/application/books/use-cases/record-book-view/record-book-view.use-case';
+import { RecordBookViewCommand } from '@/application/books/use-cases/record-book-view/record-book-view.command';
 import { ToggleBookLikeCommand } from '@/application/books/use-cases/toggle-book-like/toggle-book-like.command';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @Controller('books')
+@SkipThrottle({ global: true })
 export class BooksController {
   constructor(
     private readonly createBookUseCase: CreateBookUseCase,
@@ -55,10 +59,12 @@ export class BooksController {
     private readonly getBookFiltersUseCase: GetBookFiltersUseCase,
     private readonly toggleBookLikeUseCase: ToggleBookLikeUseCase,
     private readonly intelligentSearchUseCase: IntelligentSearchUseCase,
+    private readonly recordBookViewUseCase: RecordBookViewUseCase,
   ) {}
 
   @Post()
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   @ApiFileUpload('coverUrl', CreateBookDto)
   async create(
     @Body() createBookDto: CreateBookDto,
@@ -83,6 +89,7 @@ export class BooksController {
 
   @Get('admin/all')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   async findAllAdmin(@Query() filter: FilterBookDto) {
     const query = new GetBooksQuery({
       ...filter,
@@ -159,6 +166,7 @@ export class BooksController {
   @Patch(':slug/like')
   @RequireAuth()
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle({ global: false })
   async toggleLike(
     @Param('slug') slug: string,
     @CurrentUser('id') userId: string,
@@ -169,7 +177,7 @@ export class BooksController {
     const command = new ToggleBookLikeCommand({
       bookId: book.id,
       userId,
-      bookSlug: book.slug,
+      bookSlug: slug,
     });
     const result = await this.toggleBookLikeUseCase.execute(command);
 
@@ -180,6 +188,15 @@ export class BooksController {
         isLiked: result.isLiked,
         likes: result.likes,
       },
+    };
+  }
+
+  @Post(':slug/views')
+  @Public()
+  async recordView(@Param('slug') slug: string) {
+    await this.recordBookViewUseCase.execute(new RecordBookViewCommand(slug));
+    return {
+      message: 'Recorded view successfully',
     };
   }
 
@@ -197,6 +214,7 @@ export class BooksController {
 
   @Put(':id')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   @ApiFileUpload('coverUrl', UpdateBookDto)
   async update(
     @Param('id') id: string,
@@ -223,6 +241,7 @@ export class BooksController {
 
   @Delete(':id')
   @RequireAuth('admin')
+  @SkipThrottle({ global: false })
   async remove(@Param('id') id: string) {
     const command = new DeleteBookCommand(id);
     await this.deleteBookUseCase.execute(command);

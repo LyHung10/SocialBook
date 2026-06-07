@@ -25,6 +25,7 @@ export interface ChapterFilter {
 
 export abstract class IChapterRepository {
   abstract findById(id: ChapterId): Promise<Chapter | null>;
+  abstract findByParagraphId(paragraphId: string): Promise<Chapter | null>;
   abstract findAll(
     filter: ChapterFilter,
     pagination: PaginationOptions,
@@ -75,6 +76,10 @@ export abstract class IChapterRepository {
   ): Promise<boolean>;
 
   abstract incrementViews(id: ChapterId): Promise<void>;
+  abstract incrementViewsBySlug(
+    bookSlug: string,
+    chapterSlug: string,
+  ): Promise<void>;
 
   abstract countByBook(bookId: BookId): Promise<number>;
   abstract getTotalViewsByBook(bookId: BookId): Promise<number>;

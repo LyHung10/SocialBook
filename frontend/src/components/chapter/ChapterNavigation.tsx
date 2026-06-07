@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, List } from 'lucide-react';
@@ -13,7 +14,7 @@ interface ChapterNavigationProps {
   onTableOfContentsClick?: () => void;
 }
 
-export default function ChapterNavigation({
+const ChapterNavigation = memo(function ChapterNavigation({
   hasPrevious,
   hasNext,
   onPrevious,
@@ -77,4 +78,6 @@ export default function ChapterNavigation({
       </Button>
     </nav>
   );
-}
+});
+
+export default ChapterNavigation;

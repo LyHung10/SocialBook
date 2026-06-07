@@ -16,6 +16,7 @@ import {
   GetChaptersImportStatusParams,
   GetChaptersParams,
   ImportChaptersParams,
+  RecordChapterViewParams,
   StartChaptersImportParams,
   StartChaptersImportResponse,
   UpdateChapterParams,
@@ -75,6 +76,16 @@ export const chaptersApi = createApi({
       providesTags: (result, error, params) => [
         { type: CHAPTER_TAGS.CHAPTER, id: params.chapterSlug },
       ],
+    }),
+
+    recordChapterView: builder.mutation<void, RecordChapterViewParams>({
+      query: (params) => ({
+        url: NESTJS_CHAPTERS_ENDPOINTS.recordChapterView(
+          params.bookSlug,
+          params.chapterSlug,
+        ),
+        method: "POST",
+      }),
     }),
 
     getChapters: builder.query<ChaptersListData, GetChaptersParams>({
@@ -224,4 +235,5 @@ export const {
   useLazyGetChaptersImportStatusQuery,
   useGetChapterKnowledgeQuery,
   useAskChapterAIMutation,
+  useRecordChapterViewMutation,
 } = chaptersApi;
