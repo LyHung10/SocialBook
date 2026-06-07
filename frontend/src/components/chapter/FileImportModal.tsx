@@ -4,7 +4,6 @@ import React, { useState, useRef } from 'react';
 import { Loader2, Upload, Check, X, Eye } from 'lucide-react';
 import { useImportChaptersPreviewMutation } from '@/features/chapters/api/chaptersApi';
 import { ChapterPreview } from '@/features/chapters/types/chapter.interface';
-import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface FileImportModalProps {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Facebook, Mail, Twitter, X, Link2, Check } from 'lucide-react';
+import { Facebook, Mail, Twitter, Link2, Check } from 'lucide-react';
 import {
   EmailShareButton,
   FacebookShareButton,

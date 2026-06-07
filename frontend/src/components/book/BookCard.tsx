@@ -1,10 +1,8 @@
 import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { SafeImage } from '../common/SafeImage';
 import React, { memo, useCallback } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Book } from '@/features/books/types/book.interface';

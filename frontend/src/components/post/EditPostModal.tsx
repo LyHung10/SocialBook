@@ -3,8 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useUpdatePostMutation } from '@/features/posts/api/postApi';
-import { X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import BookSelector from './BookSelector';
+import { X, Image as ImageIcon } from 'lucide-react';
 import { toast } from "sonner";
 import { getErrorMessage, cn } from '@/lib/utils';
 import { useForm } from 'react-hook-form';

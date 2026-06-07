@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Book } from '@/features/books/types/book.interface';
 import { cn } from '@/lib/utils';
 import { BookOpen, Bookmark, Heart, Share2, Star } from 'lucide-react';
-import Image from 'next/image';
 import { SafeImage } from '../common/SafeImage';
 import Link from 'next/link';
 import { ElementType } from 'react';

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { RoomResponse } from '@/features/reading-rooms/api/readingRoomsApi';
-import type { RoomComment, RoomReactionEvent, ReactionType, ParagraphReactionSummary, RoomQuote } from '@/features/reading-room-interactions/types/room-interaction.types';
+import type { RoomComment, ReactionType, ParagraphReactionSummary, RoomQuote } from '@/features/reading-room-interactions/types/room-interaction.types';
 
 export interface PresenceData {
   userId: string;

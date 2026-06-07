@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { KnowledgeGraphData, GraphNode } from '@/features/library/types/library.interface';
 import { useTheme } from 'next-themes';
-import { Loader2, ZoomIn, ZoomOut, Maximize2, Info, ExternalLink } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -76,7 +76,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
     const timeoutId = setTimeout(updateDimensions, 100);
 
     const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (width > 0) {
           setDimensions({ width, height: height || 700 });

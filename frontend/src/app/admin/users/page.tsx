@@ -1,8 +1,5 @@
 'use client';
 
-import { useBanUserMutation, useGetUsersQuery } from '@/features/users/api/usersApi';
-import { useModalStore } from '@/store/useModalStore';
-import { getErrorMessage } from '@/lib/utils';
 import {
     CheckCircle,
     Mail,
@@ -10,7 +7,6 @@ import {
     XCircle,
     Loader2,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {

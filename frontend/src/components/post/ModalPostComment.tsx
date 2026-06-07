@@ -5,7 +5,7 @@ import Image from 'next/image';
 import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
 import { cn, formatDate } from '@/lib/utils';
-import { Heart, MessageCircle, Send, X } from 'lucide-react';
+import { Heart, MessageCircle, Send } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useModalStore } from '@/store/useModalStore';
 import { usePostComments } from '@/features/posts/hooks/usePostComments';

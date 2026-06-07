@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
+import { useCallback } from 'react';
 import { usePostActions } from '@/features/posts/hooks/usePostActions';
 import { Post } from '@/features/posts/types/post.interface';
 import { useAppAuth } from '@/features/auth/hooks';

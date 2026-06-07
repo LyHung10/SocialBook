@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketProvider';
 import { useSocketEvents } from '@/hooks/useSocketEvents';
 
