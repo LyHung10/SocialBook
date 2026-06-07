@@ -50,6 +50,12 @@ export default function CreateBook() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const genreDropdownRef = useRef<HTMLDivElement>(null);
 
+  const [authorSearch, setAuthorSearch] = useState('');
+  const [isAuthorDropdownOpen, setIsAuthorDropdownOpen] = useState(false);
+
+  const [genreSearch, setGenreSearch] = useState('');
+  const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -67,11 +73,7 @@ export default function CreateBook() {
   const { data: genresData = EMPTY_GENRES, isLoading: loadingGenres } = useGetGenresQuery();
   const { data: filtersData } = useGetFiltersQuery();
 
-  const [authorSearch, setAuthorSearch] = useState('');
-  const [isAuthorDropdownOpen, setIsAuthorDropdownOpen] = useState(false);
 
-  const [genreSearch, setGenreSearch] = useState('');
-  const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
 
   // Sort authors alphabetically
   const authors = [...authorsData].sort((a, b) => a.name.localeCompare(b.name));

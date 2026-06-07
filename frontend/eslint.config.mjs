@@ -35,6 +35,7 @@ const eslintConfig = [
       "react/display-name": "off",
       "prefer-const": "off",
       "react-hooks/purity": "off",
+      "react-hooks/immutability": "off",
     },
   },
   {
