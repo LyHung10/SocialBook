@@ -1,5 +1,5 @@
 import { ContentModerationService } from '@/infrastructure/moderation/content-moderation.service';
-import { IGeminiService } from '@/domain/gemini/services/gemini.service.interface';
+import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
