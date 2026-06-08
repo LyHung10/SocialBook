@@ -9,7 +9,6 @@ import {
 import { CommentItem } from '@/features/comments/types/comment.interface';
 import { usePostToggleLikeMutation } from '@/features/likes/api/likeApi';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
-import { MESSAGES } from '@/constants/messages';
 
 export interface UseCommentActionsOptions {
     comment: CommentItem;

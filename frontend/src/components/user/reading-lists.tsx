@@ -1,4 +1,4 @@
-import { Plus, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { ReadingListItem } from '@/components/user/reading-list-item';
 import { useGetCollectionsQuery } from '@/features/library/api/libraryApi';
 import { Collection } from '@/features/library/types/library.interface';

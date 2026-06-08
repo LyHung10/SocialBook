@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -17,8 +17,7 @@ import {
     Loader2, 
     Save, 
     Plus, 
-    Trash2, 
-    X,
+    Trash2,
     Keyboard
 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';

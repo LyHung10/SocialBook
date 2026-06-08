@@ -9,7 +9,6 @@ import {
   useDeleteChapterMutation,
   useLazyGetChapterByIdQuery,
   useStartChaptersImportMutation,
-  useGetChaptersImportStatusQuery,
   useLazyGetChaptersImportStatusQuery,
 } from "@/features/chapters/api/chaptersApi";
 import {
@@ -19,7 +18,6 @@ import {
 import {
   Chapter,
   Paragraph,
-  ChaptersImportStatus,
 } from "@/features/chapters/types/chapter.interface";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Image, { ImageProps } from 'next/image';
 
 interface SafeImageProps extends ImageProps {

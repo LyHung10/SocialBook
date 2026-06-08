@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useAppAuth } from '@/features/auth/hooks';
-import { Book, ImagePlus, X } from 'lucide-react';
+import { ImagePlus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';

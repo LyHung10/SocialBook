@@ -1,11 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
-import { useGetFlaggedPostsQuery, useApprovePostMutation, useRejectPostMutation } from '@/features/admin/api/moderationApi';
-import { toast } from 'sonner';
-import { Loader2, ChevronLeft, ChevronRight, Check, X, AlertTriangle, User, BookOpen, Clock } from 'lucide-react';
-import { useModalStore } from '@/store/useModalStore';
+import { Loader2, ChevronLeft, ChevronRight, AlertTriangle, User, BookOpen, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

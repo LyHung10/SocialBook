@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import PostList from '@/components/post/PostList';
 import { useAppAuth } from '@/features/auth/hooks';
 import { PenSquare } from 'lucide-react';
@@ -42,9 +42,11 @@ export default function Post() {
     const currentUserName = user?.name || 'Người đọc';
     const currentUserImage = user?.image || '/abstract-book-pattern.png';
     const feedRef = useRef<any>(null);
-    if (typeof window !== 'undefined') {
-        feedRef.current = document.documentElement;
-    }
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            feedRef.current = document.documentElement;
+        }
+    }, []);
 
     const goToFollowing = useCallback(() => {
         if (currentUserId) {

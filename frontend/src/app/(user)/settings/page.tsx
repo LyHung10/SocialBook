@@ -13,7 +13,6 @@ import {
     Save, 
     Globe, 
     MapPin, 
-    Link as LinkIcon, 
     Mail, 
     Calendar, 
     BadgeCheck,
@@ -26,8 +25,7 @@ import {
     CardContent, 
     CardDescription, 
     CardHeader, 
-    CardTitle,
-    CardFooter
+    CardTitle
 } from '@/components/ui/card';
 import { 
     Tabs, 

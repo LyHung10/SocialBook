@@ -2,7 +2,6 @@
 
 import {
   Archive,
-  Bookmark,
   Check,
   Plus,
   X,

@@ -6,7 +6,6 @@ import { Book } from '@/features/books/types/book.interface';
 import { formatCompact, isNewBook } from '@/lib/utils';
 import { BookOpen, ChevronLeft, ChevronRight, Eye, Heart } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { SafeImage } from '../common/SafeImage';
 import { useEffect, useState } from 'react';
 

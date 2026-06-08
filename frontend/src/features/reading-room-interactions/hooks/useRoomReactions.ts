@@ -1,6 +1,5 @@
 'use client';
 import { useCallback } from 'react';
-import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useSocket } from '@/context/SocketProvider';
 import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
 import type { ReactionType, RoomReactionEvent } from '../types/room-interaction.types';

@@ -4,7 +4,7 @@ import { useAppAuth } from '@/features/auth/hooks';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Users, BookOpen, FileText, MessageSquare, BarChart2, LogOut, PenLine, Shapes, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { X, Home, Users, BookOpen, FileText, MessageSquare, BarChart2, LogOut, PenLine, Shapes, AlertTriangle, ShieldAlert } from 'lucide-react';
 import LoginWall from '@/components/auth/LoginWall';
 
 const navItems = [
