@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  NotFoundDomainException,
-  BadRequestDomainException,
-} from '@/shared/domain/common-exceptions';
+import { BadRequestDomainException } from '@/shared/domain/common-exceptions';
 import { ICommentRepository } from '@/domain/comments/repositories/comment.repository.interface';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 import { Comment } from '@/domain/comments/entities/comment.entity';
@@ -12,6 +9,7 @@ import { UserId } from '@/domain/comments/value-objects/user-id.vo';
 import { TargetId } from '@/domain/comments/value-objects/target-id.vo';
 import { CommentTargetType } from '@/domain/comments/value-objects/comment-target-type.vo';
 import { CreateCommentCommand } from './create-comment.command';
+import { containsVietnameseToxicWords } from '@/domain/content-moderation/utils/vietnamese-profanity';
 
 @Injectable()
 export class CreateCommentUseCase {
@@ -35,6 +33,16 @@ export class CreateCommentUseCase {
           targetType,
           command.parentId,
         );
+
+      // Kiểm tra nhanh bằng regex (từ ngữ cực kỳ thô tục) - đồng bộ, không cần AI
+      const quickCheck = containsVietnameseToxicWords(command.content);
+      if (quickCheck) {
+        throw new BadRequestDomainException(
+          'Nội dung chứa từ ngữ thô tục không phù hợp với tiêu chuẩn cộng đồng.',
+        );
+      }
+
+      // Lưu comment ngay với trạng thái pending, AI sẽ kiểm tra ngầm qua event
       const comment = Comment.create({
         id: CommentId.create(this.idGenerator.generate()),
         userId: command.userId,
@@ -42,6 +50,7 @@ export class CreateCommentUseCase {
         targetId: command.targetId,
         content: command.content,
         parentId: effectiveParentId ?? undefined,
+        moderationStatus: 'pending',
       });
 
       await this.commentRepository.save(comment);
@@ -56,6 +65,7 @@ export class CreateCommentUseCase {
         targetId: command.targetId,
         targetType: command.targetType,
         parentId: comment.parentId?.toString(),
+        content: command.content,
       });
 
       return comment;

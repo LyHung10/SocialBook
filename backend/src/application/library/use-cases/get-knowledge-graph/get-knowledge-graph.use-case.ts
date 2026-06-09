@@ -273,7 +273,11 @@ export class GetKnowledgeGraphUseCase {
             color: '#f472b6', // pink-400
             isGap: true,
             reason: `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn.`,
-            slug: slugify(gap.suggestedBook, { lower: true, strict: true, locale: 'vi' }),
+            slug: slugify(gap.suggestedBook, {
+              lower: true,
+              strict: true,
+              locale: 'vi',
+            }),
           });
 
           // Links

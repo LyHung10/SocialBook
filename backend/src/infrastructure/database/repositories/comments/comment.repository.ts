@@ -75,6 +75,7 @@ export class CommentRepository
       targetId: new Types.ObjectId(targetId.toString()),
       targetType: targetType.toString(),
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     if (parentId) {
@@ -119,6 +120,7 @@ export class CommentRepository
     const queryFilter: FilterQuery<CommentDocument> = {
       parentId: new Types.ObjectId(parentId.toString()),
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     return this.executePaginatedQuery(
@@ -141,6 +143,7 @@ export class CommentRepository
       targetType: targetType.toString(),
       parentId: null,
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     return this.executePaginatedQuery(
