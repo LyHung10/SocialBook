@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
-import { store } from '@/store/store';
+import { store as reduxStore } from '@/store/store';
 import { readingRoomsApi } from '@/features/reading-rooms/api/readingRoomsApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -150,6 +150,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
 
     socket.on('connect', () => {
+      if (useReadingRoomStore.getState().room?.status === 'ended') return;
       socket.emit(ReadingRoomClientEvent.JOIN_ROOM, {
         roomCode: roomId,
         displayName: user.name || user.username || user.email?.split('@')[0] || 'Người dùng',
@@ -210,15 +211,15 @@ export const useReadingRoomSocket = (roomId?: string) => {
         toast.info('Phòng đọc đã kết thúc');
       }
       useReadingRoomStore.getState().clearRoom();
-      store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
-      router.push('/reading-rooms');
+      reduxStore.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory', { type: 'Room', id: roomId }]));
+      router.refresh();
     });
 
     socket.on(ReadingRoomServerEvent.ROOM_DELETED, () => {
       toast.error('Phòng đọc đã bị xoá');
       useReadingRoomStore.getState().clearRoom();
-      store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
-      router.push('/reading-rooms');
+      reduxStore.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory', { type: 'Room', id: roomId }]));
+      router.refresh();
     });
 
     socket.on(ReadingRoomServerEvent.ANNOTATION_ADDED, (data) => {
@@ -238,6 +239,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     });
 
     socket.on(ReadingRoomServerEvent.ERROR, (error) => {
+      if (error.message?.includes('ended') && useReadingRoomStore.getState().room?.status === 'ended') return;
       toast.error(error.message || 'Lỗi kết nối phòng đọc');
     });
 
@@ -297,6 +299,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     });
 
     if (socket.connected) {
+      if (useReadingRoomStore.getState().room?.status === 'ended') return;
       socket.emit(ReadingRoomClientEvent.JOIN_ROOM, {
         roomCode: roomId,
         displayName: user.name || user.username || user.email?.split('@')[0] || 'Người dùng',

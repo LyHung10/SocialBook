@@ -49,11 +49,11 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   
   const { data: initialRoom, isLoading: isLoadingRoom, error } = useGetRoomQuery(roomCode, { skip: !isAuthenticated });
   
-  const isEnded = initialRoom?.status === 'ended';
+  const storeRoom = useReadingRoomStore(state => state.room);
+  const isEnded = initialRoom?.status === 'ended' || storeRoom?.status === 'ended';
   const shouldConnectSocket = isAuthenticated && !!initialRoom && !isEnded;
   const { endRoom, deleteRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, sendChatMessage } = useReadingRoomSocket(shouldConnectSocket ? roomCode : undefined);
   const [reactivateRoom, { isLoading: isReactivating }] = useReactivateRoomMutation();
-  const storeRoom = useReadingRoomStore(state => state.room);
   const room = storeRoom || initialRoom;
   const isHost = room?.hostId === user?.id;
   const presences = useReadingRoomStore(state => state.presences);
@@ -252,7 +252,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           }, 300);
                         }
                       })}
-                      className={`${ROOM_BTN_BASE} border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent/60`}
+                      className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
                     >
                       <LogOut size={15} />
                       <span className="text-xs">Kết thúc</span>
@@ -272,7 +272,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           router.push('/reading-rooms');
                         }
                       })}
-                      className={`${ROOM_BTN_BASE} border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent/60`}
+                      className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
                     >
                       <Trash2 size={15} />
                       <span className="text-xs">Xoá</span>
@@ -295,12 +295,14 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   </Button>
                 ) : isHost ? (
                   <Button
+                    variant="outline"
                     size="sm"
-                    className={`${ROOM_BTN_BASE} bg-primary hover:bg-primary/90 text-white border-0 shadow-primary/20`}
+                    className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
                     disabled={isReactivating}
                     onClick={async () => {
                       try {
                         await reactivateRoom(roomCode).unwrap();
+                        useReadingRoomStore.getState().setRoom({ ...(storeRoom || initialRoom)!, status: 'active' });
                         toast.success('Phòng đã được mở lại!');
                         router.refresh();
                       } catch {

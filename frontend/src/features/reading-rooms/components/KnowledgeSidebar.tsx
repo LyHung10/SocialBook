@@ -1,25 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Send, Bot, BookOpen, Users, MapPin, Lightbulb, ChevronDown, ChevronRight, Info, Loader2, Network, Maximize2, RefreshCw } from 'lucide-react';
-
-import dynamic from 'next/dynamic';
-
-const KnowledgeGraph = dynamic(
-  () => import('./KnowledgeGraph').then((mod) => mod.KnowledgeGraph),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full min-h-[300px]">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">Đang tải sơ đồ...</p>
-        </div>
-      </div>
-  ),
-});
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { MessageSquare, Send, Bot, BookOpen, Users, MapPin, Lightbulb, ChevronDown, ChevronRight, Info, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-
 
 import { ChatMessage } from '@/store/useReadingRoomStore';
 import { Input } from '@/components/ui/input';
@@ -62,7 +43,6 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
 
   const [activeTab, setActiveTab] = useState('knowledge');
   const [question, setQuestion] = useState('');
-  const [graphOpen, setGraphOpen] = useState(false);
   const [localChatMessages, setLocalChatMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -150,14 +130,10 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
     <GlassCard className="flex flex-col h-[75vh]">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
         <div className="px-3 pt-3 flex items-center justify-between">
-          <TabsList variant="pill" className="grid w-full grid-cols-3 rounded-2xl h-10">
+          <TabsList variant="pill" className="flex-1 grid grid-cols-2 gap-2 rounded-2xl h-10">
             <TabsTrigger value="knowledge" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
               <BookOpen className="w-3 h-3 mr-1.5" />
               Kiến thức
-            </TabsTrigger>
-            <TabsTrigger value="graph" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
-              <Network className="w-3 h-3 mr-1.5" />
-              Sơ đồ
             </TabsTrigger>
             <TabsTrigger value="chat" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
               <MessageSquare className="w-3 h-3 mr-1.5" />
@@ -262,49 +238,6 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="graph" className="flex-1 overflow-hidden mt-0 p-4 flex flex-col items-center justify-center text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-            <Network className="w-10 h-10 text-primary opacity-60" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold">Sơ đồ tri thức AI</h4>
-            <p className="text-[10px] text-muted-foreground px-6">
-              Khám phá mối liên hệ giữa các nhân vật và sự kiện thông qua sơ đồ mạng lưới.
-            </p>
-          </div>
-
-          <Dialog open={graphOpen} onOpenChange={setGraphOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="rounded-xl gap-2 px-6">
-                <Maximize2 className="w-3.5 h-3.5" />
-                Mở sơ đồ toàn màn hình
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[90vw] w-[1000px] h-[80vh] p-0 overflow-hidden border-none bg-background/95 backdrop-blur-xl flex flex-col">
-              <DialogHeader className="p-6 shrink-0">
-                <DialogTitle className="flex items-center gap-2">
-                  <Network className="w-5 h-5 text-primary" />
-                  Sơ đồ tri thức AI - Chương {chapterId.slice(-4).toUpperCase()}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 min-h-0 relative">
-                {data && (
-                  <KnowledgeGraph 
-                    entities={data.entities} 
-                    relationships={data.relationships || []} 
-                    isOpen={graphOpen}
-                  />
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <p className="text-[9px] text-muted-foreground italic mt-4">
-            * Nếu sơ đồ trống, hãy thử nhấn làm mới để AI cập nhật lại dữ liệu.
-          </p>
-        </TabsContent>
-
-
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0">
           <ScrollArea ref={scrollContainerRef} className="flex-1 px-3 py-3">
             <div className="space-y-2">

@@ -28,10 +28,10 @@ export class CreateRoomUseCase {
       throw new NotFoundDomainException('Book not found');
     }
 
-    const chapterCount = await this.chapterRepository.countByBook(
+    const firstChapter = await this.chapterRepository.findFirstChapter(
       BookId.create(command.bookId),
     );
-    if (chapterCount === 0) {
+    if (!firstChapter) {
       throw new BadRequestDomainException(
         'Sách chưa có chương nào, không thể tạo phòng đọc',
       );
@@ -42,7 +42,7 @@ export class CreateRoomUseCase {
       hostId: command.hostId,
       mode: command.mode,
       maxMembers: command.maxMembers || 10,
-      currentChapterSlug: command.currentChapterSlug,
+      currentChapterSlug: firstChapter.slug,
     });
 
     await this.roomRepository.save(room);
