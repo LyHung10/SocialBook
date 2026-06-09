@@ -306,43 +306,52 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
 
 
         <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0">
-          <ScrollArea ref={scrollContainerRef} className="flex-1 px-4 py-4">
-            <div className="space-y-4">
+          <ScrollArea ref={scrollContainerRef} className="flex-1 px-3 py-3">
+            <div className="space-y-2">
               {chatMessages.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="w-6 h-6 text-primary" />
+                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 px-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
+                    <Bot className="w-7 h-7 text-primary" />
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold">Trợ lý AI đang chờ bạn</p>
-                    <p className="text-[10px] text-muted-foreground">Hãy hỏi AI về nội dung chương này hoặc ý nghĩa của các đoạn trích nhé!</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      Hỏi AI về nội dung chương này<br />hoặc ý nghĩa các đoạn trích nhé!
+                    </p>
                   </div>
                 </div>
               )}
               {chatMessages.map((msg, i) => (
                 <div
                   key={`${msg.userId || msg.role || 'msg'}-${msg.createdAt || i}-${i}`}
-                  className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'
-                    }`}
+                  className={`flex items-end gap-2 ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}
                 >
+                  {msg.role === 'ai' && (
+                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mb-0.5">
+                      <Bot className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                  )}
                   <div
-                    className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${msg.role === 'ai'
-                        ? 'bg-muted/50 border border-border text-foreground'
-                        : 'bg-primary text-primary-foreground'
-                      }`}
+                    className={`max-w-[80%] px-3 py-2.5 rounded-2xl text-xs leading-relaxed ${
+                      msg.role === 'ai'
+                        ? 'bg-black/[0.04] dark:bg-white/5 border border-border/50 text-foreground rounded-tl-sm'
+                        : 'bg-primary/10 text-foreground rounded-tr-sm'
+                    }`}
                   >
                     {msg.content}
                   </div>
                 </div>
               ))}
 
-
               {isSoloPending && (
-                <div className="flex flex-col items-start">
-                  <div className="bg-muted/50 text-foreground p-3 rounded-2xl flex gap-1">
-                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-foreground/40 rounded-full" />
-                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-foreground/40 rounded-full" />
-                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.4, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-foreground/40 rounded-full" />
+                <div className="flex items-end gap-2 justify-start">
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="bg-black/[0.04] dark:bg-white/5 border border-border/50 px-3 py-2.5 rounded-2xl rounded-tl-sm flex items-center gap-1">
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-primary/60 rounded-full" />
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-primary/60 rounded-full" />
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4, times: [0, 0.5, 1] }} className="w-1.5 h-1.5 bg-primary/60 rounded-full" />
                   </div>
                 </div>
               )}
@@ -350,24 +359,24 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
             </div>
           </ScrollArea>
 
-          <div className="p-4 border-t border-border bg-muted/20">
-            <form onSubmit={handleAskAI} className="relative">
+          <form onSubmit={handleAskAI} className="p-3 border-t border-border/60 dark:border-border bg-black/[0.02] dark:bg-white/5">
+            <div className="flex items-center gap-2">
               <Input
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Hỏi AI về nội dung..."
-                className="pr-10 rounded-xl bg-background text-xs h-10 border-border/50 focus-visible:ring-primary/20"
+                className="h-9 text-xs rounded-xl bg-background dark:bg-black/40 border-border/50 focus-visible:ring-primary/20"
               />
               <Button
                 type="submit"
                 size="icon"
                 disabled={!question.trim()}
-                className="absolute right-1 top-1 w-8 h-8 rounded-lg"
+                className="h-9 w-9 shrink-0 rounded-xl"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
               </Button>
-            </form>
-          </div>
+            </div>
+          </form>
         </TabsContent>
       </Tabs>
     </GlassCard>
