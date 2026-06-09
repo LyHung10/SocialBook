@@ -59,9 +59,9 @@ export class RefreshTokenUseCase {
 
   async validateRefreshToken(token: string): Promise<TokenPayload | false> {
     try {
-      const payload = this.jwtService.verify(token, {
+      const payload: TokenPayload = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      }) as TokenPayload;
+      });
 
       const id = UserId.create(payload.sub);
       const user = await this.userRepository.findById(id);
@@ -74,7 +74,7 @@ export class RefreshTokenUseCase {
       }
 
       return payload;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedDomainException('Refresh token không hợp lệ');
     }
   }

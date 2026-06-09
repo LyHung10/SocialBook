@@ -123,7 +123,7 @@ export class ChapterRepository
       ? sort
       : { sortBy: 'orderIndex', order: 'asc' as const };
 
-    return this.executePaginatedQuery<ChapterEntity>(
+    return this.executePaginatedQuery<ChapterEntity, RawChapterDocument>(
       queryFilter,
       pagination,
       resolvedSort,
@@ -179,13 +179,15 @@ export class ChapterRepository
     const bookObjectId = bookDocument._id;
     const sortField = sort?.sortBy || 'orderIndex';
 
-    const paginatedResult =
-      await this.executePaginatedQuery<RawChapterDocument>(
-        { bookId: bookObjectId },
-        pagination,
-        { sortBy: sortField, order: sort?.order },
-        (doc) => doc as RawChapterDocument,
-      );
+    const paginatedResult = await this.executePaginatedQuery<
+      RawChapterDocument,
+      RawChapterDocument
+    >(
+      { bookId: bookObjectId },
+      pagination,
+      { sortBy: sortField, order: sort?.order },
+      (doc) => doc,
+    );
 
     const total = paginatedResult.meta.total;
     const chapterDocs = paginatedResult.data;
@@ -254,7 +256,7 @@ export class ChapterRepository
       .exec()) as unknown as RawChapterDocument | null;
     if (!chapterDocument) return null;
 
-    const [prevChapter, nextChapter] = await Promise.all([
+    const [prevChapter, nextChapter] = (await Promise.all([
       this.chapterModel
         .findOne({
           bookId: bookDocument._id,
@@ -263,7 +265,7 @@ export class ChapterRepository
         .sort({ orderIndex: -1 })
         .select('title slug orderIndex')
         .lean()
-        .exec() as unknown as RawChapterDocument | null,
+        .exec(),
       this.chapterModel
         .findOne({
           bookId: bookDocument._id,
@@ -272,8 +274,8 @@ export class ChapterRepository
         .sort({ orderIndex: 1 })
         .select('title slug orderIndex')
         .lean()
-        .exec() as unknown as RawChapterDocument | null,
-    ]);
+        .exec(),
+    ])) as [RawChapterDocument | null, RawChapterDocument | null];
 
     return {
       book: BookMapper.toListReadModel(bookDocument),
@@ -469,7 +471,10 @@ export class ChapterRepository
   async countChaptersForBooks(bookIds: string[]): Promise<Map<string, number>> {
     const objectIds = bookIds.map((id) => new Types.ObjectId(id));
     const results = await this.chapterModel
-      .aggregate([
+      .aggregate<{
+        _id: Types.ObjectId;
+        count: number;
+      }>([
         { $match: { bookId: { $in: objectIds } } },
         { $group: { _id: '$bookId', count: { $sum: 1 } } },
       ])
@@ -488,8 +493,12 @@ export class ChapterRepository
 
   async getTotalViewsByBook(bookId: BookId): Promise<number> {
     const result = await this.chapterModel
-      .aggregate([
-        { $match: { bookId: new Types.ObjectId(bookId.toString()) } },
+      .aggregate<{ _id: null; totalViews: number }>([
+        {
+          $match: {
+            bookId: new Types.ObjectId(bookId.toString()),
+          },
+        },
         { $group: { _id: null, totalViews: { $sum: '$viewsCount' } } },
       ])
       .exec();

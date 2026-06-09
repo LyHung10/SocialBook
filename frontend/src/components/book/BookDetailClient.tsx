@@ -25,7 +25,6 @@ export default function BookDetailClient({ bookSlug }: BookDetailClientProps) {
     error,
     isLiked,
     isLiking,
-    isCreatingPost,
     handleToggleLike,
     handleSharePost,
     defaultShareContent,

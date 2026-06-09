@@ -6,7 +6,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from '@/components/ui/button';
 import { Edit2, MoreVertical, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
 
 interface PostAuthorHeaderProps {
     post: Post;
@@ -23,11 +22,11 @@ export function PostAuthorHeader({
 }: PostAuthorHeaderProps) {
     const route = useRouter();
 
-    const navigateToUser = useCallback(() => {
+    const navigateToUser = () => {
         if (post?.user?.id) {
             route.push(`/users/${post.user.id}`);
         }
-    }, [route, post?.user?.id]);
+    };
 
     const createdDate = new Date(post.createdAt).toLocaleDateString('vi-VN', {
         day: '2-digit',

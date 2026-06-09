@@ -90,14 +90,14 @@ export const axiosNextJsBaseQuery =
               
               const responseData = retryResult.data as ResponseDto<unknown>;
               return { data: responseData.data };
-            } catch (retryError) {
+            } catch {
               // Thử lại thất bại, báo lỗi
             }
           } else {
-            // Refresh thất bại hoàn toàn
             await signOut({ redirect: false });
-            typeof window !== 'undefined' && (window.location.href = '/login?error=SessionExpired');
-            toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login?error=SessionExpired';
+            }
           }
         }
 

@@ -48,11 +48,16 @@ export class GetBooksQuery {
       'likes',
       'publishedYear',
     ];
-    this.sortBy = (
+    this.sortBy =
       props.sortBy && validSortFields.includes(props.sortBy)
-        ? props.sortBy
-        : 'createdAt'
-    ) as any;
+        ? (props.sortBy as
+            | 'createdAt'
+            | 'updatedAt'
+            | 'title'
+            | 'views'
+            | 'likes'
+            | 'publishedYear')
+        : 'createdAt';
 
     this.order = props.order ?? 'desc';
   }

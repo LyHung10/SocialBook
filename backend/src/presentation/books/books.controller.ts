@@ -65,7 +65,7 @@ export class BooksController {
   @Post()
   @RequireAuth('admin')
   @SkipThrottle({ global: false })
-  @ApiFileUpload('coverUrl', CreateBookDto)
+  @ApiFileUpload('coverUrl')
   async create(
     @Body() createBookDto: CreateBookDto,
     @UploadedFile() file?: Express.Multer.File,
@@ -215,7 +215,7 @@ export class BooksController {
   @Put(':id')
   @RequireAuth('admin')
   @SkipThrottle({ global: false })
-  @ApiFileUpload('coverUrl', UpdateBookDto)
+  @ApiFileUpload('coverUrl')
   async update(
     @Param('id') id: string,
     @Body() updateBookDto: UpdateBookDto,

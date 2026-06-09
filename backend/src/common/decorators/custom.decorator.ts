@@ -4,10 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
-export function ApiFileUpload(
-  fieldName: string,
-  dtoType?: new (...args: unknown[]) => unknown,
-) {
+export function ApiFileUpload(fieldName: string) {
   const decorators: Array<
     ClassDecorator | MethodDecorator | PropertyDecorator
   > = [
@@ -18,5 +15,5 @@ export function ApiFileUpload(
     ),
   ];
 
-  return applyDecorators(...decorators) as any;
+  return applyDecorators(...decorators) as MethodDecorator & ClassDecorator;
 }

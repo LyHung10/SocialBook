@@ -92,7 +92,9 @@ export function useCommentActions({
 
     useEffect(() => {
         if (hasReplyCount) {
-            setOptimisticReplyCount(comment.repliesCount ?? 0);
+            queueMicrotask(() => {
+                setOptimisticReplyCount(comment.repliesCount ?? 0);
+            });
         }
     }, [comment.repliesCount, hasReplyCount]);
 

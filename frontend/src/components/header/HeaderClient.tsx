@@ -28,7 +28,7 @@ const LazyNotificationBell = dynamic(
 
 
 export const HeaderClient = memo(function HeaderClient() {
-    const { user, isAuthenticated, isGuest } = useAppAuth();
+    const { user, isAuthenticated } = useAppAuth();
     const { handleLogout } = useLogout();
     const { navigateToHome, navigateToBooks, navigateToPosts, navigateToLibrary, navigateToReadingRooms, navigateToProfile, navigateToSettings, navigateToKnowledgeMap, navigateToLogin } = useHeaderNavigation();
 

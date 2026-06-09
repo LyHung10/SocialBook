@@ -41,10 +41,10 @@ export default function Post() {
     const router = useRouter();
     const currentUserName = user?.name || 'Người đọc';
     const currentUserImage = user?.image || '/abstract-book-pattern.png';
-    const feedRef = useRef<any>(null);
+    const feedRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            feedRef.current = document.documentElement;
+            feedRef.current = document.documentElement as HTMLDivElement;
         }
     }, []);
 

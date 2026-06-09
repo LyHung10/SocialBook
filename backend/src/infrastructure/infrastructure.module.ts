@@ -24,7 +24,6 @@ import { FilesInfrastructureModule } from './files/files-infrastructure.module';
 import { MediaInfrastructureModule } from './media/media-infrastructure.module';
 import { ModerationInfrastructureModule } from './moderation/moderation-infrastructure.module';
 import { NotificationsInfrastructureModule } from './notifications/notifications-infrastructure.module';
-import { SchedulingInfrastructureModule } from './scheduling/scheduling-infrastructure.module';
 import { TtsInfrastructureModule } from './text-to-speech/tts-infrastructure.module';
 import { GatewaysModule } from './gateways/gateways.module';
 import { RecommendationsInfrastructureModule } from './recommendations/recommendations-infrastructure.module';
@@ -59,7 +58,6 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     MediaInfrastructureModule,
     ModerationInfrastructureModule,
     NotificationsInfrastructureModule,
-    SchedulingInfrastructureModule,
     TtsInfrastructureModule,
     ScraperInfrastructureModule,
     RecommendationsInfrastructureModule,
@@ -94,7 +92,6 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     MediaInfrastructureModule,
     ModerationInfrastructureModule,
     NotificationsInfrastructureModule,
-    SchedulingInfrastructureModule,
     TtsInfrastructureModule,
     ScraperInfrastructureModule,
     RecommendationsInfrastructureModule,

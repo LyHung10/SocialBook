@@ -187,7 +187,7 @@ CHỈ TRẢ VỀ JSON, KHÔNG THÊM TEXT NÀO KHÁC.
         recommendations,
       };
 
-      this.cacheService.set(userId, response);
+      void this.cacheService.set(userId, response);
 
       return response;
     } catch (error) {

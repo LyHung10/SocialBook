@@ -8,7 +8,7 @@ import { FollowButton } from "@/components/user/FollowButton";
 import Image from "next/image";
 import { memo } from "react";
 
-const FollowingItem = memo((props: FollowingUser) => {
+const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
     const auth = useAppAuth();
     const router = useRouter();
     const { closeFollowers } = useModalStore();

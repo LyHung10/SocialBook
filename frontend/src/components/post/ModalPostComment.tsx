@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
@@ -23,21 +23,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useAppAuth } from '@/features/auth/hooks';
 
 export default function ModalPostComment() {
     const { isPostCommentOpen, closePostComment, postCommentData, openSharePost } = useModalStore();
     const { theme } = useTheme();
-    const [createComment, { isLoading: isPosting }] = usePostCreateMutation();
+    const [createComment] = usePostCreateMutation();
 
     const post = postCommentData?.post;
-    const { user, isAuthenticated, isGuest } = useAppAuth();
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [lastPostId, setLastPostId] = useState(post?.id);
 
-    useEffect(() => {
+    if (post?.id !== lastPostId) {
+        setLastPostId(post?.id);
         setCurrentImageIndex(0);
-    }, [post?.id]);
+    }
 
     const { isLiked, likeCount, toggleLike } = usePostActions({
         postId: post?.id ?? '',

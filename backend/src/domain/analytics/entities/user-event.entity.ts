@@ -11,7 +11,7 @@ export interface UserEventProps {
   progressPercent?: number;
   source?: string;
   deviceType?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class UserEvent extends Entity<string> {
@@ -46,7 +46,7 @@ export class UserEvent extends Entity<string> {
     progressPercent?: number;
     source?: string;
     deviceType?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     createdAt: Date;
     updatedAt: Date;
   }): UserEvent {
@@ -81,7 +81,7 @@ export class UserEvent extends Entity<string> {
   get deviceType(): string | undefined {
     return this._props.deviceType;
   }
-  get metadata(): Record<string, any> | undefined {
+  get metadata(): Record<string, unknown> | undefined {
     return this._props.metadata;
   }
 }

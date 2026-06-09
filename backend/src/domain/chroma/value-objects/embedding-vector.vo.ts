@@ -22,9 +22,9 @@ export class EmbeddingVector {
 
   static fromString(vectorString: string): EmbeddingVector {
     try {
-      const vector = JSON.parse(vectorString);
+      const vector: number[] = JSON.parse(vectorString) as number[];
       return EmbeddingVector.create(vector);
-    } catch (error) {
+    } catch {
       throw new Error('Invalid vector string format');
     }
   }

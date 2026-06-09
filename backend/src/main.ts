@@ -1,4 +1,4 @@
-import { json, urlencoded } from 'express';
+import { json, urlencoded, Application as ExpressApplication } from 'express';
 import { Logger } from '@/shared/logger/logger.service';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -69,7 +69,8 @@ async function bootstrap() {
 
   // Cấu hình cookie-parser
   app.use(cookieParser());
-  void app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  const expressApp = app.getHttpAdapter().getInstance() as ExpressApplication;
+  expressApp.set('trust proxy', 1);
 
   // Cấu hình CORS
   const origin = frontendUrl.includes(',')

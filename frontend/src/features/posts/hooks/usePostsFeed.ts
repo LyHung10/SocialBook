@@ -32,24 +32,26 @@ export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedRet
     }
   );
 
-  const items = data?.data ?? [];
   const hasMore = data?.meta?.hasMore ?? false;
   const nextCursor = data?.meta?.nextCursor;
 
-  // Update allPosts when items change
+  // Update allPosts when data changes
   useEffect(() => {
-    if (!items.length && !hasMore) return;
+    const currentItems = data?.data ?? [];
+    if (!currentItems.length && !hasMore) return;
 
-    setAllPosts((prev) => {
-      if (cursor === undefined) {
-        return items;
-      }
+    queueMicrotask(() => {
+      setAllPosts((prev) => {
+        if (cursor === undefined) {
+          return currentItems;
+        }
 
-      // Deduplicate new posts
-      const newPosts = items.filter((post) => !prev.some((p) => p.id === post.id));
-      return [...prev, ...newPosts];
+        // Deduplicate new posts
+        const newPosts = currentItems.filter((post) => !prev.some((p) => p.id === post.id));
+        return [...prev, ...newPosts];
+      });
     });
-  }, [items, cursor, hasMore]);
+  }, [data, cursor, hasMore]);
 
   useEffect(() => {
     const handlePostUpdated = (e: Event) => {

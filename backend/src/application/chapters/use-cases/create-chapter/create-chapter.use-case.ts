@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ConflictDomainException,
-  NotFoundDomainException,
-} from '@/shared/domain/common-exceptions';
+import { ConflictDomainException } from '@/shared/domain/common-exceptions';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 import { Chapter } from '@/domain/chapters/entities/chapter.entity';

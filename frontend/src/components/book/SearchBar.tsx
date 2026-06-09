@@ -20,16 +20,12 @@ export const SearchBar = ({
   const debouncedInput = useDebounce(input, debounceMs);
   const isComposing = useRef(false);
   const lastSearchedValue = useRef(initialValue);
+  const [lastInitialValue, setLastInitialValue] = useState(initialValue);
 
-  useEffect(() => {
-    const normalizedInitial = initialValue.trim();
-    const normalizedLast = lastSearchedValue.current.trim();
-
-    if (normalizedInitial !== normalizedLast) {
-      setInput(initialValue);
-      lastSearchedValue.current = initialValue;
-    }
-  }, [initialValue]);
+  if (initialValue.trim() !== lastInitialValue.trim()) {
+    setLastInitialValue(initialValue);
+    setInput(initialValue);
+  }
 
   useEffect(() => {
     if (isComposing.current) return;

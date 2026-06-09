@@ -36,14 +36,14 @@ interface CommentItemProps {
     onReplyRemoved?: () => void;
 }
 
-const CommentItemCard: React.FC<CommentItemProps> = React.memo(({
+const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentItemCard({
     comment,
     targetId,
     targetType,
     depth = 1,
     onReplyAdded,
     onReplyRemoved,
-}) => {
+}) {
     const router = useRouter();
     const { closePostComment } = useModalStore();
     const { user } = useAppAuth();
@@ -51,7 +51,6 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(({
 
     const {
         isOwner,
-        optimisticLikeCount,
         optimisticIsLiked,
         optimisticReplyCount,
         isEditing,

@@ -70,8 +70,8 @@ export class UsersRepository implements IUserRepository {
 
     const skip = (pagination.page - 1) * pagination.limit;
 
-    const [result] = await this.userModel
-      .aggregate([
+    const facetResult = await this.userModel
+      .aggregate<{ metadata: Array<{ total: number }>; data: UserDocument[] }>([
         { $match: query },
         {
           $facet: {
@@ -86,7 +86,8 @@ export class UsersRepository implements IUserRepository {
       ])
       .exec();
 
-    const total = result.metadata[0]?.total || 0;
+    const result = facetResult[0] ?? { metadata: [], data: [] };
+    const total = result.metadata[0]?.total ?? 0;
     const docs = result.data;
 
     return {
@@ -163,20 +164,22 @@ export class UsersRepository implements IUserRepository {
 
   // Statistics
   async countByDate(startDate: Date, endDate?: Date): Promise<number> {
-    const query: FilterQuery<UserDocument> = { createdAt: { $gte: startDate } };
-    if (endDate) {
-      query.createdAt.$lt = endDate;
-    }
+    const createdAtQuery: Record<string, unknown> = { $gte: startDate };
+    if (endDate) createdAtQuery.$lt = endDate;
+    const query: FilterQuery<UserDocument> = { createdAt: createdAtQuery };
     return await this.userModel.countDocuments(query).exec();
   }
 
   async countByProvider(): Promise<Map<string, number>> {
     const result = await this.userModel
-      .aggregate([{ $group: { _id: '$provider', count: { $sum: 1 } } }])
+      .aggregate<{
+        _id: string | null;
+        count: number;
+      }>([{ $group: { _id: '$provider', count: { $sum: 1 } } }])
       .exec();
 
     const map = new Map<string, number>();
-    result.forEach((item) => map.set(item._id || 'local', item.count));
+    result.forEach((item) => map.set(item._id ?? 'local', item.count));
     return map;
   }
 
@@ -184,9 +187,12 @@ export class UsersRepository implements IUserRepository {
     Array<{ country: string; userCount: number }>
   > {
     const result = await this.userModel
-      .aggregate([
+      .aggregate<{
+        _id: string;
+        userCount: number;
+      }>([
         { $group: { _id: '$location', userCount: { $sum: 1 } } },
-        { $match: { $and: [{ _id: { $ne: null } }, { _id: { $ne: '' } }] } },
+        { $match: { _id: { $nin: [null, ''] } } },
         { $sort: { userCount: -1 } },
         { $limit: 20 },
       ])
@@ -217,7 +223,7 @@ export class UsersRepository implements IUserRepository {
     }
 
     return await this.userModel
-      .aggregate([
+      .aggregate<{ _id: string; count: number }>([
         { $match: { createdAt: { $gte: startDate } } },
         {
           $group: {
@@ -231,11 +237,11 @@ export class UsersRepository implements IUserRepository {
   }
 
   async countAll(): Promise<number> {
-    return await this.userModel.countDocuments().exec();
+    return this.userModel.countDocuments().exec();
   }
 
   async countWithLocation(): Promise<number> {
-    return await this.userModel
+    return this.userModel
       .countDocuments({
         location: { $ne: null, $nin: ['', 'null', 'undefined'] },
       })

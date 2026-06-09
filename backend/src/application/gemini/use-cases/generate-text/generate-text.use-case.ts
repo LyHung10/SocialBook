@@ -31,7 +31,7 @@ export class GenerateTextUseCase {
   ) {}
 
   async execute(request: GenerateTextRequest): Promise<GenerateTextResponse> {
-    const userId = UserId.create(request.userId);
+    UserId.create(request.userId);
 
     const aiRequest = AIRequest.create({
       id: this.idGenerator.generate(),

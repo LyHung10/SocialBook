@@ -28,6 +28,21 @@ import { FollowMapper } from './follow.mapper';
 
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
 
+interface AggregationFollowRow {
+  _id: Types.ObjectId;
+  id?: string;
+  userId: Types.ObjectId;
+  targetId: Types.ObjectId;
+  status: boolean;
+  username?: string;
+  image?: string;
+  postCount: number;
+  readingListCount: number;
+  followersCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Injectable()
 export class FollowRepository
   extends BaseMongoRepository<FollowEntity, FollowDocument, FollowId>
@@ -69,73 +84,71 @@ export class FollowRepository
   ): Promise<{ data: FollowWithUserInfo[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
-    const [rows, total] = await Promise.all([
-      this.followModel
-        .aggregate([
-          { $match: { userId: new Types.ObjectId(userId), status: true } },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'targetId',
-              foreignField: '_id',
-              as: 'targetUser',
-            },
+    const rows = await this.followModel
+      .aggregate<AggregationFollowRow>([
+        { $match: { userId: new Types.ObjectId(userId), status: true } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'targetId',
+            foreignField: '_id',
+            as: 'targetUser',
           },
-          {
-            $unwind: { path: '$targetUser', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $unwind: { path: '$targetUser', preserveNullAndEmptyArrays: true },
+        },
+        {
+          $lookup: {
+            from: 'posts',
+            localField: 'targetId',
+            foreignField: 'userId',
+            pipeline: [{ $match: { isDeleted: false } }],
+            as: 'posts',
           },
-          {
-            $lookup: {
-              from: 'posts',
-              localField: 'targetId',
-              foreignField: 'userId',
-              pipeline: [{ $match: { isDeleted: false } }],
-              as: 'posts',
-            },
+        },
+        {
+          $lookup: {
+            from: 'reading_lists',
+            localField: 'targetId',
+            foreignField: 'userId',
+            as: 'readingLists',
           },
-          {
-            $lookup: {
-              from: 'reading_lists',
-              localField: 'targetId',
-              foreignField: 'userId',
-              as: 'readingLists',
-            },
+        },
+        {
+          $lookup: {
+            from: 'follows',
+            localField: 'targetId',
+            foreignField: 'targetId',
+            pipeline: [{ $match: { status: true } }],
+            as: 'followers',
           },
-          {
-            $lookup: {
-              from: 'follows',
-              localField: 'targetId',
-              foreignField: 'targetId',
-              pipeline: [{ $match: { status: true } }],
-              as: 'followers',
-            },
+        },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            id: '$_id',
+            userId: 1,
+            targetId: 1,
+            status: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            username: '$targetUser.username',
+            image: '$targetUser.image',
+            postCount: { $size: '$posts' },
+            readingListCount: { $size: '$readingLists' },
+            followersCount: { $size: '$followers' },
           },
-          { $skip: skip },
-          { $limit: limit },
-          {
-            $project: {
-              id: '$_id',
-              userId: 1,
-              targetId: 1,
-              status: 1,
-              createdAt: 1,
-              updatedAt: 1,
-              username: '$targetUser.username',
-              image: '$targetUser.image',
-              postCount: { $size: '$posts' },
-              readingListCount: { $size: '$readingLists' },
-              followersCount: { $size: '$followers' },
-            },
-          },
-        ])
-        .exec(),
-      this.followModel.countDocuments({
-        userId: new Types.ObjectId(userId),
-        status: true,
-      }),
-    ]);
+        },
+      ])
+      .exec();
+    const total = await this.followModel.countDocuments({
+      userId: new Types.ObjectId(userId),
+      status: true,
+    });
     return {
-      data: rows.map((r) => ({
+      data: rows.map((r: AggregationFollowRow) => ({
         id: r._id?.toString() ?? r.id?.toString(),
         userId: r.userId?.toString(),
         targetId: r.targetId?.toString(),
@@ -164,77 +177,75 @@ export class FollowRepository
   ): Promise<{ data: FollowWithUserInfo[]; meta: PaginationMeta }> {
     const skip = (page - 1) * limit;
 
-    const [rows, total] = await Promise.all([
-      this.followModel
-        .aggregate([
-          { $match: { targetId: new Types.ObjectId(targetId), status: true } },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'userId',
-              foreignField: '_id',
-              as: 'followerUser',
-            },
+    const rows = await this.followModel
+      .aggregate<AggregationFollowRow>([
+        { $match: { targetId: new Types.ObjectId(targetId), status: true } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'followerUser',
           },
-          {
-            $unwind: {
-              path: '$followerUser',
-              preserveNullAndEmptyArrays: true,
-            },
+        },
+        {
+          $unwind: {
+            path: '$followerUser',
+            preserveNullAndEmptyArrays: true,
           },
-          {
-            $lookup: {
-              from: 'posts',
-              localField: 'userId',
-              foreignField: 'userId',
-              pipeline: [{ $match: { isDeleted: false } }],
-              as: 'posts',
-            },
+        },
+        {
+          $lookup: {
+            from: 'posts',
+            localField: 'userId',
+            foreignField: 'userId',
+            pipeline: [{ $match: { isDeleted: false } }],
+            as: 'posts',
           },
-          {
-            $lookup: {
-              from: 'reading_lists',
-              localField: 'userId',
-              foreignField: 'userId',
-              as: 'readingLists',
-            },
+        },
+        {
+          $lookup: {
+            from: 'reading_lists',
+            localField: 'userId',
+            foreignField: 'userId',
+            as: 'readingLists',
           },
-          {
-            $lookup: {
-              from: 'follows',
-              localField: 'userId',
-              foreignField: 'targetId',
-              pipeline: [{ $match: { status: true } }],
-              as: 'followers',
-            },
+        },
+        {
+          $lookup: {
+            from: 'follows',
+            localField: 'userId',
+            foreignField: 'targetId',
+            pipeline: [{ $match: { status: true } }],
+            as: 'followers',
           },
-          { $skip: skip },
-          { $limit: limit },
-          {
-            $project: {
-              id: '$_id',
-              userId: 1,
-              targetId: 1,
-              status: 1,
-              createdAt: 1,
-              updatedAt: 1,
-              username: '$followerUser.username',
-              image: '$followerUser.image',
-              postCount: { $size: '$posts' },
-              readingListCount: { $size: '$readingLists' },
-              followersCount: { $size: '$followers' },
-            },
+        },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            id: '$_id',
+            userId: 1,
+            targetId: 1,
+            status: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            username: '$followerUser.username',
+            image: '$followerUser.image',
+            postCount: { $size: '$posts' },
+            readingListCount: { $size: '$readingLists' },
+            followersCount: { $size: '$followers' },
           },
-        ])
-        .exec(),
-      this.followModel.countDocuments({
-        targetId: new Types.ObjectId(targetId),
-        status: true,
-      }),
-    ]);
+        },
+      ])
+      .exec();
+    const total = await this.followModel.countDocuments({
+      targetId: new Types.ObjectId(targetId),
+      status: true,
+    });
 
     return {
-      data: rows.map((r) => ({
+      data: rows.map((r: AggregationFollowRow) => ({
         id: r._id?.toString() ?? r.id?.toString(),
         userId: r.userId?.toString(),
         targetId: r.targetId?.toString(),
@@ -291,10 +302,11 @@ export class FollowRepository
     if (filter.dateFrom || filter.dateTo) {
       queryFilter.createdAt = {};
       if (filter.dateFrom) {
-        queryFilter.createdAt.$gte = filter.dateFrom;
+        (queryFilter.createdAt as Record<string, Date>)['$gte'] =
+          filter.dateFrom;
       }
       if (filter.dateTo) {
-        queryFilter.createdAt.$lte = filter.dateTo;
+        (queryFilter.createdAt as Record<string, Date>)['$lte'] = filter.dateTo;
       }
     }
 

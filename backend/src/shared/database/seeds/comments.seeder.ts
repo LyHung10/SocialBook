@@ -6,6 +6,28 @@ import {
   Comment,
   CommentDocument,
 } from '@/infrastructure/database/schemas/comment.schema';
+
+interface SeedCommentData {
+  userId: Types.ObjectId;
+  targetType: string;
+  targetId: Types.ObjectId;
+  parentId: null;
+  content: string;
+  likesCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface SeedReplyData {
+  userId: Types.ObjectId;
+  targetType: string;
+  targetId: Types.ObjectId;
+  parentId: Types.ObjectId;
+  content: string;
+  likesCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 import {
   Book,
   BookDocument,
@@ -13,7 +35,6 @@ import {
 import {
   Chapter,
   ChapterDocument,
-  ParagraphDocument,
 } from '@/infrastructure/database/schemas/chapter.schema';
 
 @Injectable()
@@ -47,7 +68,7 @@ export class CommentsSeed {
       return;
     }
 
-    const comments: any[] = [];
+    const comments: SeedCommentData[] = [];
 
     // Tạo fake user IDs (trong production, bạn sẽ có user seeder)
     const fakeUserIds = [
@@ -112,7 +133,9 @@ export class CommentsSeed {
           numParagraphsToComment,
         );
 
-        for (const paragraph of paragraphsToComment) {
+        for (const paragraph of paragraphsToComment as Array<{
+          _id: Types.ObjectId;
+        }>) {
           const numComments = Math.floor(Math.random() * 2) + 1;
 
           for (let i = 0; i < numComments; i++) {
@@ -138,7 +161,7 @@ export class CommentsSeed {
     const insertedComments = await this.commentModel.insertMany(comments);
 
     // Tạo thêm một số reply comments với parentId hợp lệ
-    const replyComments: any[] = [];
+    const replyComments: SeedReplyData[] = [];
     const parentComments = insertedComments.slice(0, 15);
 
     for (const parentComment of parentComments) {

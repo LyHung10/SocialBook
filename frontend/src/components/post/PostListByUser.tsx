@@ -9,9 +9,12 @@ interface PostListProps {
   userId: string;
 }
 
+const INITIAL_SENTINEL = Symbol('initial');
+
 const PostListUser: React.FC<PostListProps> = ({ userId }) => {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [processedCursor, setProcessedCursor] = useState<string | typeof INITIAL_SENTINEL | undefined>(INITIAL_SENTINEL);
   const limit = 10;
 
   const observerTarget = useRef<HTMLDivElement | null>(null);
@@ -27,21 +30,18 @@ const PostListUser: React.FC<PostListProps> = ({ userId }) => {
   const hasMore = data?.meta?.hasMore ?? false;
   const nextCursor = data?.meta?.nextCursor;
 
-  useEffect(() => {
-    if (!items.length && !hasMore) return;
-
-    setAllPosts((prev) => {
-      if (cursor === undefined) {
-        return items;
+  if (items.length > 0 && cursor !== processedCursor) {
+    setProcessedCursor(cursor);
+    if (cursor === undefined) {
+      setAllPosts(items);
+    } else {
+      const existingIds = new Set(allPosts.map((p) => p.id));
+      const newPosts = items.filter((p) => !existingIds.has(p.id));
+      if (newPosts.length > 0) {
+        setAllPosts([...allPosts, ...newPosts]);
       }
-
-      const newPosts = items.filter(
-        (post) => !prev.some((p) => p.id === post.id)
-      );
-
-      return [...prev, ...newPosts];
-    });
-  }, [items, cursor, hasMore]);
+    }
+  }
 
   useEffect(() => {
     const handlePostUpdated = (e: Event) => {
@@ -89,7 +89,7 @@ const PostListUser: React.FC<PostListProps> = ({ userId }) => {
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, isFetching]);
+  }, [hasMore, isFetching, nextCursor]);
 
   if (isLoading && cursor === undefined) {
     return (

@@ -18,7 +18,7 @@ import { GenreId } from '@/domain/books/value-objects/genre-id.vo';
 import { BaseMongoRepository } from '@/shared/infrastructure/base-mongo.repository';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
 import { BookMapper, RawBookDocument, BookPersistence } from './book.mapper';
 import { TextSimilarityService } from '@/shared/domain/text-similarity.service';
@@ -36,7 +36,7 @@ export class BookRepository
   }
 
   protected toDomain(doc: BookDocument): BookEntity {
-    return BookMapper.toDomain(doc as unknown as RawBookDocument);
+    return BookMapper.toDomain(doc as RawBookDocument);
   }
 
   protected toPersistence(entity: BookEntity): BookPersistence {
@@ -151,7 +151,7 @@ export class BookRepository
   ): Promise<PaginatedResult<BookListReadModel>> {
     const queryFilter = this.buildQueryFilter(filter);
 
-    const postFacetStages: any[] = [
+    const postFacetStages: PipelineStage[] = [
       {
         $lookup: {
           from: 'genres',
@@ -191,7 +191,7 @@ export class BookRepository
       { $project: { _chapters: 0, _authorArr: 0 } },
     ];
 
-    return this.executePaginatedQuery<BookListReadModel>(
+    return this.executePaginatedQuery<BookListReadModel, RawBookDocument>(
       queryFilter,
       pagination,
       sort,
@@ -343,7 +343,12 @@ export class BookRepository
     Array<{ id: string; name: string; slug: string; count: number }>
   > {
     const result = await this.bookModel
-      .aggregate([
+      .aggregate<{
+        _id: Types.ObjectId;
+        name: string;
+        slug: string;
+        count: number;
+      }>([
         { $match: { isDeleted: false } },
         { $unwind: '$genres' },
         {
@@ -377,7 +382,7 @@ export class BookRepository
 
   async countByTags(): Promise<Array<{ name: string; count: number }>> {
     const result = await this.bookModel
-      .aggregate([
+      .aggregate<{ _id: string; count: number }>([
         {
           $match: {
             isDeleted: false,
@@ -455,7 +460,7 @@ export class BookRepository
   async getFilters(): Promise<BookFilters> {
     const [genresResult, tagsResult] = await Promise.all([
       this.bookModel
-        .aggregate([
+        .aggregate<{ id: string; name: string; slug: string; count: number }>([
           { $match: { isDeleted: false, status: 'published' } },
           { $unwind: '$genres' },
           {
@@ -489,7 +494,7 @@ export class BookRepository
         ])
         .exec(),
       this.bookModel
-        .aggregate([
+        .aggregate<{ name: string; count: number }>([
           { $match: { isDeleted: false, status: 'published' } },
           { $unwind: '$tags' },
           {
@@ -513,12 +518,12 @@ export class BookRepository
 
     return {
       genres: genresResult.map((g) => ({
-        id: g.id.toString(),
+        id: g.id,
         name: g.name,
         slug: g.slug,
         count: g.count,
       })),
-      tags: tagsResult,
+      tags: tagsResult as Array<{ name: string; count: number }>,
     };
   }
 }

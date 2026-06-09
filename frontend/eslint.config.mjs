@@ -12,10 +12,6 @@ const eslintConfig = [
       "unused-imports": unusedImports,
     },
     rules: {
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
@@ -26,16 +22,6 @@ const eslintConfig = [
           argsIgnorePattern: "^_",
         },
       ],
-      "@typescript-eslint/no-this-alias": "off",
-      "react/no-unescaped-entities": "off",
-      "react-hooks/set-state-in-effect": "off",
-      "@typescript-eslint/no-unused-expressions": "off",
-      "@typescript-eslint/no-empty-object-type": "off",
-      "react-hooks/preserve-manual-memoization": "off",
-      "react/display-name": "off",
-      "prefer-const": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/immutability": "off",
     },
   },
   {

@@ -18,7 +18,6 @@ export interface NotificationMeta {
   username?: string;
   image?: string;
   targetId?: string;
-  [key: string]: any;
 }
 
 export interface NotificationProps {

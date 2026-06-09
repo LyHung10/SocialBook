@@ -12,6 +12,12 @@ import {
   RoomReactionDocument,
 } from '../../schemas/reading-room-interactions/room-reaction.schema';
 
+interface ReactionAggregationRow {
+  paragraphId: string;
+  reactions: Record<string, number>;
+  userReactions: Record<string, string>;
+}
+
 @Injectable()
 export class ReactionRepository extends IReactionRepository {
   constructor(
@@ -116,7 +122,7 @@ export class ReactionRepository extends IReactionRepository {
     paragraphIds: string[],
   ): Promise<ReactionSummary[]> {
     const docs = await this.reactionModel
-      .aggregate([
+      .aggregate<ReactionAggregationRow>([
         { $match: { roomId, chapterSlug, paragraphId: { $in: paragraphIds } } },
         {
           $group: {
@@ -156,11 +162,13 @@ export class ReactionRepository extends IReactionRepository {
       ])
       .exec();
 
-    return docs.map((d) => ({
-      paragraphId: d.paragraphId || '',
-      reactions: d.reactions || {},
-      userReactions: d.userReactions || [],
-    }));
+    return docs.map(
+      (d): ReactionSummary => ({
+        paragraphId: d.paragraphId || '',
+        reactions: d.reactions || {},
+        userReactions: d.userReactions || {},
+      }),
+    );
   }
 
   async deleteByRoom(roomId: string): Promise<void> {

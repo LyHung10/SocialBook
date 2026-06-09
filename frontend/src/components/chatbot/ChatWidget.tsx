@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const ChatWidget = () => {
-  const [askChatbot, { isLoading }] = useAskChatbotMutation();
+  const [askChatbot] = useAskChatbotMutation();
 
   const {
     messages,

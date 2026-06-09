@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { User } from '@/infrastructure/database/schemas/user.schema';
 import { Role } from '@/infrastructure/database/schemas/role.schema';
 import * as bcrypt from 'bcrypt';

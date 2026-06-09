@@ -57,9 +57,9 @@ export class ReadingProgressMapper {
 
   private static mapStatusToChapterStatus(status: string): ChapterStatus {
     switch (status) {
-      case ReadingStatus.COMPLETED:
+      case ReadingStatus.COMPLETED as string:
         return ChapterStatus.COMPLETED;
-      case ReadingStatus.READING:
+      case ReadingStatus.READING as string:
         return ChapterStatus.IN_PROGRESS;
       default:
         return ChapterStatus.NOT_STARTED;
@@ -69,11 +69,11 @@ export class ReadingProgressMapper {
   private static mapChapterStatusToStatus(status: ChapterStatus): string {
     switch (status) {
       case ChapterStatus.COMPLETED:
-        return ReadingStatus.COMPLETED;
+        return ReadingStatus.COMPLETED as string;
       case ChapterStatus.IN_PROGRESS:
-        return ReadingStatus.READING;
+        return ReadingStatus.READING as string;
       default:
-        return ReadingStatus.READING;
+        return ReadingStatus.READING as string;
     }
   }
 }

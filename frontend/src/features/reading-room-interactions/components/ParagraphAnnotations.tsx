@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useShallow } from 'zustand/react/shallow';
-import { useAppAuth } from '@/features/auth/hooks';
 import { useRoomAnnotations } from '../hooks/useRoomAnnotations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +24,6 @@ export function ParagraphAnnotations({ roomId, chapterSlug, paragraphId, isOpen:
     onToggle?.(value);
   };
   const [text, setText] = useState('');
-  const { user } = useAppAuth();
   const comments = useReadingRoomStore(useShallow((s) => s.roomComments.filter(
     c => c.paragraphId === paragraphId && !c.parentCommentId,
   )));

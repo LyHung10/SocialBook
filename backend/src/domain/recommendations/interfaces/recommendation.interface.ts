@@ -9,7 +9,7 @@ export interface EnrichedRecommendation {
   book: PopulatedBook;
 }
 
-export interface RecommendationResult extends EnrichedRecommendation {}
+export type RecommendationResult = EnrichedRecommendation;
 
 export interface RecommendationAnalysis {
   favoriteGenres: string[];

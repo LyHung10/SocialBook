@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ChangeEvent, FormEvent, useState, useCallback, useEffect } from 'react';
+import { ChangeEvent, FormEvent, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft,
@@ -68,25 +68,24 @@ export default function EditBook({ bookId }: EditBookProps) {
         type: 'success' | 'error';
         text: string;
     } | null>(null);
+    const [bookDataSnapshot, setBookDataSnapshot] = useState<typeof bookData>(undefined);
 
-    // Populate form when book data loads
-    useEffect(() => {
-        if (bookData) {
-            setFormData({
-                title: bookData.title || '',
-                authorId: bookData.authorId?.id || '',
-                genres: bookData.genres?.map((g: any) => g.id) || [],
-                description: bookData.description || '',
-                publishedYear: bookData.publishedYear || new Date().getFullYear().toString(),
-                status: bookData.status || 'draft',
-                tagsInput: bookData.tags?.join(', ') || '',
-            });
+    if (bookData && bookData !== bookDataSnapshot) {
+        setBookDataSnapshot(bookData);
+        setFormData({
+            title: bookData.title || '',
+            authorId: bookData.authorId?.id || '',
+            genres: bookData.genres?.map((g) => g.id) || [],
+            description: bookData.description || '',
+            publishedYear: bookData.publishedYear || new Date().getFullYear().toString(),
+            status: bookData.status || 'draft',
+            tagsInput: bookData.tags?.join(', ') || '',
+        });
 
-            if (bookData.coverUrl) {
-                setCoverPreview(bookData.coverUrl);
-            }
+        if (bookData.coverUrl) {
+            setCoverPreview(bookData.coverUrl);
         }
-    }, [bookData]);
+    }
 
     const handleImageUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -119,12 +118,12 @@ export default function EditBook({ bookId }: EditBookProps) {
     };
 
     const getGenreName = (genreId: string) => {
-        const genre = genres.find((g: any) => g.id === genreId);
+        const genre = genres.find((g: Genre) => g.id === genreId);
         return genre?.name || genreId;
     };
 
     const getAuthorName = (authorId: string) => {
-        const author = authors.find((a: any) => a.id === authorId);
+        const author = authors.find((a: Author) => a.id === authorId);
         return author?.name || 'Chưa chọn';
     };
 
@@ -229,7 +228,7 @@ export default function EditBook({ bookId }: EditBookProps) {
                         Chỉnh sửa sách
                     </h1>
                     <p className="text-lg text-gray-600">
-                        Cập nhật thông tin cho "{bookData.title}"
+                        Cập nhật thông tin cho &ldquo;{bookData.title}&rdquo;
                     </p>
                 </div>
 
@@ -341,7 +340,7 @@ export default function EditBook({ bookId }: EditBookProps) {
                                                 <option value="">
                                                     {loadingAuthors ? 'Đang tải...' : 'Chọn tác giả'}
                                                 </option>
-                                                {authors.map((author: any) => (
+                                                {authors.map((author: Author) => (
                                                     <option key={author.id} value={author.id}>
                                                         {author.name}
                                                     </option>
@@ -449,7 +448,7 @@ export default function EditBook({ bookId }: EditBookProps) {
                                                 <option value="">
                                                     {loadingGenres ? 'Đang tải...' : 'Chọn thể loại'}
                                                 </option>
-                                                {genres.map((genre: any) => (
+                                                {genres.map((genre: Genre) => (
                                                     <option
                                                         key={genre.id}
                                                         value={genre.id}

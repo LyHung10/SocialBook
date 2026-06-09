@@ -1,8 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import {
-  ConflictDomainException,
-  NotFoundDomainException,
-} from '@/shared/domain/common-exceptions';
+import { ConflictDomainException } from '@/shared/domain/common-exceptions';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
 import { IGenreRepository } from '@/domain/genres/repositories/genre.repository.interface';

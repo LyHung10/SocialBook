@@ -65,7 +65,7 @@ export const useTracking = () => {
           clearInterval(timerRef.current);
         }
       };
-    }, [bookId, chapterId, intervalSeconds, trackEvent]);
+    }, [bookId, chapterId, intervalSeconds]);
   };
 
   return { trackEvent, useReadingHeartbeat };

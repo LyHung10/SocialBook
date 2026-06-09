@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IntelligentSearchQuery } from './intelligent-search.query';
 import {
@@ -46,14 +47,7 @@ export class IntelligentSearchUseCase {
     queryDto: IntelligentSearchQuery,
   ): Promise<PaginatedSearchResult> {
     const start = performance.now();
-    const {
-      query,
-      page = 1,
-      limit = 10,
-      genres,
-      sortBy = 'score',
-      order = 'desc',
-    } = queryDto;
+    const { query, page = 1, limit = 10, genres, order = 'desc' } = queryDto;
 
     try {
       const normalizedQuery = query.toLowerCase().trim();
@@ -168,8 +162,8 @@ export class IntelligentSearchUseCase {
           totalPages: Math.ceil(total / (limit || 1)),
         },
       };
-    } catch (e) {
-      this.logger.error(`Search process failed: ${e.message}`);
+    } catch (e: unknown) {
+      this.logger.error(`Search process failed: ${getErrorMessage(e)}`);
       throw e;
     }
   }

@@ -126,7 +126,7 @@ export class FollowsController {
 
   @Get('stats')
   @Public()
-  async getStats(@Query('userId') userId: string) {
+  getStats() {
     return {
       message: 'Get follow stats not yet implemented',
       data: new FollowStatsResponseDto(0, 0, 0, 0, []),

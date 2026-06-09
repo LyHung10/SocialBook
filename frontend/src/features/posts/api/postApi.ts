@@ -123,7 +123,7 @@ export const postApi = createApi({
       query: (data) => ({
         url: NESTJS_POSTS_ENDPOINTS.create,
         method: 'POST',
-        body: buildFormData(data as any),
+        body: buildFormData(data),
       }),
       transformResponse: (response: MutationRawResponse) => {
         if (isWrappedResponse(response)) {
@@ -146,7 +146,7 @@ export const postApi = createApi({
         query: ({ id, data }) => ({
           url: NESTJS_POSTS_ENDPOINTS.update(id),
           method: 'PATCH',
-          body: buildFormData(data as any),
+          body: buildFormData(data),
         }),
         transformResponse: (response: MutationRawResponse) => {
           if (isWrappedResponse(response)) {

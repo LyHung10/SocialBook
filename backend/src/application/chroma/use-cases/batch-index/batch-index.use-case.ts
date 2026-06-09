@@ -15,22 +15,33 @@ export class BatchIndexUseCase {
       );
 
       // Use the appropriate repository method based on content type
-      let result;
-      switch (command.contentType) {
-        case 'book':
-          result = await this.vectorRepository.indexBooks(command.contentIds);
-          break;
-        case 'author':
-          result = await this.vectorRepository.indexAuthors(command.contentIds);
-          break;
-        case 'chapter':
-          result = await this.vectorRepository.indexChapters(
-            command.contentIds,
-          );
-          break;
-        default:
-          throw new Error(`Unsupported content type: ${command.contentType}`);
+      interface BatchResult {
+        totalProcessed: number;
+        successful: number;
+        failed: number;
+        errors: Array<{ contentId: string; error: string }>;
       }
+
+      const result: BatchResult = await (async () => {
+        switch (command.contentType) {
+          case 'book':
+            return this.vectorRepository.indexBooks(
+              command.contentIds,
+            ) as Promise<BatchResult>;
+          case 'author':
+            return this.vectorRepository.indexAuthors(
+              command.contentIds,
+            ) as Promise<BatchResult>;
+          case 'chapter':
+            return this.vectorRepository.indexChapters(
+              command.contentIds,
+            ) as Promise<BatchResult>;
+          default:
+            throw new Error(
+              `Unsupported content type: ${String(command.contentType)}`,
+            );
+        }
+      })();
 
       this.logger.log(
         `Batch index completed: ${result.successful}/${result.totalProcessed} successful`,

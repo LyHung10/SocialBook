@@ -36,7 +36,7 @@ export class ResetPasswordUseCase {
       if (!isValid) {
         throw new BadRequestException('Mã OTP không hợp lệ');
       }
-    } catch (e) {
+    } catch {
       throw new BadRequestException('Mã OTP không hợp lệ hoặc đã hết hạn');
     }
 

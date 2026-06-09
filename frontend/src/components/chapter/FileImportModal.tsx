@@ -28,7 +28,6 @@ export function FileImportModal({
     onImport,
     isLoading: isImporting,
     bookSlug,
-    bookId,
     currentChapterCount = 0,
 }: FileImportModalProps) {
     const [file, setFile] = useState<File | null>(null);

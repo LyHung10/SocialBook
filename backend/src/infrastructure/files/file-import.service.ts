@@ -1,4 +1,5 @@
 // file-import.service.ts
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
@@ -87,7 +88,8 @@ export class FileImportService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to parse file: ${error.message}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Failed to parse file: ${msg}`);
     }
   }
 
@@ -130,84 +132,97 @@ export class FileImportService {
    * Parse EPUB file
    */
   private async parseEpub(buffer: Buffer): Promise<ParsedChapter[]> {
-    return new Promise((resolve, reject) => {
-      // Handle different export styles (CommonJS vs ESM interop)
-      const EPubImport = require('epub2');
-      const EPub = EPubImport.EPub || EPubImport.default || EPubImport;
+    const { EPub: EPubConstructor } = await import('epub2');
 
-      const tempFilePath = path.join(os.tmpdir(), `upload-${uuidv4()}.epub`);
+    const tempFilePath = path.join(os.tmpdir(), `upload-${uuidv4()}.epub`);
 
-      try {
-        // Write buffer to temporary file
-        fs.writeFileSync(tempFilePath, buffer);
+    try {
+      // Write buffer to temporary file
+      fs.writeFileSync(tempFilePath, buffer);
 
-        const epub = new EPub(tempFilePath) as EpubInstance;
+      if (typeof EPubConstructor !== 'function') {
+        throw new BadRequestException(
+          'Failed to initialize EPUB parser: constructor not found',
+        );
+      }
+      const epub: EpubInstance = new EPubConstructor(tempFilePath);
 
-        epub.on('end', async () => {
-          try {
-            const chapters: ParsedChapter[] = [];
+      const chapters = await new Promise<ParsedChapter[]>((resolve, reject) => {
+        let settled = false;
 
-            // Process each chapter from spine
-            for (const chapterRef of epub.flow ?? []) {
-              const chapterText = await this.getEpubChapter(
-                epub,
-                chapterRef.id ?? '',
-              );
-              const plainText = this.stripHtml(chapterText);
+        epub.on('end', () => {
+          if (settled) return;
+          const chapterList: ParsedChapter[] = [];
 
-              // Get chapter title
-              let title = chapterRef.title || chapterRef.id;
-              const tocItem = epub.toc.find(
-                (t: EpubChapterRef) => t.href === chapterRef.href,
-              );
-              if (tocItem?.title) {
-                title = tocItem.title;
-              }
-
-              // Only add chapters with content
-              if (plainText.trim().length > 0) {
-                const metadataTitle = title || `Chapter ${chapters.length + 1}`;
-                const processed = this.processChapterContent(
-                  metadataTitle,
-                  plainText,
+          const processFlow = async () => {
+            try {
+              for (const chapterRef of epub.flow ?? []) {
+                const chapterText = await this.getEpubChapter(
+                  epub,
+                  chapterRef.id ?? '',
                 );
+                const plainText = this.stripHtml(chapterText);
 
-                chapters.push({
-                  title: processed.title,
-                  content: processed.content,
-                });
+                let title = chapterRef.title || chapterRef.id;
+                const tocItem = epub.toc.find(
+                  (t: EpubChapterRef) => t.href === chapterRef.href,
+                );
+                if (tocItem?.title) {
+                  title = tocItem.title;
+                }
+
+                if (plainText.trim().length > 0) {
+                  const metadataTitle =
+                    title || `Chapter ${chapterList.length + 1}`;
+                  const processed = this.processChapterContent(
+                    metadataTitle,
+                    plainText,
+                  );
+                  chapterList.push({
+                    title: processed.title,
+                    content: processed.content,
+                  });
+                }
               }
-            }
 
-            // Cleanup temp file
-            this.cleanupTempFile(tempFilePath);
+              this.cleanupTempFile(tempFilePath);
 
-            if (chapters.length === 0) {
-              reject(new BadRequestException('No content found in EPUB file'));
-            } else {
-              resolve(chapters);
+              if (chapterList.length === 0) {
+                reject(
+                  new BadRequestException('No content found in EPUB file'),
+                );
+              } else {
+                resolve(chapterList);
+              }
+            } catch (err) {
+              settled = true;
+              this.cleanupTempFile(tempFilePath);
+              reject(
+                err instanceof Error
+                  ? err
+                  : new BadRequestException(String(err)),
+              );
             }
-          } catch (error) {
-            this.cleanupTempFile(tempFilePath);
-            reject(error);
-          }
+          };
+
+          void processFlow();
         });
 
         epub.on('error', (err: Error) => {
+          settled = true;
           this.cleanupTempFile(tempFilePath);
           reject(new BadRequestException(`EPUB parsing error: ${err.message}`));
         });
 
         epub.parse();
-      } catch (error) {
-        this.cleanupTempFile(tempFilePath);
-        reject(
-          new BadRequestException(
-            `Failed to read EPUB file: ${(error as Error).message}`,
-          ),
-        );
-      }
-    });
+      });
+
+      return chapters;
+    } catch (error) {
+      this.cleanupTempFile(tempFilePath);
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to read EPUB file: ${msg}`);
+    }
   }
 
   /**
@@ -234,7 +249,14 @@ export class FileImportService {
   private async parseMobi(buffer: Buffer): Promise<ParsedChapter[]> {
     try {
       // Import @lingo-reader/mobi-parser library (ES module)
-      const { initMobiFile } = await import('@lingo-reader/mobi-parser');
+      const mobiParser = await import('@lingo-reader/mobi-parser');
+      const initMobiFile = mobiParser.initMobiFile as (
+        file: Uint8Array,
+      ) => Promise<{
+        getSpine(): Array<{ id: string }>;
+        loadChapter(id: string): { html: string } | undefined;
+        getMetadata(): { title?: string } | undefined;
+      }>;
 
       // Convert Buffer to Uint8Array
       const uint8Array = new Uint8Array(buffer);
@@ -245,14 +267,14 @@ export class FileImportService {
       const chapters: ParsedChapter[] = [];
 
       // Get the spine (array of chapters with id fields)
-      const spine = await mobi.getSpine();
+      const spine = mobi.getSpine();
 
       // Process each chapter in the spine
       for (let i = 0; i < spine.length; i++) {
         const spineItem = spine[i];
 
         // Load chapter content using the id
-        const processedChapter = await mobi.loadChapter(spineItem.id);
+        const processedChapter = mobi.loadChapter(spineItem.id);
 
         if (!processedChapter) {
           continue;
@@ -279,11 +301,11 @@ export class FileImportService {
 
       // Fallback: If no chapters were extracted, try metadata
       if (chapters.length === 0) {
-        const metadata = await mobi.getMetadata();
+        const metadata = mobi.getMetadata();
 
         // Try to get some content from the first spine item
         if (spine.length > 0) {
-          const firstChapter = await mobi.loadChapter(spine[0].id);
+          const firstChapter = mobi.loadChapter(spine[0].id);
           if (firstChapter) {
             const plainText = this.stripHtml(firstChapter.html);
 
@@ -305,7 +327,7 @@ export class FileImportService {
         throw error;
       }
       throw new BadRequestException(
-        `MOBI parsing error: ${(error as Error).message}`,
+        `MOBI parsing error: ${getErrorMessage(error)}`,
       );
     }
   }
@@ -413,7 +435,8 @@ export class FileImportService {
       cleanedContent = lines.slice(1).join('\n').trim();
     } else {
       // Fallback: Try to remove metadata title if it appears at start
-      const normalizedTitle = metadataTitle.trim().toLowerCase();
+      const _normalizedTitle = metadataTitle.trim().toLowerCase();
+      void _normalizedTitle;
       const prefixesToCheck = [
         metadataTitle,
         `Table of ${metadataTitle}`,

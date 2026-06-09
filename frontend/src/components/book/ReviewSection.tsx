@@ -9,6 +9,7 @@ import { UserAvatar } from '@/components/common/UserAvatar';
 import { Heart, Info, Loader2, MessageCircle, Star } from 'lucide-react';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useGetBookLibraryInfoQuery } from '@/features/library/api/libraryApi';
+import type { Review } from '@/features/reviews/types/review.interface';
 
 export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: string }) => {
     const { isAuthenticated } = useAppAuth();
@@ -115,9 +116,9 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                             Chưa có đánh giá nào. Hãy là người đầu tiên!
                         </div>
                     ) : (
-                        reviews?.map((review: any) => (
+                        reviews?.map((review: Review) => (
                             <div
-                                key={review.id || review._id}
+                                key={review.id}
                                 className="group"
                             >
                                 <div className="flex gap-4">
@@ -152,7 +153,7 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                                         </p>
                                         <div className="flex items-center">
                                             <button
-                                                onClick={() => handleLike(review.id || review._id)}
+                                                onClick={() => handleLike(review.id)}
                                                 className={cn(
                                                     "flex items-center gap-1.5 text-[10px] font-bold transition-all uppercase tracking-widest",
                                                     review.isLiked

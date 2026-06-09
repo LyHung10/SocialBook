@@ -96,13 +96,12 @@ export class SearchRankingService {
       >();
 
       for (const r of results) {
-        const bookId = r.document.metadata.bookId || r.document.contentId;
+        const metadata = r.document.metadata ?? {};
+        const bookId = (metadata.bookId as string) || r.document.contentId;
         if (!bookId) continue;
 
         const contentLower = r.document.content.toLowerCase();
-        const titleLower = (
-          (r.document.metadata.title as string) || ''
-        ).toLowerCase();
+        const titleLower = ((metadata.title as string) || '').toLowerCase();
 
         let keywordBoost = 0;
 

@@ -5,8 +5,14 @@ import {
   User,
   UserDocument,
 } from '@/infrastructure/database/schemas/user.schema';
-import { Chapter } from '@/infrastructure/database/schemas/chapter.schema';
-import { Progress } from '@/infrastructure/database/schemas/progress.schema';
+import {
+  Chapter,
+  ChapterDocument,
+} from '@/infrastructure/database/schemas/chapter.schema';
+import {
+  Progress,
+  ProgressDocument,
+} from '@/infrastructure/database/schemas/progress.schema';
 
 @Injectable()
 export class LocationAndReadingSeeder {
@@ -14,8 +20,8 @@ export class LocationAndReadingSeeder {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectModel(Chapter.name) private chapterModel: Model<any>,
-    @InjectModel(Progress.name) private progressModel: Model<any>,
+    @InjectModel(Chapter.name) private chapterModel: Model<ChapterDocument>,
+    @InjectModel(Progress.name) private progressModel: Model<ProgressDocument>,
   ) {}
 
   async seedLocations(): Promise<{ updated: number; message: string }> {
@@ -99,7 +105,7 @@ export class LocationAndReadingSeeder {
             { upsert: true },
           );
           createdCount++;
-        } catch (error) {
+        } catch {
           continue;
         }
       }

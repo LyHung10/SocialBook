@@ -252,8 +252,8 @@ export default function CollectionDetailPage() {
               Bộ sưu tập này đang trống
             </h3>
             <p className="text-muted-foreground text-sm max-w-xs mb-8">
-              Hãy thêm sách vào bộ sưu tập này bằng cách chọn "Thêm vào danh
-              sách" khi đọc sách.
+              Hãy thêm sách vào bộ sưu tập này bằng cách chọn &quot;Thêm vào danh
+              sách&quot; khi đọc sách.
             </p>
             <Link
               href="/library"

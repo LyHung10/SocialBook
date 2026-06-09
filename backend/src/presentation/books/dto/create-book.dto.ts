@@ -4,7 +4,6 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
-  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -28,8 +27,8 @@ export class CreateBookDto {
   @IsString()
   authorName?: string;
 
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value;
+  @Transform(({ value }: { value: unknown }) => {
+    if (Array.isArray(value)) return value as string[];
     if (typeof value === 'string') return [value];
     return [];
   })
@@ -53,10 +52,10 @@ export class CreateBookDto {
   })
   status?: 'draft' | 'published' | 'completed';
 
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value || (typeof value === 'string' && value.trim() === ''))
       return undefined;
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) return value as string[];
     if (typeof value === 'string') {
       return value.includes(',')
         ? value.split(',').map((s) => s.trim())

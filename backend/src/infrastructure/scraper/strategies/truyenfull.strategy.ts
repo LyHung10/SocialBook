@@ -24,7 +24,7 @@ export class TruyenFullStrategy implements IScraperStrategy {
       const response = await firstValueFrom(
         this.httpService.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }),
       );
-      const $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data as string);
 
       const title =
         $('.col-info-desc .title').text().trim() ||
@@ -58,8 +58,9 @@ export class TruyenFullStrategy implements IScraperStrategy {
         sourceUrl: url,
         slug,
       };
-    } catch (error) {
-      this.logger.error(`Error scraping book ${url}: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error scraping book ${url}: ${msg}`);
       throw error;
     }
   }
@@ -69,7 +70,7 @@ export class TruyenFullStrategy implements IScraperStrategy {
       const response = await firstValueFrom(
         this.httpService.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }),
       );
-      const $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data as string);
 
       let title = $('.chapter-title').text().trim();
       if (!title) title = $('h2').text().trim();
@@ -101,8 +102,9 @@ export class TruyenFullStrategy implements IScraperStrategy {
         content: content,
         paragraphs,
       };
-    } catch (error) {
-      this.logger.error(`Error scraping chapter ${url}: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error scraping chapter ${url}: ${msg}`);
       throw error;
     }
   }
@@ -115,7 +117,7 @@ export class TruyenFullStrategy implements IScraperStrategy {
       const path = urlObj.pathname;
       const segments = path.split('/').filter((segment) => segment.length > 0);
       return segments.length > 0 ? segments[segments.length - 1] : '';
-    } catch (e) {
+    } catch {
       return '';
     }
   }

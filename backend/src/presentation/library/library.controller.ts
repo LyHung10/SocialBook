@@ -5,7 +5,6 @@ import { GetChapterProgressQuery } from '@/application/library/use-cases/get-cha
 import { GetChapterProgressUseCase } from '@/application/library/use-cases/get-chapter-progress/get-chapter-progress.use-case';
 import { GetLibraryQuery } from '@/application/library/use-cases/get-library/get-library.query';
 import { GetLibraryUseCase } from '@/application/library/use-cases/get-library/get-library.use-case';
-import { RecordReadingTimeUseCase } from '@/application/library/use-cases/record-reading-time/record-reading-time.use-case';
 import { ProcessReadingSessionCommand } from '@/application/library/use-cases/process-reading-session/process-reading-session.command';
 import { ProcessReadingSessionUseCase } from '@/application/library/use-cases/process-reading-session/process-reading-session.use-case';
 import { RemoveFromLibraryCommand } from '@/application/library/use-cases/remove-from-library/remove-from-library.command';
@@ -76,11 +75,7 @@ export class LibraryController {
     }
 
     const limitNumber = limit ? parseInt(limit, 10) : undefined;
-    const query = new GetLibraryQuery(
-      userId,
-      readingStatuses as any,
-      limitNumber,
-    );
+    const query = new GetLibraryQuery(userId, readingStatuses, limitNumber);
     const readingLists = await this.getLibraryUseCase.execute(query);
 
     return {

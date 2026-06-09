@@ -39,8 +39,8 @@ export class AskChapterAIUseCase {
       Bạn là một trợ lý đọc sách thông minh.
       Nhiệm vụ của bạn là giải đáp thắc mắc của độc giả về chương sách hiện tại.
       
-      Tác phẩm: "${book.title}"
-      Chương: "${chapter.title}"
+      Tác phẩm: "${String(book.title)}"
+      Chương: "${String(chapter.title)}"
       
       Nội dung chương:
       ${content.substring(0, 5000)}

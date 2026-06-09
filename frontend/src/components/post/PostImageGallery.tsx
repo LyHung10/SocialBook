@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface PostImageGalleryProps {
@@ -21,12 +21,6 @@ export function PostImageGallery({
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const activeIndex = currentIndex >= validImages.length ? 0 : currentIndex;
-
-    useEffect(() => {
-        if (currentIndex >= validImages.length) {
-            setCurrentIndex(0);
-        }
-    }, [validImages.length, currentIndex]);
 
     const nextImage = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();

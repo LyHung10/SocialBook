@@ -9,8 +9,6 @@ export const useRoomPresence = (
 ) => {
   const room = useReadingRoomStore((state) => state.room);
 
-  // Send heartbeat every 10 seconds. Redis presence TTL is 30s, so this
-  // provides a 3× safety margin before a user appears offline.
   useEffect(() => {
     if (!room) return;
 
@@ -22,5 +20,5 @@ export const useRoomPresence = (
     sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
 
     return () => clearInterval(interval);
-  }, [room?.roomId, chapterSlug, activeParagraphId, sendHeartbeat, readingProgress]);
+  }, [room, chapterSlug, activeParagraphId, sendHeartbeat, readingProgress]);
 };

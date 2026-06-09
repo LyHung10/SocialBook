@@ -5,9 +5,7 @@ import {
   Delete,
   Body,
   Param,
-  Query,
   UseGuards,
-  Inject,
 } from '@nestjs/common';
 import {
   GenerateChapterAudioDto,

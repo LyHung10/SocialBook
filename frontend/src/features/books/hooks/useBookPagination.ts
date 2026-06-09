@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
 import type { Book, BookOrderField } from '@/features/books/types/book.interface';
 import { useIntersectionPagination } from '@/hooks/useIntersectionPagination';
@@ -16,15 +16,9 @@ interface UseBookPaginationProps {
 export const useBookPagination = (params: UseBookPaginationProps) => {
     const [page, setPage] = useState(1);
     const [allBooks, setAllBooks] = useState<Book[]>([]);
-    const [hasMore, setHasMore] = useState(true);
+    const queryKeyRef = useRef('');
 
     const queryKey = JSON.stringify({ ...params });
-
-    useEffect(() => {
-        setPage(1);
-        setAllBooks([]);
-        setHasMore(true);
-    }, [queryKey]);
 
     const { data, isLoading, isFetching } = useGetBooksQuery(
         {
@@ -39,23 +33,30 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
     );
 
     useEffect(() => {
-        if (data?.data) {
-            if (page === 1) {
-                setAllBooks(data.data);
-            } else {
+        const isReset = queryKey !== queryKeyRef.current;
+        if (isReset) {
+            queryKeyRef.current = queryKey;
+        }
+
+        if (isReset) {
+            queueMicrotask(() => {
+                setPage(1);
+                setAllBooks([]);
+            });
+        } else if (data?.data) {
+            queueMicrotask(() => {
                 setAllBooks((prev) => {
+                    if (page === 1) return data.data;
                     const existingIds = new Set(prev.map((b) => b.id));
                     const uniqueNewBooks = data.data.filter((b: Book) => !existingIds.has(b.id));
                     return [...prev, ...uniqueNewBooks];
                 });
-            }
-            setHasMore(data.meta.current < data.meta.totalPages);
-        } else if (!isLoading && !isFetching && page > 1) {
-            setHasMore(false);
+            });
         }
-    }, [data, page, isLoading, isFetching]);
+    }, [queryKey, data, page]);
 
-    // Logic Infinite Scroll (Intersection Observer)
+    const hasMore = data ? data.meta.current < data.meta.totalPages : true;
+
     const lastBookRef = useIntersectionPagination({
         onLoadMore: () => setPage((prev) => prev + 1),
         isEnabled: !isFetching && hasMore,

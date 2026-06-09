@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   User,
+  UserDocument,
   UserSchema,
 } from '@/infrastructure/database/schemas/user.schema';
 import {
@@ -25,7 +25,7 @@ import {
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>(
           'MONGO_URI',
           'mongodb://localhost:27017/socialbook',
@@ -45,7 +45,7 @@ class SeedModule {}
 async function seedLocations() {
   const app = await NestFactory.createApplicationContext(SeedModule);
 
-  const userModel = app.get<Model<any>>(`${User.name}Model`);
+  const userModel = app.get<Model<UserDocument>>(`${User.name}Model`);
 
   const locations = [
     'Vietnam',

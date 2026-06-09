@@ -26,7 +26,7 @@ export class CreateCommentDto {
   content: string;
 
   @IsOptional()
-  @ValidateIf((o) => o.parentId !== null)
+  @ValidateIf((o: { parentId?: string | null }) => o.parentId !== null)
   parentId?: string | null;
 }
 
@@ -44,7 +44,7 @@ export class CommentCountDto {
   targetType: TargetTypeEnum;
 
   @IsOptional()
-  @ValidateIf((o) => o.parentId !== null)
+  @ValidateIf((o: { parentId?: string | null }) => o.parentId !== null)
   parentId?: string | null;
 }
 

@@ -1,6 +1,6 @@
 import { BookItem } from "@/components/user/book-item";
 import { ChevronRight } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useGetCollectionDetailNoAuthQuery } from "@/features/library/api/libraryApi";
 
 interface ReadingListItemProps {
@@ -10,7 +10,6 @@ interface ReadingListItemProps {
 
 export function ReadingListItem(props: ReadingListItemProps) {
     const { userId } = useParams<{ userId: string }>();
-    const router = useRouter();
     const { id, name } = props;
 
     const { data: response } = useGetCollectionDetailNoAuthQuery({ id, userId });

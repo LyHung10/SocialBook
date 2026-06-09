@@ -35,25 +35,19 @@ export class EpubParserService implements IEpubParser {
     try {
       await fs.writeFile(tmpFile, fileBuffer);
 
-      // epub2 exports both .EPub (named) and .default - use .EPub as primary
-
-      const epubModule = require('epub2');
-      const EPub = epubModule.EPub ?? epubModule.default ?? epubModule;
-
-      if (typeof EPub !== 'function') {
-        throw new Error(
-          `epub2 module loaded but EPub is not a constructor. Keys: ${Object.keys(epubModule).join(', ')}`,
-        );
+      const { EPub: EPubConstructor } = await import('epub2');
+      if (typeof EPubConstructor !== 'function') {
+        throw new Error('epub2 module loaded but EPub is not a constructor');
       }
 
-      const epub: EpubInstance = new EPub(tmpFile) as EpubInstance;
+      const epub: EpubInstance = new EPubConstructor(tmpFile);
 
       const chapters = await new Promise<ParsedChapter[]>((resolve, reject) => {
-        epub.on('end', async () => {
-          try {
-            const result: ParsedChapter[] = [];
-            const flow: EpubChapterRef[] = epub.flow || [];
+        epub.on('end', () => {
+          const result: ParsedChapter[] = [];
+          const flow: EpubChapterRef[] = epub.flow || [];
 
+          const processFlow = async () => {
             for (const chapter of flow) {
               if (!chapter.id) continue;
 
@@ -85,12 +79,16 @@ export class EpubParserService implements IEpubParser {
             }
 
             resolve(result);
-          } catch (err) {
-            reject(err);
-          }
+          };
+
+          processFlow().catch((err: unknown) => {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          });
         });
 
-        epub.on('error', reject);
+        epub.on('error', (err: unknown) => {
+          reject(err instanceof Error ? err : new Error(String(err)));
+        });
         epub.parse();
       });
 

@@ -5,6 +5,7 @@ import {
   NotFoundDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IReviewRepository } from '@/domain/reviews/repositories/review.repository.interface';
+import { Review } from '@/domain/reviews/entities/review.entity';
 import { UpdateReviewDto } from '@/application/reviews/dto/update-review.dto';
 import { CheckContentUseCase } from '@/application/content-moderation/use-cases/check-content.use-case';
 
@@ -19,7 +20,7 @@ export class UpdateReviewUseCase {
     userId: string,
     reviewId: string,
     dto: UpdateReviewDto,
-  ): Promise<any> {
+  ): Promise<Review> {
     const review = await this.reviewRepository.findById(reviewId);
     if (!review) {
       throw new NotFoundDomainException(ErrorMessages.REVIEW_NOT_FOUND);

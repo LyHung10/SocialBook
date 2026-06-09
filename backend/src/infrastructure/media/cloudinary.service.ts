@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
@@ -32,7 +33,10 @@ export class CloudinaryService implements IMediaService, OnModuleInit {
           resource_type: 'auto',
         },
         (error, result) => {
-          if (error) return reject(error);
+          if (error) {
+            const errMsg = getErrorMessage(error, 'Upload failed');
+            return reject(new Error(errMsg));
+          }
           if (!result)
             return reject(new Error('Upload failed: result is undefined'));
 
@@ -69,11 +73,14 @@ export class CloudinaryService implements IMediaService, OnModuleInit {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'tts', // hoặc 'socialbook/audios'
-          resource_type: 'video', // Cloudinary dùng 'video' cho audio
+          resource_type: 'video', // Cloudinary dùng 'video' for audio
           format: 'mp3',
         },
         (error, result) => {
-          if (error) return reject(error);
+          if (error) {
+            const errMsg = getErrorMessage(error, 'Upload failed');
+            return reject(new Error(errMsg));
+          }
           if (!result)
             return reject(new Error('Upload failed: result is undefined'));
 

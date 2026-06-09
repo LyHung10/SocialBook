@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import {
   NotFoundDomainException,
   ConflictDomainException,
-  BadRequestDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
-import { Chapter } from '@/domain/chapters/entities/chapter.entity';
 import { ChapterId } from '@/domain/chapters/value-objects/chapter-id.vo';
 import { ChapterTitle } from '@/domain/chapters/value-objects/chapter-title.vo';
 import { BookId } from '@/domain/chapters/value-objects/book-id.vo';
@@ -61,7 +59,7 @@ export class UpdateChapterUseCase {
       for (const currentParagraph of currentParagraphs) {
         try {
           chapter.removeParagraph(currentParagraph.id);
-        } catch (e) {
+        } catch {
           // Ignore if it's the last paragraph
         }
       }
@@ -70,7 +68,7 @@ export class UpdateChapterUseCase {
         if (paragraphData.id) {
           try {
             chapter.updateParagraph(paragraphData.id, paragraphData.content);
-          } catch (e) {
+          } catch {
             chapter.addParagraph(paragraphData.content);
           }
         } else {

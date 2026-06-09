@@ -56,9 +56,10 @@ export function useCreatePost(
     },
   });
 
-  const { watch, setValue, reset } = form;
+  const { watch, setValue, reset, getValues } = form;
   const currentImages = watch("images") || [];
-  const currentContent = watch("content") || "";
+  const totalImages = currentImages.length;
+  const canAddMore = totalImages < maxImages;
 
   useEffect(() => {
     reset({
@@ -68,16 +69,17 @@ export function useCreatePost(
       images: [],
     });
     setPreviewUrls([]);
-  }, [defaultContent, reset]);
+  }, [defaultContent, defaultBookId, defaultBookTitle, reset]);
 
   const handleFileSelect = useCallback(
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
 
       const filesArray = Array.from(files);
-      const totalImages = currentImages.length + filesArray.length;
+      const currentImagesVal = getValues("images") || [];
+      const totalImagesVal = currentImagesVal.length + filesArray.length;
 
-      if (totalImages > maxImages) {
+      if (totalImagesVal > maxImages) {
         toast.error(`Chỉ có thể thêm tối đa ${maxImages} ảnh`);
         return;
       }
@@ -91,7 +93,7 @@ export function useCreatePost(
       });
 
       if (validFiles.length > 0) {
-        const updatedImages = [...currentImages, ...validFiles];
+        const updatedImages = [...currentImagesVal, ...validFiles];
         setValue("images", updatedImages);
         const newPreviewUrls = validFiles.map((file) =>
           URL.createObjectURL(file),
@@ -99,18 +101,19 @@ export function useCreatePost(
         setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
       }
     },
-    [currentImages, maxImages, setValue],
+    [maxImages, setValue, getValues],
   );
 
   const handleRemoveImage = useCallback(
     (index: number) => {
+      const currentImagesVal = getValues("images") || [];
       URL.revokeObjectURL(previewUrls[index]);
-      const updatedImages = currentImages.filter((_, i) => i !== index);
+      const updatedImages = currentImagesVal.filter((_, i) => i !== index);
       const updatedPreviews = previewUrls.filter((_, i) => i !== index);
       setValue("images", updatedImages);
       setPreviewUrls(updatedPreviews);
     },
-    [currentImages, previewUrls, setValue],
+    [previewUrls, setValue, getValues],
   );
 
   const onSubmit = useCallback(
@@ -126,9 +129,6 @@ export function useCreatePost(
     },
     [externalOnSubmit],
   );
-
-  const totalImages = currentImages.length;
-  const canAddMore = totalImages < maxImages;
 
   return {
     form,

@@ -22,7 +22,6 @@ export default function AudiobookView({
     chapterTitle,
     paragraphs,
     bookTitle,
-    bookCoverImage,
 }: AudiobookViewProps) {
     const { data: ttsData, isLoading } = useGetChapterAudioQuery(chapterId);
     const [incrementPlayCount] = useIncrementPlayCountMutation();
@@ -31,7 +30,6 @@ export default function AudiobookView({
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [playbackRate, setPlaybackRate] = useState(1);
-    const [activeParagraphIndex, setActiveParagraphIndex] = useState<number>(-1);
     const [hasTrackedPlay, setHasTrackedPlay] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -66,24 +64,20 @@ export default function AudiobookView({
         });
     }, [duration, paragraphs]);
 
-    // Sync active paragraph with audio time
-    useEffect(() => {
-        if (!paragraphTimings.length || !isPlaying) return;
-
-        const index = paragraphTimings.findIndex(
+    const activeParagraphIndex = useMemo(() => {
+        if (!paragraphTimings.length || !isPlaying) return -1;
+        return paragraphTimings.findIndex(
             (t) => currentTime >= t.startTime && currentTime < t.endTime
         );
+    }, [currentTime, paragraphTimings, isPlaying]);
 
-        if (index !== -1 && index !== activeParagraphIndex) {
-            setActiveParagraphIndex(index);
-
-            // Auto-scroll
-            const element = paragraphRefs.current[index];
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+    useEffect(() => {
+        if (activeParagraphIndex === -1) return;
+        const element = paragraphRefs.current[activeParagraphIndex];
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    }, [currentTime, paragraphTimings, activeParagraphIndex, isPlaying]);
+    }, [activeParagraphIndex]);
 
     // Audio event handlers
     const onLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
@@ -99,7 +93,6 @@ export default function AudiobookView({
 
     const onEnded = () => {
         setIsPlaying(false);
-        setActiveParagraphIndex(-1);
         setCurrentTime(0);
     };
 
@@ -157,7 +150,6 @@ export default function AudiobookView({
         if (timing && audioRef.current) {
             audioRef.current.currentTime = timing.startTime;
             if (!isPlaying) togglePlay();
-            setActiveParagraphIndex(index);
         }
     };
 

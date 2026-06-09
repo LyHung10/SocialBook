@@ -12,6 +12,7 @@ import {
     UserListResponse,
     UserOverviewResponse
 } from '../types/user.types';
+import { ReadingPreferences } from '@/types/reading-preferences.interface';
 
 export const usersApi = createApi({
     reducerPath: 'usersApi',
@@ -71,7 +72,7 @@ export const usersApi = createApi({
             ],
         }),
 
-        getReadingPreferences: builder.query<any, void>({
+        getReadingPreferences: builder.query<ReadingPreferences, void>({
             query: () => ({
                 url: '/users/me/reading-preferences',
                 method: 'GET',
@@ -79,7 +80,7 @@ export const usersApi = createApi({
             providesTags: ['Users'],
         }),
 
-        updateReadingPreferences: builder.mutation<any, any>({
+        updateReadingPreferences: builder.mutation<ReadingPreferences, Partial<ReadingPreferences>>({
             query: (body) => ({
                 url: '/users/me/reading-preferences',
                 method: 'PUT',

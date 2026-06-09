@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { Public } from '@/common/decorators/custom.decorator';
 import { ScrapeBookUseCase } from '@/application/scraper/use-cases/scrape-book.use-case';
 import { ScrapeChapterUseCase } from '@/application/scraper/use-cases/scrape-chapter.use-case';
@@ -12,13 +12,13 @@ export class ScraperController {
 
   @Public()
   @Post('start')
-  async startScraping(@Body('listUrl') listUrl: string) {
+  startScraping() {
     return { success: false, message: 'Not implemented in refactor yet' };
   }
 
   @Public()
   @Post('full-book')
-  async scrapeFullBook(@Body('bookUrl') bookUrl: string) {
+  scrapeFullBook() {
     return { success: false, message: 'Not implemented in refactor yet' };
   }
 
@@ -29,14 +29,17 @@ export class ScraperController {
     try {
       const result = await this.scrapeBookUseCase.execute(bookUrl);
       return { success: true, data: result };
-    } catch (error) {
-      return { success: false, message: error.message };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   }
 
   @Public()
   @Post('chapters')
-  async scrapeChapters(@Body('bookId') bookId: string) {
+  scrapeChapters() {
     return { success: false, message: 'Not implemented in refactor yet' };
   }
 }
