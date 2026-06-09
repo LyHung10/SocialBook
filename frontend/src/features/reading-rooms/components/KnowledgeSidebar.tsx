@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 
 
-import { useReadingRoomStore, ChatMessage } from '@/store/useReadingRoomStore';
+import { ChatMessage } from '@/store/useReadingRoomStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,10 +39,9 @@ interface KnowledgeSidebarProps {
   bookSlug: string;
   chapterId: string;
   roomId?: string;
-  askAI?: (question: string) => void;
 }
 
-export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: KnowledgeSidebarProps) => {
+export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSidebarProps) => {
   const [shouldForce, setShouldForce] = useState(false);
   const { data, isLoading, error } = useGetChapterKnowledgeQuery(
     { bookSlug, chapterId, force: shouldForce },
@@ -68,32 +67,28 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!roomId) {
-      const savedMessages = localStorage.getItem(`chat_solo_${chapterId}`);
-      if (savedMessages) {
-        try {
-          const timer = setTimeout(() => {
-            setLocalChatMessages(JSON.parse(savedMessages));
-          }, 0);
-          return () => clearTimeout(timer);
-        } catch {
-          toast.error('Không thể đọc tin nhắn đã lưu');
-        }
-      }
-    }
-  }, [roomId, chapterId]);
-
-  useEffect(() => {
-    if (!roomId && localChatMessages.length > 0) {
-      localStorage.setItem(`chat_solo_${chapterId}`, JSON.stringify(localChatMessages));
-    }
-  }, [localChatMessages, roomId, chapterId]);
-
   const [askChapterAI, { isLoading: isSoloPending }] = useAskChapterAIMutation();
 
-  const { chatMessages: roomChatMessages } = useReadingRoomStore();
-  const chatMessages = roomId ? roomChatMessages.filter(m => m.role === 'ai') : localChatMessages;
+  const chatMessages = localChatMessages;
+  const storageKey = roomId ? `chat_room_${roomId}_${chapterId}` : `chat_solo_${chapterId}`;
+
+  useEffect(() => {
+    const savedMessages = localStorage.getItem(storageKey);
+    if (savedMessages) {
+      try {
+        const timer = setTimeout(() => setLocalChatMessages(JSON.parse(savedMessages)), 0);
+        return () => clearTimeout(timer);
+      } catch {
+        toast.error('Không thể đọc tin nhắn đã lưu');
+      }
+    }
+  }, [roomId, chapterId, storageKey]);
+
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      localStorage.setItem(storageKey, JSON.stringify(chatMessages));
+    }
+  }, [chatMessages, roomId, chapterId, storageKey]);
 
   useEffect(() => {
     if (scrollContainerRef.current && scrollRef.current) {
@@ -116,37 +111,30 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const handleAskAI = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim()) return;
+    const q = question;
+    setQuestion('');
 
-    if (roomId && askAI) {
-      askAI(question);
-      setQuestion('');
-    } else {
-      const userMsg: ChatMessage = {
-        userId: 'me',
-        role: 'user',
-        content: question,
-        createdAt: new Date().toISOString()
+    const userMsg: ChatMessage = {
+      userId: roomId ? 'ai-question' : 'me',
+      role: 'user',
+      content: q,
+      createdAt: new Date().toISOString(),
+    };
+
+    setLocalChatMessages(prev => [...prev, userMsg]);
+
+    try {
+      const response = await askChapterAI({ bookSlug, chapterId, question: q }).unwrap();
+      const aiMsg: ChatMessage = {
+        userId: roomId ? 'gemini-ai' : 'ai',
+        role: 'ai',
+        content: response.answer,
+        createdAt: response.createdAt,
       };
-      setLocalChatMessages(prev => [...prev, userMsg]);
-      setQuestion('');
 
-      try {
-        const response = await askChapterAI({
-          bookSlug,
-          chapterId,
-          question
-        }).unwrap();
-
-        const aiMsg: ChatMessage = {
-          userId: 'ai',
-          role: 'ai',
-          content: response.answer,
-          createdAt: response.createdAt
-        };
-        setLocalChatMessages(prev => [...prev, aiMsg]);
-      } catch {
-        toast.error('AI không thể trả lời lúc này. Vui lòng thử lại!');
-      }
+      setLocalChatMessages(prev => [...prev, aiMsg]);
+    } catch {
+      toast.error('AI không thể trả lời lúc này. Vui lòng thử lại!');
     }
   };
 
