@@ -37,7 +37,7 @@ export class ReadingPreferences {
       '#1a1a1a',
       '#e5e5e5',
       'justify',
-      0,
+      40,
       [],
       0,
     );
@@ -54,7 +54,7 @@ export class ReadingPreferences {
       props.backgroundColor || defaults.backgroundColor,
       props.textColor || defaults.textColor,
       props.textAlign || defaults.textAlign,
-      props.marginWidth || defaults.marginWidth,
+      props.marginWidth ?? defaults.marginWidth,
       props.preferredGenres ?? defaults.preferredGenres,
       props.dailyReadingGoal ?? defaults.dailyReadingGoal,
     );
