@@ -27,7 +27,7 @@ export default function GlobalConfirmModal() {
             setIsLoading(true);
             await confirmData.onConfirm();
             closeConfirm();
-        } catch (error) {
+        } catch {
             toast.error('Thao tác thất bại, vui lòng thử lại');
         } finally {
             setIsLoading(false);

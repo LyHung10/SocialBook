@@ -14,6 +14,10 @@ import { NotificationsService } from '@/infrastructure/notifications/notificatio
 import { CreateNotificationDto } from '@/application/notifications/dto/create-notification.dto';
 import { JwtService } from '@nestjs/jwt';
 
+interface SocketData {
+  userId: string;
+}
+
 @WebSocketGateway({
   namespace: '/notifications',
   cors: {
@@ -38,44 +42,43 @@ export class NotificationsGateway
     this.notificationsService.setServer(this.server);
   }
 
-  async handleConnection(socket: Socket) {
+  handleConnection(socket: Socket) {
     try {
-      const auth = socket.handshake.auth as { token?: string };
-      const query = socket.handshake.query as { token?: string };
+      const auth = socket.handshake.auth as unknown as { token: string };
+      const query = socket.handshake.query as unknown as { token: string };
 
-      let token = auth?.token ?? query?.token;
-      if (Array.isArray(token)) {
-        token = token[0];
-      }
+      const token = auth?.token ?? query?.token;
 
-      if (!token || typeof token !== 'string') {
+      if (typeof token !== 'string' || !token) {
         this.logger.warn('No token, disconnect');
         socket.disconnect(true);
         return;
       }
 
-      const payload = this.jwt.verify(token);
-      const userId = payload.sub || payload.id;
+      const payload = this.jwt.verify<{ sub?: string; id?: string }>(token, {
+        complete: false,
+      });
+      const userId = payload.sub ?? payload.id;
       if (!userId) {
         socket.disconnect(true);
         return;
       }
-      socket.data.userId = userId;
-      socket.join(`user:${userId}`);
-    } catch (e) {
-      this.logger.error('WS error in handleConnection:', e);
+      (socket.data as SocketData).userId = userId;
+      void socket.join(`user:${userId}`);
+    } catch {
+      this.logger.error('WS error in handleConnection:');
       socket.disconnect(true);
     }
   }
 
-  handleDisconnect(@ConnectedSocket() socket: Socket) {
+  handleDisconnect() {
     // cleanup nếu cần
   }
 
   // Cho phép client chủ động yêu cầu data
   @SubscribeMessage('notification:list')
   async list(@ConnectedSocket() socket: Socket) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId;
     return this.notificationsService.findAllByUser(userId);
   }
 
@@ -84,7 +87,7 @@ export class NotificationsGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { id: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId;
     return this.notificationsService.markRead(userId, body.id);
   }
 

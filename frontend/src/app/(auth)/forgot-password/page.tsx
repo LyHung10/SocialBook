@@ -1,5 +1,6 @@
 'use client';
 
+import { getErrorMessage } from '@/lib/utils';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -99,24 +100,8 @@ export default function ForgotPasswordPage() {
     router.push('/login');
   };
 
-  // Helper để lấy thông báo lỗi từ các hook
-  const getErrorMessage = (error: any) => {
-    if (
-      error &&
-      'data' in error &&
-      error.data &&
-      typeof error.data === 'object' &&
-      'message' in error.data
-    ) {
-      return (error.data as { message: string }).message;
-    }
-    return null;
-  };
-
-  const currentError =
-    getErrorMessage(forgotPasswordError) ||
-    getErrorMessage(resetPasswordError) ||
-    getErrorMessage(resendOtpError);
+  const apiError = forgotPasswordError || resetPasswordError || resendOtpError;
+  const currentError = apiError ? getErrorMessage(apiError) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">

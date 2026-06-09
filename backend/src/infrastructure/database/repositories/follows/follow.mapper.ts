@@ -7,8 +7,8 @@ export interface FollowWithUserInfo {
   userId: string;
   targetId: string;
   status: boolean;
-  username: string;
-  image: string;
+  username: string | undefined;
+  image: string | undefined;
   postCount: number;
   readingListCount: number;
   followersCount: number;

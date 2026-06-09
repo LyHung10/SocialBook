@@ -116,14 +116,14 @@ export default function ChapterPage({ params }: ChapterPageProps) {
       router.push(
         `/books/${bookSlug}/chapters/${navigation.previous.slug}`,
       );
-  }, [navigation?.previous, bookSlug, router]);
+  }, [navigation, bookSlug, router]);
 
   const goToNextChapter = useCallback(() => {
     navigation?.next &&
       router.push(
         `/books/${bookSlug}/chapters/${navigation.next.slug}`,
       );
-  }, [navigation?.next, bookSlug, router]);
+  }, [navigation, bookSlug, router]);
 
   const defaultShareContent = useMemo(() => {
     if (!book || !chapter) return "";

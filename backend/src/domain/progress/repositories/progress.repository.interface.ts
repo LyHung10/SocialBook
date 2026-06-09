@@ -2,7 +2,6 @@ import {
   ReadingHeatmapData,
   ChapterEngagementData,
   ReadingSpeedData,
-  ActiveUsersData,
 } from '@/domain/statistics/interfaces/statistics.model';
 
 export abstract class IProgressRepository {

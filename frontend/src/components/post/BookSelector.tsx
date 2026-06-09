@@ -47,9 +47,6 @@ export default function BookSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [allBooks, setAllBooks] = useState<SelectableBook[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -82,26 +79,23 @@ export default function BookSelector({
   const isLoading = onlyLibrary ? isLibraryLoading : isNormalLoading;
   const isFetching = onlyLibrary ? isLibraryFetching : isNormalFetching;
 
-  useEffect(() => {
-    if (books.length > 0) {
-      setAllBooks((prev) => {
-        if (page === 1 || onlyLibrary) {
-          return books;
-        }
-        const uniqueBooks = books.filter(
-          (book) => !prev.some((b) => b.id === book.id)
-        );
-        return [...prev, ...uniqueBooks];
-      });
+  const [allBooks, setAllBooks] = useState<SelectableBook[]>([]);
 
-      if (meta) {
-        setHasMore(meta.current < meta.totalPages);
-      } else if (onlyLibrary) {
-        setHasMore(false);
+  if (books.length > 0) {
+    if (page === 1 || onlyLibrary) {
+      if (allBooks !== books) {
+        setAllBooks(books);
+      }
+    } else {
+      const existingIds = new Set(allBooks.map((b) => b.id));
+      const newBooks = books.filter((b) => !existingIds.has(b.id));
+      if (newBooks.length > 0) {
+        setAllBooks([...allBooks, ...newBooks]);
       }
     }
-  }, [books, page, meta, onlyLibrary]);
+  }
 
+  const hasMore = onlyLibrary ? false : meta ? meta.current < meta.totalPages : true;
   const selectedBook = allBooks.find((book) => book.id === value);
   const filteredBooks = allBooks.filter(
     (book) =>
@@ -140,7 +134,7 @@ export default function BookSelector({
 
       return () => observer.disconnect();
     },
-    [isFetching, hasMore, searchQuery]
+    [isFetching, hasMore, searchQuery, onlyLibrary]
   );
 
   const handleSelect = (book: SelectableBook) => {

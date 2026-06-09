@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,16 @@ import { Loader2 } from 'lucide-react';
 
 export default function EditCollectionModal() {
   const { isEditCollectionOpen, closeEditCollection, editCollectionData } = useModalStore();
-  const [name, setName] = useState('');
+  const [name, setName] = useState(editCollectionData?.currentName || '');
+  const [lastSnapshot, setLastSnapshot] = useState(editCollectionData);
   const [updateCollection, { isLoading }] = useUpdateCollectionMutation();
 
-  useEffect(() => {
+  if (editCollectionData !== lastSnapshot) {
+    setLastSnapshot(editCollectionData);
     if (editCollectionData?.currentName) {
       setName(editCollectionData.currentName);
     }
-  }, [editCollectionData]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,7 @@ export default function EditCollectionModal() {
       toast.success('Đã cập nhật tên bộ sưu tập');
       editCollectionData.onSuccess?.();
       closeEditCollection();
-    } catch (error) {
+    } catch {
       toast.error('Lỗi khi cập nhật tên bộ sưu tập');
     }
   };

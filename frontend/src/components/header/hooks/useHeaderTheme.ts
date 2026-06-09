@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 
 interface UseHeaderThemeReturn {
@@ -8,13 +8,17 @@ interface UseHeaderThemeReturn {
     mounted: boolean;
 }
 
+function useHydrated() {
+    return useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false,
+    );
+}
+
 export function useHeaderTheme(): UseHeaderThemeReturn {
     const { theme, setTheme } = useNextTheme();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useHydrated();
 
     const toggleTheme = useCallback(() => {
         if (!mounted) return;

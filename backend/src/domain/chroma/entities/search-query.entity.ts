@@ -8,7 +8,7 @@ export interface SearchQueryProps {
   limit: number;
   threshold: number;
   contentType?: ContentType;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 }
 
 export class SearchQuery {
@@ -31,7 +31,7 @@ export class SearchQuery {
     query: string;
     embedding: number[];
     contentType?: 'book' | 'author' | 'chapter';
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
     limit?: number;
     threshold?: number;
   }): SearchQuery {
@@ -60,7 +60,7 @@ export class SearchQuery {
     query: string;
     embedding: number[];
     contentType?: 'book' | 'author' | 'chapter';
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
     limit?: number;
     threshold?: number;
     createdAt: Date;
@@ -91,7 +91,7 @@ export class SearchQuery {
   get contentType(): ContentType | undefined {
     return this._props.contentType;
   }
-  get filters(): Record<string, any> | undefined {
+  get filters(): Record<string, unknown> | undefined {
     return this._props.filters ? { ...this._props.filters } : undefined;
   }
   get limit(): number {
@@ -113,11 +113,11 @@ export class SearchQuery {
     );
   }
 
-  getFilter(key: string): any {
+  getFilter(key: string): unknown {
     return this._props.filters?.[key];
   }
 
-  addFilter(key: string, value: any): void {
+  addFilter(key: string, value: unknown): void {
     if (!this._props.filters) {
       this._props.filters = {};
     }

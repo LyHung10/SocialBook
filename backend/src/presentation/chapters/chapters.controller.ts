@@ -43,8 +43,6 @@ import { GetChapterByIdUseCase } from '@/application/chapters/use-cases/get-chap
 import { GetChapterBySlugQuery } from '@/application/chapters/use-cases/get-chapter-by-slug/get-chapter-by-slug.query';
 import { GetChapterBySlugUseCase } from '@/application/chapters/use-cases/get-chapter-by-slug/get-chapter-by-slug.use-case';
 import { GetChaptersQuery } from '@/application/chapters/use-cases/get-chapters/get-chapters.query';
-import { ChapterResult } from '@/application/chapters/use-cases/get-chapters/get-chapters.result';
-import { PaginatedResult } from '@/common/interfaces/pagination.interface';
 import { UpdateChapterCommand } from '@/application/chapters/use-cases/update-chapter/update-chapter.command';
 import { ImportEpubPreviewUseCase } from '@/application/chapters/use-cases/import-epub-preview/import-epub-preview.use-case';
 import { StartChaptersImportUseCase } from '@/application/chapters/use-cases/start-chapters-import/start-chapters-import.use-case';

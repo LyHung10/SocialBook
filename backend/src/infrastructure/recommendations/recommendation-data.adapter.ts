@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FlattenMaps, Model, Types } from 'mongoose';
 import {
   Book,
   BookDocument,
@@ -31,6 +31,24 @@ type LeanedReadingList = {
   _id: Types.ObjectId;
   bookId: PopulatedBook | null;
   status: string;
+};
+
+type LeanedProgress = FlattenMaps<Progress> & {
+  bookId: PopulatedBook | null;
+};
+
+type LeanedReview = FlattenMaps<Review> & {
+  bookId: PopulatedBook | null;
+};
+
+interface GenreInfo {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+type LeanedPreference = FlattenMaps<UserPreference> & {
+  genreId: GenreInfo | null;
 };
 
 @Injectable()
@@ -72,18 +90,18 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
           .sort({ lastReadAt: -1 })
           .limit(20)
           .populate({ path: 'bookId', populate: { path: 'genres' } })
-          .lean<any[]>(),
+          .lean<LeanedProgress[]>(),
         this.reviewModel
           .find({ userId: userObjectId })
           .populate({ path: 'bookId', populate: { path: 'genres' } })
-          .lean<any[]>(),
+          .lean<LeanedReview[]>(),
         this.bookModel.find({ likedBy: userObjectId }).populate('genres'),
         this.preferenceModel
           .find({ userId: userObjectId })
           .populate('genreId')
           .sort({ score: -1 })
           .limit(10)
-          .lean<any[]>(),
+          .lean<LeanedPreference[]>(),
       ]);
 
     const validReadingLists = readingLists.filter((rl) => rl.bookId != null);
@@ -142,7 +160,7 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
       const genreCounts = new Map<string, number>();
       allBooks.forEach((book) => {
         if (book?.genres) {
-          book.genres.forEach((genre: any) => {
+          (book.genres as Array<{ name: string }>).forEach((genre) => {
             if (genre && genre.name) {
               genreCounts.set(
                 genre.name,
@@ -181,10 +199,10 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
     const readingLists = await this.readingListModel
       .find({ userId: userObjectId })
       .select('bookId')
-      .lean<any[]>();
+      .lean<Array<{ _id: Types.ObjectId; bookId: Types.ObjectId | null }>>();
     const readBookIds = readingLists
       .filter((rl) => rl.bookId != null)
-      .map((rl) => rl.bookId);
+      .map((rl) => rl.bookId as Types.ObjectId);
 
     return this.bookModel
       .find({
@@ -197,9 +215,15 @@ export class RecommendationDataAdapter implements IRecommendationDataPort {
       .lean<PopulatedBook[]>();
   }
 
-  private _calculateBookProgress(bookId: string, progresses: any[]): number {
+  private _calculateBookProgress(
+    bookId: string,
+    progresses: LeanedProgress[],
+  ): number {
     const bookProgresses = progresses.filter(
-      (p) => p.bookId && p.bookId._id && p.bookId._id.toString() === bookId,
+      (p) =>
+        p.bookId &&
+        (p.bookId as unknown as { _id: Types.ObjectId })._id.toString() ===
+          bookId,
     );
     if (bookProgresses.length === 0) return 0;
     return bookProgresses.filter((p) => p.status === 'completed').length;

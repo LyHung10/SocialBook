@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { useSocket } from '@/context/SocketProvider';
 import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
-import type { RoomComment } from '../types/room-interaction.types';
+import type { RoomComment, RoomSocket } from '../types/room-interaction.types';
 
 export const useRoomAnnotations = () => {
   const { getSocket } = useSocket();
@@ -41,14 +41,22 @@ export const useRoomAnnotations = () => {
   return { addComment, deleteComment };
 };
 
-export const setupRoomAnnotationListeners = (socket: any, store: any) => {
-  if (!socket) return;
+interface RoomAnnotationStore {
+  getState(): {
+    addRoomComment: (data: RoomComment) => void;
+    removeRoomComment: (commentId: string, paragraphId: string) => void;
+  };
+}
 
-  socket.on(ReadingRoomServerEvent.COMMENT_ADDED, (data: RoomComment) => {
-    store.getState().addRoomComment(data);
+export const setupRoomAnnotationListeners = (socket: RoomSocket | null | undefined, store: RoomAnnotationStore | null | undefined) => {
+  if (!socket || !store) return;
+
+  socket.on(ReadingRoomServerEvent.COMMENT_ADDED, (data: unknown) => {
+    store.getState().addRoomComment(data as RoomComment);
   });
 
-  socket.on(ReadingRoomServerEvent.COMMENT_DELETED, (data: { commentId: string; paragraphId: string }) => {
-    store.getState().removeRoomComment(data.commentId, data.paragraphId);
+  socket.on(ReadingRoomServerEvent.COMMENT_DELETED, (data: unknown) => {
+    const { commentId, paragraphId } = data as { commentId: string; paragraphId: string };
+    store.getState().removeRoomComment(commentId, paragraphId);
   });
 };

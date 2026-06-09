@@ -27,16 +27,20 @@ export function useCommentList({ targetId, isCommentOpen, parentId, limit = 20 }
     useEffect(() => {
         if (!isCommentOpen) return;
         if (isCommentOpen && targetId) {
-            setAllComments([]);
-            setCursor(undefined);
+            queueMicrotask(() => {
+                setAllComments([]);
+                setCursor(undefined);
+            });
             fetchComments({ targetId, parentId, limit });
         }
     }, [isCommentOpen, targetId, parentId, limit, fetchComments]);
 
     useEffect(() => {
         if (data?.comments) {
-            setAllComments(data.comments);
-            setCursor(data.nextCursor ?? undefined);
+            queueMicrotask(() => {
+                setAllComments(data.comments);
+                setCursor(data.nextCursor ?? undefined);
+            });
         }
     }, [data]);
 

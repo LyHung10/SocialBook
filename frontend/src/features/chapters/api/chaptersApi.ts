@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "@/lib/nestjs-client-api";
 import { NESTJS_CHAPTERS_ENDPOINTS } from "@/constants/server-endpoints";
+import type { PaginationMeta } from '@/lib/api-response';
 import {
   Chapter,
   ChapterDetailData,
@@ -33,7 +34,7 @@ const normalizeChaptersListResponse = (response: unknown): ChaptersListData => {
   const objResponse = response as {
     chapters?: Chapter[];
     data?: Chapter[];
-    meta?: any;
+    meta?: PaginationMeta;
   };
 
   if (objResponse?.chapters && Array.isArray(objResponse.chapters)) {

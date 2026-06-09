@@ -33,7 +33,9 @@ export const useFollowerItem = ({
 
     useEffect(() => {
         if (statusData) {
-            setIsFollowing(statusData.isFollowing);
+            queueMicrotask(() => {
+                setIsFollowing(statusData.isFollowing);
+            });
         }
     }, [statusData]);
 
@@ -52,7 +54,7 @@ export const useFollowerItem = ({
                 await toggleFollow(userId).unwrap();
             }
             setIsFollowing((prev) => !prev);
-        } catch (e) {
+        } catch {
             toast.error(MESSAGES.FOLLOW_TOGGLE_FAILED);
         }
     };

@@ -21,7 +21,6 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
         displayedCommentCount,
         isLiked,
         likeCount,
-        isDeleting,
         actions,
     } = usePostCard({ post });
 

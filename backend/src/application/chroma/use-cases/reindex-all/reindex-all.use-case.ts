@@ -1,10 +1,8 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
-import {
-  IVectorRepository,
-  BatchIndexResult,
-} from '@/domain/chroma/repositories/vector.repository.interface';
+import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { VectorDocument } from '@/domain/chroma/entities/vector-document.entity';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 
@@ -57,7 +55,7 @@ export class ReindexAllUseCase {
         success: true,
         details: { authors: authorStats, books: bookStats },
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('❌ Full reindexing failed:', error);
       throw error;
     }
@@ -110,9 +108,12 @@ export class ReindexAllUseCase {
             await this.flushBatch(batchBuffer, failedEntityIds, stats.errors);
             batchBuffer = [];
           }
-        } catch (error) {
+        } catch (error: unknown) {
           failedEntityIds.add(author.id.toString());
-          this.addError(stats.errors, `Author ${author.id}: ${error.message}`);
+          this.addError(
+            stats.errors,
+            `Author ${String(author.id)}: ${getErrorMessage(error)}`,
+          );
         }
       }
       currentPage++;
@@ -190,9 +191,12 @@ export class ReindexAllUseCase {
               batchBuffer = [];
             }
           }
-        } catch (error) {
+        } catch (error: unknown) {
           failedEntityIds.add(book.id.toString());
-          this.addError(stats.errors, `Book ${book.id}: ${error.message}`);
+          this.addError(
+            stats.errors,
+            `Book ${String(book.id)}: ${getErrorMessage(error)}`,
+          );
         }
       }
 
@@ -229,7 +233,7 @@ export class ReindexAllUseCase {
           }
         }
         return; // Success or handled
-      } catch (error) {
+      } catch (error: unknown) {
         attempt++;
         if (attempt >= MAX_RETRIES) {
           // If all retries failed, mark all entities in this batch as failed
@@ -238,7 +242,7 @@ export class ReindexAllUseCase {
           }
           this.addError(
             errorList,
-            `Critical batch failure after ${MAX_RETRIES} attempts: ${error.message}`,
+            `Critical batch failure after ${MAX_RETRIES} attempts: ${getErrorMessage(error)}`,
           );
           break;
         }

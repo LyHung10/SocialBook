@@ -24,7 +24,7 @@ export class NhaSachMienPhiStrategy implements IScraperStrategy {
       const response = await firstValueFrom(
         this.httpService.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }),
       );
-      const $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data as string);
 
       const title = $('h1.tblue.fs-20, h1.tblue').first().text().trim();
       const authorText = $('div.mg-t-10:contains("Tác giả:")').text();
@@ -55,41 +55,39 @@ export class NhaSachMienPhiStrategy implements IScraperStrategy {
         sourceUrl: url,
         // chapters logic can be separate or included if we want full scrape immediately
       };
-    } catch (error) {
-      this.logger.error(`Error scraping NSMP book ${url}: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error scraping NSMP book ${url}: ${msg}`);
       throw error;
     }
   }
 
   async scrapeChapter(url: string): Promise<ScrapedChapterData> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }),
-      );
-      const $ = cheerio.load(response.data);
+    const response = await firstValueFrom(
+      this.httpService.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }),
+    );
+    const $ = cheerio.load(response.data as string);
 
-      let title = $('h2.mg-t-10').text().trim();
-      if (!title) title = $('h2').first().text().trim();
+    let title = $('h2.mg-t-10').text().trim();
+    if (!title) title = $('h2').first().text().trim();
 
-      const paragraphs: { content: string }[] = [];
-      $('.noi_dung_online p, .content_p p').each((_, el) => {
-        const text = $(el).text().trim();
-        if (text) paragraphs.push({ content: text });
-      });
+    const paragraphs: { content: string }[] = [];
+    $('.noi_dung_online p, .content_p p').each((_, el) => {
+      const text = $(el).text().trim();
+      if (text) paragraphs.push({ content: text });
+    });
 
-      return {
-        title,
-        order: 0,
-        content: '',
-        paragraphs,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      title,
+      order: 0,
+      content: '',
+      paragraphs,
+    };
   }
 
-  async scrapeCategory(url: string, limit: number = 20): Promise<string[]> {
+  scrapeCategory(url: string, _limit: number = 20): Promise<string[]> {
+    void _limit;
     // Implement category crawling
-    return [];
+    return Promise.resolve([]);
   }
 }

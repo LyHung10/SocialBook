@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
@@ -11,10 +12,10 @@ export class CacheService {
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.redis.get(key);
-      return value ? JSON.parse(value) : null;
+      return value ? (JSON.parse(value) as T) : null;
     } catch (error) {
       this.logger.error(
-        `Failed to get cache key ${key}: ${(error as Error).message}`,
+        `Failed to get cache key ${key}: ${getErrorMessage(error)}`,
       );
       return null;
     }
@@ -30,7 +31,7 @@ export class CacheService {
       }
     } catch (error) {
       this.logger.error(
-        `Failed to set cache key ${key}: ${(error as Error).message}`,
+        `Failed to set cache key ${key}: ${getErrorMessage(error)}`,
       );
     }
   }
@@ -52,7 +53,7 @@ export class CacheService {
       return result === 'OK';
     } catch (error) {
       this.logger.error(
-        `Failed to set nx cache key ${key}: ${(error as Error).message}`,
+        `Failed to set nx cache key ${key}: ${getErrorMessage(error)}`,
       );
       return false;
     }
@@ -63,7 +64,7 @@ export class CacheService {
       await this.redis.del(key);
     } catch (error) {
       this.logger.error(
-        `Failed to delete cache key ${key}: ${(error as Error).message}`,
+        `Failed to delete cache key ${key}: ${getErrorMessage(error)}`,
       );
     }
   }
@@ -76,7 +77,7 @@ export class CacheService {
       }
     } catch (error) {
       this.logger.error(
-        `Failed to clear cache pattern ${pattern}: ${(error as Error).message}`,
+        `Failed to clear cache pattern ${pattern}: ${getErrorMessage(error)}`,
       );
     }
   }

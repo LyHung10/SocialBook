@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  BadRequestDomainException,
-  NotFoundDomainException,
-} from '@/shared/domain/common-exceptions';
+import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { ReadingRoomResult } from '../reading-room.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';

@@ -96,7 +96,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
   // ─── Embedding ───────────────────────────────────
 
-  async embedQuery(text: string): Promise<number[]> {
+  embedQuery(text: string): Promise<number[]> {
     this.ensureInitialized();
     return this.embeddings.embedQuery(text);
   }
@@ -129,8 +129,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         errors: [],
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `Batch save failed for ${documents.length} docs, attempting split-and-retry. Error: ${error.message}`,
+        `Batch save failed for ${documents.length} docs, attempting split-and-retry. Error: ${message}`,
       );
 
       // Granular Error Handling: Split and retry if batch is large
@@ -154,7 +155,6 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       }
 
       // If single document failed, return it as failure
-      const message = error instanceof Error ? error.message : String(error);
       return {
         totalProcessed: 1,
         successful: 0,
@@ -440,15 +440,18 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   // ─── Content Type Specific Operations ─────────────
   // These are stubs — actual indexing is done by ReindexAllUseCase
 
-  async indexBooks(bookIds: string[]): Promise<BatchIndexResult> {
+  indexBooks(_bookIds: string[]): Promise<BatchIndexResult> {
+    void _bookIds;
     throw new Error('Not implemented — use ReindexAllUseCase');
   }
 
-  async indexAuthors(authorIds: string[]): Promise<BatchIndexResult> {
+  indexAuthors(_authorIds: string[]): Promise<BatchIndexResult> {
+    void _authorIds;
     throw new Error('Not implemented — use ReindexAllUseCase');
   }
 
-  async indexChapters(chapterIds: string[]): Promise<BatchIndexResult> {
+  indexChapters(_chapterIds: string[]): Promise<BatchIndexResult> {
+    void _chapterIds;
     throw new Error('Not implemented — use ReindexAllUseCase');
   }
 

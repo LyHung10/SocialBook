@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
@@ -27,24 +28,26 @@ export class ScrapeBookUseCase {
     private readonly idGenerator: IIdGenerator,
   ) {}
 
-  async execute(url: string): Promise<any> {
+  async execute(url: string): Promise<Book> {
     try {
       const strategy = this.scraperFactory.getStrategy(url);
       const bookData: ScrapedBookData = await strategy.scrapeBook(url);
 
       return await this.saveBook(bookData);
-    } catch (error) {
-      this.logger.error(`Failed to scrape book from ${url}: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to scrape book from ${url}: ${getErrorMessage(error)}`,
+      );
       throw error;
     }
   }
 
-  private async saveBook(bookData: ScrapedBookData): Promise<any> {
+  private async saveBook(bookData: ScrapedBookData): Promise<Book> {
     // 1. Find or Create Author
     let authorNameVO: AuthorName;
     try {
       authorNameVO = AuthorName.create(bookData.author);
-    } catch (e) {
+    } catch {
       authorNameVO = AuthorName.create('Unknown');
     }
 
@@ -74,7 +77,7 @@ export class ScrapeBookUseCase {
         if (genre) {
           genreIds.push(genre.id.toString());
         }
-      } catch (e) {
+      } catch {
         this.logger.warn(`Skipping invalid genre name: ${genreNameStr}`);
       }
     }

@@ -21,7 +21,7 @@ export class AIRequest extends BaseSchema {
   userId: string;
 
   @Prop({ type: Object, default: {} })
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export const AIRequestSchema = SchemaFactory.createForClass(AIRequest);

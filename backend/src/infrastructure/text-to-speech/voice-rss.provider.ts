@@ -18,7 +18,7 @@ export class VoiceRSSProvider implements ITextToSpeechProvider {
     text: string,
     options: AudioGenerationOptions,
   ): Promise<{ audioUrl: string; format: string; duration?: number }> {
-    const { voice, language, speed, format = 'mp3' } = options;
+    const { voice, speed, format = 'mp3' } = options;
     const apiKey = this.configService.get<string>('env.VOICERSS_API_KEY');
 
     if (!apiKey) {
@@ -75,9 +75,10 @@ export class VoiceRSSProvider implements ITextToSpeechProvider {
       const audioUrl = await this.mediaService.uploadAudio(fakeAudioFile);
 
       return { audioUrl, format, duration: 0 }; // Duration estimation might require metadata parsing (e.g. music-metadata)
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new InternalServerErrorException(
-        `Failed to generate audio: ${error.message}`,
+        `Failed to generate audio: ${message}`,
       );
     }
   }

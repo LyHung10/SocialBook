@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 interface UseOptimisticToggleOptions {
   initialCount: number;
@@ -15,11 +15,16 @@ export function useOptimisticToggle({
 }: UseOptimisticToggleOptions) {
   const [count, setCount] = useState(initialCount);
   const [isActive, setIsActive] = useState(initialState);
+  const [prevInitCount, setPrevInitCount] = useState(initialCount);
+  const [prevInitState, setPrevInitState] = useState(initialState);
 
-  useEffect(() => {
+  // Sync state when initial values change (render-time reset)
+  if (initialCount !== prevInitCount || initialState !== prevInitState) {
+    setPrevInitCount(initialCount);
+    setPrevInitState(initialState);
     setCount(initialCount);
     setIsActive(initialState);
-  }, [initialCount, initialState]);
+  }
 
   const toggle = useCallback(async () => {
     const nextState = !isActive;

@@ -229,10 +229,11 @@ export class GetKnowledgeGraphUseCase {
         this.logger.log(
           `[KnowledgeGraph] AI generated ${aiResult?.gaps?.length || 0} gaps`,
         );
-      } catch (aiErr) {
+      } catch (aiErr: unknown) {
+        const aiError = aiErr as Error;
         this.logger.error(
           '[KnowledgeGraph] AI Analysis failed, using fallback.',
-          aiErr.message,
+          aiError.message,
         );
         // Fallback: Pick 2 genres the user hasn't read
         const missingGenres = availableGenres
@@ -293,7 +294,7 @@ export class GetKnowledgeGraphUseCase {
           });
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error('[KnowledgeGraph] Global analysis error:', error);
     }
 

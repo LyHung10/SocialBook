@@ -43,11 +43,24 @@ function chunkText(text: string, targetWords: number = 400): string[] {
   return chunks;
 }
 
+interface ChapterDoc {
+  content?: string;
+  title?: string;
+  bookId?: string | { title?: string };
+}
+
+interface AuthorDoc {
+  name?: string;
+  bio?: string;
+  nationality?: string;
+  alternativeNames?: string[];
+}
+
 /**
  * Create searchable document chunks for a chapter
  * Returns array of text chunks (300-500 words each)
  */
-export function createChapterDocument(chapter: any): string[] {
+export function createChapterDocument(chapter: ChapterDoc): string[] {
   if (!chapter.content) return [];
 
   const chunks = chunkText(chapter.content, 400);
@@ -63,7 +76,9 @@ export function createChapterDocument(chapter: any): string[] {
 
     // Add book context if available
     const bookTitle =
-      typeof chapter.bookId === 'object' ? chapter.bookId?.title : null;
+      typeof chapter.bookId === 'object'
+        ? (chapter.bookId as { title?: string }).title
+        : null;
     if (bookTitle && index === 0) {
       contextParts.push(`Sách: ${bookTitle}`);
     }
@@ -78,7 +93,7 @@ export function createChapterDocument(chapter: any): string[] {
  * Create searchable document text for an author
  * Combines name, bio, and other relevant information
  */
-export function createAuthorDocument(author: any): string {
+export function createAuthorDocument(author: AuthorDoc): string {
   const parts: string[] = [];
 
   // Author name (most important - add multiple times)
@@ -94,14 +109,14 @@ export function createAuthorDocument(author: any): string {
 
   // Nationality
   if (author.nationality) {
-    parts.push(`Quốc t적: ${author.nationality}`);
+    parts.push(`Quốc tịch: ${author.nationality}`);
   }
 
   // Alternative names or pen names
   if (author.alternativeNames && Array.isArray(author.alternativeNames)) {
-    author.alternativeNames.forEach((altName: string) => {
+    for (const altName of author.alternativeNames) {
       parts.push(`Bút danh: ${altName}`);
-    });
+    }
   }
 
   return parts.join('\n');

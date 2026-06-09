@@ -134,7 +134,7 @@ export const ChapterContent = memo(function ChapterContent({
         hydrate();
 
         return () => { cancelled = true; };
-    }, [room?.roomId, chapterId, fetchComments, fetchReactions]);
+    }, [room?.roomId, room?.currentChapterSlug, chapterId, fetchComments, fetchReactions]);
 
     const handleMouseUp = (paraId: string) => {
 
@@ -176,7 +176,7 @@ export const ChapterContent = memo(function ChapterContent({
 
             const answer = response.answer;
             setAiAnalysis({ type, content: answer, isLoading: false });
-        } catch (err) {
+        } catch {
             toast.error('AI không thể xử lý lúc này.');
             setAiAnalysis(null);
         }
@@ -539,7 +539,7 @@ const ChapterTextRenderer = ({
                                             AI INSIGHT
                                         </div>
                                         <p className="text-xs leading-relaxed text-muted-foreground italic">
-                                            "{h.aiInsight}"
+                                            &ldquo;{h.aiInsight}&rdquo;
                                         </p>
                                     </div>
                                 ) : (

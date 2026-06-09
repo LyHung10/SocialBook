@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { ReactNode } from 'react';
 import { Post } from '@/features/posts/types/post.interface';
 import { BookForAdmin } from '@/features/books/types/book.interface';
 import { Chapter } from '@/features/chapters/types/chapter.interface';
@@ -82,7 +83,7 @@ export interface DeleteBookModalData {
 
 export interface ConfirmModalData {
   title: string;
-  description: string | React.ReactNode;
+  description: string | ReactNode;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void | Promise<void>;
@@ -115,20 +116,38 @@ export interface ManageChapterModalData {
   onSuccess?: () => void;
 }
 
+export type ModalDataType = 
+  | Record<string, unknown>
+  | CreatePostModalData
+  | EditPostModalData
+  | SharePostModalData
+  | PostCommentModalData
+  | AddToLibraryModalData
+  | ChapterSummaryModalData
+  | FileImportModalData
+  | CreateCollectionModalData
+  | EditCollectionModalData
+  | DeleteBookModalData
+  | ConfirmModalData
+  | GenreModalData
+  | AuthorModalData
+  | ManageChapterModalData
+  | null;
+
 export interface ModalState {
   isOpen: boolean;
-  data: any;
+  data: ModalDataType;
 }
 
 export interface ModalStore {
   // Dynamic State
   modals: Record<ModalName, ModalState>;
-  openModal: (name: ModalName, data?: any) => void;
+  openModal: (name: ModalName, data?: ModalDataType) => void;
   closeModal: (name: ModalName) => void;
 
   // Legacy state for backwards compatibility
   isCreatePostOpen: boolean;
-  createPostData: CreatePostModalData;
+  createPostData: CreatePostModalData | null;
   openCreatePost: (data?: CreatePostModalData) => void;
   closeCreatePost: () => void;
 
@@ -224,35 +243,35 @@ const initialModalsState: Record<ModalName, ModalState> = {
 export const useModalStore = create<ModalStore>((set, get) => {
   const syncLegacyProps = (modals: Record<ModalName, ModalState>) => ({
     isCreatePostOpen: modals.createPost.isOpen,
-    createPostData: modals.createPost.data,
+    createPostData: modals.createPost.data as CreatePostModalData | null,
     isEditPostOpen: modals.editPost.isOpen,
-    editPostData: modals.editPost.data,
+    editPostData: modals.editPost.data as EditPostModalData | null,
     isSharePostOpen: modals.sharePost.isOpen,
-    sharePostData: modals.sharePost.data,
+    sharePostData: modals.sharePost.data as SharePostModalData | null,
     isPostCommentOpen: modals.postComment.isOpen,
-    postCommentData: modals.postComment.data,
+    postCommentData: modals.postComment.data as PostCommentModalData | null,
     isAddToLibraryOpen: modals.addToLibrary.isOpen,
-    addToLibraryData: modals.addToLibrary.data,
+    addToLibraryData: modals.addToLibrary.data as AddToLibraryModalData | null,
     isFollowersOpen: modals.followers.isOpen,
-    followersData: modals.followers.data,
+    followersData: modals.followers.data as { userId: string; count?: number } | null,
     isChapterSummaryOpen: modals.chapterSummary.isOpen,
-    chapterSummaryData: modals.chapterSummary.data,
+    chapterSummaryData: modals.chapterSummary.data as ChapterSummaryModalData | null,
     isFileImportOpen: modals.fileImport.isOpen,
-    fileImportData: modals.fileImport.data,
+    fileImportData: modals.fileImport.data as FileImportModalData | null,
     isDeleteBookOpen: modals.deleteBook.isOpen,
-    deleteBookData: modals.deleteBook.data,
+    deleteBookData: modals.deleteBook.data as DeleteBookModalData | null,
     isCreateCollectionOpen: modals.createCollection.isOpen,
-    createCollectionData: modals.createCollection.data,
+    createCollectionData: modals.createCollection.data as CreateCollectionModalData | null,
     isEditCollectionOpen: modals.editCollection.isOpen,
-    editCollectionData: modals.editCollection.data,
+    editCollectionData: modals.editCollection.data as EditCollectionModalData | null,
     isConfirmOpen: modals.confirm.isOpen,
-    confirmData: modals.confirm.data,
+    confirmData: modals.confirm.data as ConfirmModalData | null,
     isGenreModalOpen: modals.genre.isOpen,
-    genreModalData: modals.genre.data,
+    genreModalData: modals.genre.data as GenreModalData | null,
     isAuthorModalOpen: modals.author.isOpen,
-    authorModalData: modals.author.data,
+    authorModalData: modals.author.data as AuthorModalData | null,
     isManageChapterOpen: modals.manageChapter.isOpen,
-    manageChapterData: modals.manageChapter.data,
+    manageChapterData: modals.manageChapter.data as ManageChapterModalData | null,
   });
 
   return {

@@ -1,9 +1,11 @@
 import { UserPreference as UserPreferenceEntity } from '@/domain/analytics/entities/user-preference.entity';
-import { UserPreference as UserPreferenceSchema } from '@/infrastructure/database/schemas/user-preference.schema';
-import { Types } from 'mongoose';
+import { UserPreference } from '@/infrastructure/database/schemas/user-preference.schema';
+import { Types, FlattenMaps } from 'mongoose';
+
+type UserPreferenceLean = FlattenMaps<UserPreference> & { _id: Types.ObjectId };
 
 export class UserPreferenceMapper {
-  static toDomain(raw: any): UserPreferenceEntity {
+  static toDomain(raw: UserPreferenceLean): UserPreferenceEntity {
     return UserPreferenceEntity.reconstitute(
       raw._id.toString(),
       {
@@ -16,7 +18,7 @@ export class UserPreferenceMapper {
     );
   }
 
-  static toPersistence(entity: UserPreferenceEntity): any {
+  static toPersistence(entity: UserPreferenceEntity): Record<string, unknown> {
     return {
       _id: new Types.ObjectId(entity.id),
       userId: new Types.ObjectId(entity.userId),

@@ -56,9 +56,9 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
 
   private mapStatusToChapterStatus(status: string): ChapterStatus {
     switch (status) {
-      case ReadingStatus.COMPLETED:
+      case ReadingStatus.COMPLETED as string:
         return ChapterStatus.COMPLETED;
-      case ReadingStatus.READING:
+      case ReadingStatus.READING as string:
         return ChapterStatus.IN_PROGRESS;
       default:
         return ChapterStatus.NOT_STARTED;
@@ -68,11 +68,11 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
   private mapChapterStatusToStatus(status: ChapterStatus): string {
     switch (status) {
       case ChapterStatus.COMPLETED:
-        return ReadingStatus.COMPLETED;
+        return ReadingStatus.COMPLETED as string;
       case ChapterStatus.IN_PROGRESS:
-        return ReadingStatus.READING;
+        return ReadingStatus.READING as string;
       default:
-        return ReadingStatus.READING; // Default to READING for NOT_STARTED
+        return ReadingStatus.READING as string; // Default to READING for NOT_STARTED
     }
   }
 

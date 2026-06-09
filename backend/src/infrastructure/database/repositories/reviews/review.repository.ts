@@ -22,8 +22,6 @@ export class ReviewRepository implements IReviewRepository {
   }
 
   async update(review: ReviewEntity): Promise<ReviewEntity> {
-    const persistenceModel = ReviewMapper.toPersistence(review);
-    // We only update specific fields, avoiding overwriting immutable ones if needed
     const updated = await this.reviewModel
       .findByIdAndUpdate(
         review.id,
@@ -58,7 +56,7 @@ export class ReviewRepository implements IReviewRepository {
       .find({ bookId: new Types.ObjectId(bookId) })
       .sort({ createdAt: -1 })
       .populate('userId', 'username image');
-    return reviews.map(ReviewMapper.toDomain);
+    return reviews.map((r) => ReviewMapper.toDomain(r));
   }
 
   async findByUserId(userId: string): Promise<ReviewEntity[]> {
@@ -66,7 +64,7 @@ export class ReviewRepository implements IReviewRepository {
       .find({ userId: new Types.ObjectId(userId) })
       .sort({ createdAt: -1 })
       .populate('bookId', 'title coverUrl');
-    return reviews.map(ReviewMapper.toDomain);
+    return reviews.map((r) => ReviewMapper.toDomain(r));
   }
 
   async toggleLike(
@@ -111,7 +109,11 @@ export class ReviewRepository implements IReviewRepository {
   ): Promise<Map<string, { rating: number; count: number }>> {
     const objectIds = bookIds.map((id) => new Types.ObjectId(id));
     const results = await this.reviewModel
-      .aggregate([
+      .aggregate<{
+        _id: Types.ObjectId;
+        avgRating: number;
+        reviewCount: number;
+      }>([
         { $match: { bookId: { $in: objectIds } } },
         {
           $group: {

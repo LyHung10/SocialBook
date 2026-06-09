@@ -68,7 +68,7 @@ export default function CreateBook() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-  const [createBook, { isLoading }] = useCreateBookMutation();
+  const [createBook] = useCreateBookMutation();
   const { data: authorsData = EMPTY_AUTHORS, isLoading: loadingAuthors } = useGetAuthorsQuery();
   const { data: genresData = EMPTY_GENRES, isLoading: loadingGenres } = useGetGenresQuery();
   const { data: filtersData } = useGetFiltersQuery();
@@ -96,7 +96,6 @@ export default function CreateBook() {
   const {
     formData,
     coverPreview,
-    coverFile,
     selectedGenreId,
     setSelectedGenreId,
     message,
@@ -111,7 +110,7 @@ export default function CreateBook() {
 
   const getGenreName = (genreId: string) => {
     if (!genreId) return '';
-    const genre = sortedGenres.find((g: any) => (g.id ?? g._id) === genreId);
+    const genre = sortedGenres.find((g: Genre) => g.id === genreId);
     return genre?.name || genreId;
   };
 
@@ -119,7 +118,7 @@ export default function CreateBook() {
     if (authorId?.startsWith('new:')) {
       return authorId.replace('new:', '');
     }
-    const author = authors.find((a: any) => (a.id ?? a._id) === authorId);
+    const author = authors.find((a: Author) => a.id === authorId);
     return author?.name || 'Chưa chọn';
   };
 
@@ -272,8 +271,8 @@ export default function CreateBook() {
                           <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl max-h-72 overflow-y-auto overflow-x-hidden p-2 animate-in fade-in zoom-in-95 duration-200">
                             {filteredAuthors.length > 0 ? (
                               <div className="grid gap-1">
-                                {filteredAuthors.map((author: any) => {
-                                  const authorId = author.id ?? author._id;
+                                {filteredAuthors.map((author: Author) => {
+                                  const authorId = author.id;
                                   return (
                                     <button
                                       key={authorId}
@@ -314,7 +313,7 @@ export default function CreateBook() {
                                   </div>
                                   <div>
                                     <p className="font-bold text-sm">Thêm tác giả mới</p>
-                                    <p className="text-xs opacity-70 italic">"{authorSearch}"</p>
+                                     <p className="text-xs opacity-70 italic">&ldquo;{authorSearch}&rdquo;</p>
                                   </div>
                                 </button>
                               )
@@ -458,8 +457,8 @@ export default function CreateBook() {
                           <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl max-h-72 overflow-y-auto overflow-x-hidden p-2 animate-in fade-in zoom-in-95 duration-200">
                             {filteredGenres.length > 0 ? (
                               <div className="grid gap-1">
-                                {filteredGenres.map((genre: any) => {
-                                  const genreId = genre.id ?? genre._id;
+                                {filteredGenres.map((genre: Genre) => {
+                                  const genreId = genre.id;
                                   const isAdded = formData.genres.includes(genreId);
                                   return (
                                     <button
@@ -501,7 +500,7 @@ export default function CreateBook() {
                                   </div>
                                   <div>
                                     <p className="font-bold text-sm">Thêm thể loại mới</p>
-                                    <p className="text-xs opacity-70 italic">"{genreSearch}"</p>
+                                     <p className="text-xs opacity-70 italic">&ldquo;{genreSearch}&rdquo;</p>
                                   </div>
                                 </button>
                               )

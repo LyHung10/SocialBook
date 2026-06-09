@@ -23,14 +23,10 @@ import {
 import {
   CommentCountDto,
   CreateCommentDto,
-  FlagCommentDto,
   ModerateCommentDto,
   UpdateCommentDto,
 } from '@/presentation/comments/dto/create-comment.dto';
-import {
-  FilterCommentDto,
-  GetCommentsDto,
-} from '@/presentation/comments/dto/filter-comment.dto';
+import { GetCommentsDto } from '@/presentation/comments/dto/filter-comment.dto';
 
 import { CreateCommentUseCase } from '@/application/comments/use-cases/create-comment/create-comment.use-case';
 import { DeleteCommentUseCase } from '@/application/comments/use-cases/delete-comment/delete-comment.use-case';
@@ -125,7 +121,7 @@ export class CommentsController {
 
   @Get(':id')
   @Public()
-  async getById(@Param('id') id: string) {
+  getById() {
     return {
       message: 'Get comment by ID not yet implemented',
       data: null,
@@ -167,7 +163,7 @@ export class CommentsController {
 
   @Post(':id/flag')
   @UseGuards(JwtAuthGuard)
-  async flag(@Param('id') id: string, @Body() dto: FlagCommentDto) {
+  flag() {
     return {
       message: 'Flag comment not yet implemented',
       data: null,
@@ -190,7 +186,7 @@ export class CommentsController {
   @Get('stats')
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async getStats() {
+  getStats() {
     return {
       message: 'Get comment stats not yet implemented',
       data: new CommentStatsDto(0, 0, 0, 0, 0, {}),
@@ -200,7 +196,7 @@ export class CommentsController {
   @Get('moderation/pending')
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async getPendingModeration(@Query() filter: FilterCommentDto) {
+  getPendingModeration() {
     return {
       message: 'Get pending moderation not yet implemented',
       data: {
@@ -213,7 +209,7 @@ export class CommentsController {
   @Get('moderation/flagged')
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async getFlagged(@Query() filter: FilterCommentDto) {
+  getFlagged() {
     return {
       message: 'Get flagged comments not yet implemented',
       data: {

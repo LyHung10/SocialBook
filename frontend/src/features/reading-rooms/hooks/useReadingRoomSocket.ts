@@ -364,7 +364,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
       if (cleanup) cleanup();
     };
 
-   }, [roomId, connectSocket, user]);
+   }, [roomId, connectSocket, user, setupListeners]);
 
   useEffect(() => {
     listenersSetupRef.current = false;

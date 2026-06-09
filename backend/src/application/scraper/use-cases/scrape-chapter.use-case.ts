@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
@@ -23,7 +24,7 @@ export class ScrapeChapterUseCase {
     bookIdStr: string,
     chapterUrl: string,
     orderIndexNum: number,
-  ): Promise<any> {
+  ): Promise<Chapter> {
     try {
       const bookId = BookId.create(bookIdStr);
       const book = await this.bookRepository.findById(bookId);
@@ -32,9 +33,6 @@ export class ScrapeChapterUseCase {
       const strategy = this.scraperFactory.getStrategy(chapterUrl);
       const chapterData: ScrapedChapterData =
         await strategy.scrapeChapter(chapterUrl);
-
-      // Check existing
-      const slug = this.extractSlug(chapterUrl) || chapterData.title;
 
       const chapter = Chapter.create({
         id: ChapterId.create(this.idGenerator.generate()),
@@ -48,9 +46,9 @@ export class ScrapeChapterUseCase {
 
       await this.chapterRepository.save(chapter);
       return chapter;
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Failed to scrape chapter ${chapterUrl}: ${error.message}`,
+        `Failed to scrape chapter ${chapterUrl}: ${getErrorMessage(error)}`,
       );
       throw error;
     }

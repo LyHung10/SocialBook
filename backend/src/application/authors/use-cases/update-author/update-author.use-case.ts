@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import {
   NotFoundDomainException,
   ConflictDomainException,
-  BadRequestDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
 import { Author } from '@/domain/authors/entities/author.entity';

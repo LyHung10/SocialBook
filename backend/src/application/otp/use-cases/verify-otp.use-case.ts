@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   BadRequestDomainException,
@@ -30,9 +31,10 @@ export class VerifyOtpUseCase {
       await this.otpRepository.deleteByEmail(email);
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestDomainException) throw error;
-      this.logger.error(`Error verifying OTP for ${email}: ${error.message}`);
+      const errMessage = getErrorMessage(error);
+      this.logger.error(`Error verifying OTP for ${email}: ${errMessage}`);
       throw new InternalServerDomainException('Failed to verify OTP');
     }
   }

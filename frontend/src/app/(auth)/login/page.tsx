@@ -80,7 +80,7 @@ function LoginPage() {
               LES MISERABLES
             </h1>
             <p className="text-2xl text-primary-foreground/90 font-serif italic border-l-4 border-primary pl-4">
-              "Even the darkest night will end and the sun will rise."
+              &quot;Even the darkest night will end and the sun will rise.&quot;
             </p>
             <p className="mt-4 text-lg font-medium">— Victor Hugo</p>
           </div>

@@ -176,7 +176,7 @@ export const libraryApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: (result, error, { bookId }) => [
+      invalidatesTags: () => [
         { type: 'Library', id: 'LIST_ALL' }
       ]
     }),

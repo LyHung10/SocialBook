@@ -25,16 +25,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend1
-      - backend2
       - frontend
 
   backend1:
     <<: *backend-common
     container_name: socialbook-backend1
-
-  backend2:
-    <<: *backend-common
-    container_name: socialbook-backend2
 
   frontend:
     image: daithien/socialbook-fe:dev
@@ -46,7 +41,6 @@ services:
       - frontend.env
     depends_on:
       - backend1
-      - backend2
 
   mongo:
     image: mongo:7

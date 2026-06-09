@@ -235,7 +235,7 @@ export default function ChapterManagementPage() {
           <div className="divide-y divide-gray-200">
             {chapters.length === 0 ? (
               <div className="text-center py-16 text-gray-500">
-                Chưa có chương nào. Nhấn "Thêm chương mới" để bắt đầu.
+                Chưa có chương nào. Nhấn &quot;Thêm chương mới&quot; để bắt đầu.
               </div>
             ) : (
               chapters.map((chapter, index) => (
@@ -246,7 +246,7 @@ export default function ChapterManagementPage() {
                   {/* Chapter Header */}
                   <div
                     className="flex items-center justify-between px-4 py-3 cursor-pointer sticky top-0 z-10 bg-white border-b border-gray-50"
-                    onClick={(e) => handleToggleExpand(chapter.id, e)}
+                    onClick={() => handleToggleExpand(chapter.id)}
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {expandedChapterId === chapter.id ? (
@@ -442,7 +442,7 @@ export default function ChapterManagementPage() {
             <AlertDialogDescription>
               Bạn có chắc chắn muốn xóa chương{" "}
               <span className="font-semibold text-foreground">
-                "{chapterToDelete?.title}"
+                &quot;{chapterToDelete?.title}&quot;
               </span>
               ? Hành động này không thể hoàn tác và sẽ xóa tất cả các đoạn văn
               của chương này.

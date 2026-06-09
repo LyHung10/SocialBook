@@ -64,7 +64,8 @@ export class OtpRepository implements IOtpRepository {
     }
   }
 
-  async getTtl(_email: string): Promise<number> {
-    return this.OTP_EXPIRY;
+  getTtl(_email: string): Promise<number> {
+    void _email;
+    return Promise.resolve(this.OTP_EXPIRY);
   }
 }

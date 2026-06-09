@@ -13,7 +13,6 @@ import {
 import type {
   ImportChaptersChapterInput,
   ImportChaptersJobData,
-  ImportChaptersJobProgress,
   ImportChaptersJobResult,
 } from '@/application/chapters/dto/chapters-import.types';
 
@@ -95,7 +94,7 @@ export class ChaptersImportService {
     const progress: unknown = job.progress ?? null;
 
     if (state === 'completed') {
-      const result = await job.returnvalue;
+      const result = job.returnvalue;
       return { state, progress, result };
     }
 

@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
+import Image from 'next/image';
 import { useAppAuth } from '@/features/auth/hooks';
 import { GlassCard } from '@/components/common/GlassCard';
 
@@ -59,9 +60,11 @@ export function RoomChat({ sendChatMessage, disabled }: RoomChatProps) {
               >
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                   {msg.avatarUrl ? (
-                    <img
-                      src={msg.avatarUrl}
+                    <Image
+                      src={msg.avatarUrl || ''}
                       alt=""
+                      width={28}
+                      height={28}
                       className="w-full h-full object-cover"
                     />
                   ) : (

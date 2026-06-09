@@ -45,6 +45,13 @@ import { AddQuoteCommand } from '@/application/reading-room-interactions/use-cas
 import { VoteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.use-case';
 import { VoteQuoteCommand } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.command';
 
+interface SocketData {
+  userId?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  roomId?: string;
+}
+
 @WebSocketGateway({
   namespace: '/reading-rooms',
   cors: { origin: process.env.FRONTEND_URL || 'http://localhost:3000' },
@@ -112,7 +119,8 @@ export class ReadingRoomGateway
       content: string;
     },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     try {
       const command = new AddHighlightCommand(
         body.roomId,
@@ -131,17 +139,12 @@ export class ReadingRoomGateway
           ...newHighlight,
           user: {
             userId,
-            displayName: socket.data.displayName,
-            avatarUrl: socket.data.avatarUrl,
+            displayName: sd.displayName ?? '',
+            avatarUrl: sd.avatarUrl ?? '',
           },
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Highlight failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'HIGHLIGHT_FAILED',
-        message,
-      });
+      this.emitError(socket, 'HIGHLIGHT_FAILED', 'Highlight failed', error);
     }
   }
 
@@ -150,7 +153,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; highlightId: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new RemoveHighlightCommand(
         body.roomId,
@@ -166,45 +169,47 @@ export class ReadingRoomGateway
           removedBy: userId,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Remove highlight failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'HIGHLIGHT_REMOVE_FAILED',
-        message,
-      });
+      this.emitError(
+        socket,
+        'HIGHLIGHT_REMOVE_FAILED',
+        'Remove highlight failed',
+        error,
+      );
     }
   }
 
-  async handleConnection(socket: Socket) {
+  handleConnection(socket: Socket) {
     try {
       const auth = socket.handshake.auth as { token?: string };
       const query = socket.handshake.query as { token?: string };
 
-      let token = auth?.token ?? query?.token;
-      if (Array.isArray(token)) token = token[0];
+      const token = auth?.token ?? query?.token;
 
-      if (!token || typeof token !== 'string') {
+      if (typeof token !== 'string' || !token) {
         socket.disconnect(true);
         return;
       }
 
-      const payload = this.jwt.verify(token);
-      const userId = payload.sub || payload.id;
+      const payload = this.jwt.verify<{ sub?: string; id?: string }>(token, {
+        complete: false,
+      });
+      const userId = payload.sub ?? payload.id;
       if (!userId) {
         socket.disconnect(true);
         return;
       }
-      socket.data.userId = userId;
-      socket.join(`user:${userId}`);
-    } catch (e) {
-      this.logger.error('Connection error:', e);
+      (socket.data as SocketData).userId = userId;
+      void socket.join(`user:${userId}`);
+    } catch {
+      // Socket connection error handled by disconnect below
       socket.disconnect(true);
     }
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const userId = socket.data.userId;
-    const roomId = socket.data.roomId;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId;
+    const roomId = sd.roomId;
 
     if (userId && roomId) {
       await this.presenceService.removePresence(roomId, userId);
@@ -221,17 +226,18 @@ export class ReadingRoomGateway
     @MessageBody()
     body: { roomCode: string; displayName: string; avatarUrl: string },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     try {
       const command = new JoinRoomCommand(userId, body.roomCode);
       const room = await this.joinRoomUseCase.execute(command);
       const roomId = room.roomId;
 
-      socket.data.roomId = roomId;
-      socket.data.displayName = body.displayName;
-      socket.data.avatarUrl = body.avatarUrl;
+      sd.roomId = roomId;
+      sd.displayName = body.displayName;
+      sd.avatarUrl = body.avatarUrl;
 
-      socket.join(`room:${roomId}`);
+      void socket.join(`room:${roomId}`);
 
       await this.presenceService.upsertPresence(roomId, userId, {
         userId,
@@ -273,11 +279,7 @@ export class ReadingRoomGateway
         .to(`room:${roomId}`)
         .emit(ReadingRoomServerEvent.PRESENCE_UPDATE, presences);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Join failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'JOIN_FAILED',
-        message,
-      });
+      this.emitError(socket, 'JOIN_FAILED', 'Join failed', error);
     }
   }
 
@@ -286,7 +288,8 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     const roomId = body.roomId;
 
     try {
@@ -294,8 +297,8 @@ export class ReadingRoomGateway
       const room = await this.leaveRoomUseCase.execute(command);
       await this.presenceService.removePresence(roomId, userId);
 
-      socket.leave(`room:${roomId}`);
-      delete socket.data.roomId;
+      void socket.leave(`room:${roomId}`);
+      delete sd.roomId;
 
       this.server
         .to(`room:${roomId}`)
@@ -314,11 +317,7 @@ export class ReadingRoomGateway
         .to(`room:${roomId}`)
         .emit(ReadingRoomServerEvent.PRESENCE_UPDATE, presences);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Leave failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'LEAVE_FAILED',
-        message,
-      });
+      this.emitError(socket, 'LEAVE_FAILED', 'Leave failed', error);
     }
   }
 
@@ -327,7 +326,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; chapterSlug: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new ChangeChapterCommand(
         userId,
@@ -342,12 +341,12 @@ export class ReadingRoomGateway
           byUserId: userId,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Chapter change failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'CHAPTER_CHANGE_FAILED',
-        message,
-      });
+      this.emitError(
+        socket,
+        'CHAPTER_CHANGE_FAILED',
+        'Chapter change failed',
+        error,
+      );
     }
   }
 
@@ -356,7 +355,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; mode: 'sync' | 'free' },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new ChangeRoomModeCommand(userId, body.roomId, body.mode);
       await this.changeRoomModeUseCase.execute(command);
@@ -367,12 +366,7 @@ export class ReadingRoomGateway
           changedBy: userId,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Mode change failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'MODE_CHANGE_FAILED',
-        message,
-      });
+      this.emitError(socket, 'MODE_CHANGE_FAILED', 'Mode change failed', error);
     }
   }
 
@@ -381,7 +375,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new EndRoomCommand(userId, body.roomId);
       await this.endRoomUseCase.execute(command);
@@ -398,12 +392,7 @@ export class ReadingRoomGateway
         ),
       );
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'End room failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'END_ROOM_FAILED',
-        message,
-      });
+      this.emitError(socket, 'END_ROOM_FAILED', 'End room failed', error);
     }
   }
 
@@ -412,7 +401,7 @@ export class ReadingRoomGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new DeleteRoomCommand(userId, body.roomId);
       await this.deleteRoomUseCase.execute(command);
@@ -420,13 +409,20 @@ export class ReadingRoomGateway
         .to(`room:${body.roomId}`)
         .emit(ReadingRoomServerEvent.ROOM_DELETED, { deletedBy: userId });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Delete room failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'DELETE_ROOM_FAILED',
-        message,
-      });
+      this.emitError(socket, 'DELETE_ROOM_FAILED', 'Delete room failed', error);
     }
+  }
+
+  private emitError(
+    socket: Socket,
+    code: string,
+    defaultMsg: string,
+    error: unknown,
+  ) {
+    socket.emit(ReadingRoomServerEvent.ERROR, {
+      code,
+      message: error instanceof Error ? error.message : defaultMsg,
+    });
   }
 
   private isRateLimited(
@@ -457,8 +453,10 @@ export class ReadingRoomGateway
     },
   ) {
     if (this.isRateLimited(socket, 'heartbeat', 30)) return;
-    const userId = socket.data.userId as string;
-    const { displayName, avatarUrl } = socket.data;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
+    const displayName = sd.displayName ?? '';
+    const avatarUrl = sd.avatarUrl ?? '';
 
     if (userId && displayName && body.roomId) {
       await this.presenceService.upsertPresence(body.roomId, userId, {
@@ -480,7 +478,7 @@ export class ReadingRoomGateway
   }
 
   @SubscribeMessage('paragraph_commented')
-  async handleParagraphCommented(
+  handleParagraphCommented(
     @ConnectedSocket() socket: Socket,
     @MessageBody()
     body: {
@@ -490,17 +488,18 @@ export class ReadingRoomGateway
       commentId: string;
     },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     socket.to(`room:${body.roomId}`).emit('annotation_added', {
       paragraphId: body.paragraphId,
       chapterId: body.chapterId,
       commentId: body.commentId,
-      user: { userId, displayName: socket.data.displayName },
+      user: { userId, displayName: sd.displayName ?? '' },
     });
   }
 
   @SubscribeMessage('paragraph_comment_deleted')
-  async handleParagraphCommentDeleted(
+  handleParagraphCommentDeleted(
     @ConnectedSocket() socket: Socket,
     @MessageBody()
     body: { roomId: string; paragraphId: string; commentId: string },
@@ -517,12 +516,13 @@ export class ReadingRoomGateway
     @MessageBody() data: { roomId: string; question: string },
   ) {
     if (this.isRateLimited(socket, 'ask_ai', 5)) return;
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
 
     try {
       // Broadcast user message first for immediate feedback
-      const displayName = socket.data.displayName || 'User';
-      const avatarUrl = socket.data.avatarUrl || '';
+      const displayName = sd.displayName || 'User';
+      const avatarUrl = sd.avatarUrl || '';
       this.server
         .to(`room:${data.roomId}`)
         .emit(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, {
@@ -537,26 +537,25 @@ export class ReadingRoomGateway
       const command = new AskAICommand(data.roomId, userId, data.question);
       await this.askAIUseCase.execute(command);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to process AI question';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'ASK_AI_FAILED',
-        message,
-      });
+      this.emitError(
+        socket,
+        'ASK_AI_FAILED',
+        'Failed to process AI question',
+        error,
+      );
     }
   }
 
   @SubscribeMessage('send_chat_message')
-  async handleSendChatMessage(
+  handleSendChatMessage(
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { roomId: string; content: string },
   ) {
     if (this.isRateLimited(socket, 'send_chat_message', 10)) return;
-    const userId = socket.data.userId as string;
-    const displayName = socket.data.displayName || 'User';
-    const avatarUrl = socket.data.avatarUrl || '';
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
+    const displayName = sd.displayName || 'User';
+    const avatarUrl = sd.avatarUrl || '';
     this.server
       .to(`room:${data.roomId}`)
       .emit(ReadingRoomServerEvent.NEW_CHAT_MESSAGE, {
@@ -581,7 +580,8 @@ export class ReadingRoomGateway
       parentCommentId?: string;
     },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     try {
       const command = new AddCommentCommand(
         userId,
@@ -592,7 +592,7 @@ export class ReadingRoomGateway
         body.parentCommentId,
       );
       const comment = await this.addCommentUseCase.execute(command);
-      const displayName = socket.data.displayName || 'User';
+      const displayName = sd.displayName || 'User';
 
       this.server
         .to(`room:${body.roomId}`)
@@ -607,12 +607,7 @@ export class ReadingRoomGateway
           createdAt: comment.createdAt,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Add comment failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'COMMENT_FAILED',
-        message,
-      });
+      this.emitError(socket, 'COMMENT_FAILED', 'Add comment failed', error);
     }
   }
 
@@ -622,7 +617,7 @@ export class ReadingRoomGateway
     @MessageBody()
     body: { roomId: string; commentId: string; paragraphId: string },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new DeleteCommentCommand(
         userId,
@@ -639,12 +634,12 @@ export class ReadingRoomGateway
           paragraphId: body.paragraphId,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Delete comment failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'COMMENT_DELETE_FAILED',
-        message,
-      });
+      this.emitError(
+        socket,
+        'COMMENT_DELETE_FAILED',
+        'Delete comment failed',
+        error,
+      );
     }
   }
 
@@ -659,7 +654,8 @@ export class ReadingRoomGateway
       reactionType: string;
     },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     try {
       const command = new AddReactionCommand(
         userId,
@@ -669,7 +665,7 @@ export class ReadingRoomGateway
         body.reactionType,
       );
       const reaction = await this.addReactionUseCase.execute(command);
-      const displayName = socket.data.displayName || 'User';
+      const displayName = sd.displayName || 'User';
 
       this.server
         .to(`room:${body.roomId}`)
@@ -682,12 +678,7 @@ export class ReadingRoomGateway
           createdAt: reaction.createdAt,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Add reaction failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'REACTION_FAILED',
-        message,
-      });
+      this.emitError(socket, 'REACTION_FAILED', 'Add reaction failed', error);
     }
   }
 
@@ -702,7 +693,8 @@ export class ReadingRoomGateway
       content: string;
     },
   ) {
-    const userId = socket.data.userId as string;
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
     try {
       const command = new AddQuoteCommand(
         userId,
@@ -721,17 +713,12 @@ export class ReadingRoomGateway
           chapterSlug: quote.chapterSlug,
           paragraphId: quote.paragraphId,
           userId,
-          displayName: socket.data.displayName,
+          displayName: sd.displayName ?? '',
           voteCount: 0,
           createdAt: quote.createdAt,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Add quote failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'QUOTE_FAILED',
-        message,
-      });
+      this.emitError(socket, 'QUOTE_FAILED', 'Add quote failed', error);
     }
   }
 
@@ -741,7 +728,7 @@ export class ReadingRoomGateway
     @MessageBody()
     body: { roomId: string; quoteId: string; voteType: 'up' | 'down' },
   ) {
-    const userId = socket.data.userId as string;
+    const userId = (socket.data as SocketData).userId ?? '';
     try {
       const command = new VoteQuoteCommand(
         userId,
@@ -760,12 +747,7 @@ export class ReadingRoomGateway
           voteType: result.userVoteType,
         });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Vote quote failed';
-      socket.emit(ReadingRoomServerEvent.ERROR, {
-        code: 'QUOTE_VOTE_FAILED',
-        message,
-      });
+      this.emitError(socket, 'QUOTE_VOTE_FAILED', 'Vote quote failed', error);
     }
   }
 }

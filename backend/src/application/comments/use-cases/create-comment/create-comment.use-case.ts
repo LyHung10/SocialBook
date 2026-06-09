@@ -5,7 +5,6 @@ import { ICommentRepository } from '@/domain/comments/repositories/comment.repos
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 import { Comment } from '@/domain/comments/entities/comment.entity';
 import { CommentId } from '@/domain/comments/value-objects/comment-id.vo';
-import { UserId } from '@/domain/comments/value-objects/user-id.vo';
 import { TargetId } from '@/domain/comments/value-objects/target-id.vo';
 import { CommentTargetType } from '@/domain/comments/value-objects/comment-target-type.vo';
 import { CreateCommentCommand } from './create-comment.command';
@@ -23,11 +22,10 @@ export class CreateCommentUseCase {
 
   async execute(command: CreateCommentCommand): Promise<Comment> {
     try {
-      const userId = UserId.create(command.userId);
       const targetId = TargetId.create(command.targetId);
       const targetType = CommentTargetType.create(command.targetType);
 
-      const { effectiveParentId, level } =
+      const { effectiveParentId } =
         await this.commentRepository.resolveParentId(
           targetId,
           targetType,

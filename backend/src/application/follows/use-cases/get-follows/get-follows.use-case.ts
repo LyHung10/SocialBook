@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IFollowRepository } from '@/domain/follows/repositories/follow.repository.interface';
 import { UserId } from '@/domain/follows/value-objects/user-id.vo';
 import { TargetId } from '@/domain/follows/value-objects/target-id.vo';
+import { Follow } from '@/domain/follows/entities/follow.entity';
+import { PaginatedResult } from '@/common/interfaces/pagination.interface';
 import { GetFollowsQuery } from './get-follows.query';
 
 @Injectable()
@@ -22,7 +24,7 @@ export class GetFollowsUseCase {
         order: query.order || 'desc',
       };
 
-      let result;
+      let result: PaginatedResult<Follow>;
 
       if (query.userId) {
         const userId = UserId.create(query.userId);

@@ -58,15 +58,19 @@ export function useAddToLibrary({
 
     useEffect(() => {
         if (libraryInfo) {
-            setSelectedStatus(libraryInfo.status);
-            setSelectedCollections(libraryInfo.collections.map((c) => c.id));
+            queueMicrotask(() => {
+                setSelectedStatus(libraryInfo.status);
+                setSelectedCollections(libraryInfo.collections.map((c) => c.id));
+            });
         }
     }, [libraryInfo]);
 
     useEffect(() => {
         if (isOpen) {
-            setIsCreating(false);
-            setNewCollectionName('');
+            queueMicrotask(() => {
+                setIsCreating(false);
+                setNewCollectionName('');
+            });
         }
     }, [isOpen]);
 
@@ -81,7 +85,7 @@ export function useAddToLibrary({
             } else {
                 await updateStatus({ bookId, status }).unwrap();
             }
-        } catch (error) {
+        } catch {
             setSelectedStatus(previousStatus);
             toast.error('Cập nhật trạng thái thất bại');
         }
@@ -101,7 +105,7 @@ export function useAddToLibrary({
 
         try {
             await updateCollections({ bookId, collectionIds: newIds }).unwrap();
-        } catch (error) {
+        } catch {
             setSelectedCollections(selectedCollections);
             toast.error('Cập nhật bộ sưu tập thất bại');
         }
@@ -117,7 +121,7 @@ export function useAddToLibrary({
 
             setNewCollectionName('');
             setIsCreating(false);
-        } catch (error) {
+        } catch {
             toast.error('Tạo danh sách thất bại');
         }
     }, [newCollectionName, handleToggleCollection, createCollection]);

@@ -70,7 +70,8 @@ export const KnowledgeGraph = ({ entities, relationships, isOpen = true }: Knowl
     const key = allTypes.join(',');
     if (key !== prevTypesRef.current) {
       prevTypesRef.current = key;
-      setActiveTypes(new Set(allTypes));
+      const timer = setTimeout(() => setActiveTypes(new Set(allTypes)), 0);
+      return () => clearTimeout(timer);
     }
   }, [allTypes]);
 
@@ -214,7 +215,6 @@ export const KnowledgeGraph = ({ entities, relationships, isOpen = true }: Knowl
       const t = l.target as GraphNode;
       if (!s.x || !s.y || !t.x || !t.y) return '';
       const dx = t.x - s.x;
-      const dy = t.y - s.y;
       const cp = { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 + l.bendDir * Math.abs(dx) * 0.25 };
       return `M${s.x},${s.y} Q${cp.x},${cp.y} ${t.x},${t.y}`;
     };
@@ -306,7 +306,7 @@ export const KnowledgeGraph = ({ entities, relationships, isOpen = true }: Knowl
       simulation.stop();
       svg.on('.zoom', null);
     };
-  }, [data, dimensions]);
+  }, [data, dimensions, isOpen]);
 
   const filteredCount = activeTypes.size;
   const totalTypes = allTypes.length;
@@ -403,10 +403,10 @@ export const KnowledgeGraph = ({ entities, relationships, isOpen = true }: Knowl
       </AnimatePresence>
 
       <div className="absolute top-4 right-4 flex flex-col gap-1">
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const t = d3.select(svgRef.current).transition(); d3.zoom<SVGSVGElement, unknown>().scaleBy(t as any, 1.2); }}>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const el = svgRef.current; if (!el) return; const svg = d3.select(el); const currentZoom = d3.zoomTransform(el); svg.transition().call((sel: d3.Transition<SVGSVGElement, unknown, null, undefined>) => (d3.zoom<SVGSVGElement, unknown>().transform as unknown as (sel: d3.Transition<SVGSVGElement, unknown, null, undefined>, transform: d3.ZoomTransform) => void)(sel, currentZoom.scale(1.2))); }}>
           <ZoomIn className="w-4 h-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const t = d3.select(svgRef.current).transition(); d3.zoom<SVGSVGElement, unknown>().scaleBy(t as any, 0.8); }}>
+        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg shadow-sm" onClick={() => { const el = svgRef.current; if (!el) return; const svg = d3.select(el); const currentZoom = d3.zoomTransform(el); svg.transition().call((sel: d3.Transition<SVGSVGElement, unknown, null, undefined>) => (d3.zoom<SVGSVGElement, unknown>().transform as unknown as (sel: d3.Transition<SVGSVGElement, unknown, null, undefined>, transform: d3.ZoomTransform) => void)(sel, currentZoom.scale(0.8))); }}>
           <ZoomOut className="w-4 h-4" />
         </Button>
       </div>

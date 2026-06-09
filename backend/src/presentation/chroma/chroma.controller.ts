@@ -127,8 +127,7 @@ export class ChromaController {
 
   @Public()
   @Get('health')
-  async health() {
-    // Basic health check - could be expanded to test actual vector store connectivity
+  health() {
     return {
       message: 'Vector store is operational',
       data: {

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import {
   Injectable,
   ConflictException,
@@ -125,7 +126,7 @@ export class GoogleAuthUseCase {
           role: roleName,
         },
       };
-    } catch (error) {
+    } catch (error: unknown) {
       if (
         error instanceof UnauthorizedDomainException ||
         error instanceof UserBannedDomainException ||
@@ -134,9 +135,10 @@ export class GoogleAuthUseCase {
       ) {
         throw error;
       }
+      const errorMessage = getErrorMessage(error);
       this.logger.error(
-        `Unexpected error during Google login for ${command.email}: ${error.message}`,
-        error.stack,
+        `Unexpected error during Google login for ${command.email}: ${errorMessage}`,
+        error instanceof Error ? error.stack : undefined,
       );
       throw new InternalServerErrorException(
         'Đã có lỗi xảy ra khi đăng nhập bằng Google',

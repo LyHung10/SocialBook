@@ -1,5 +1,3 @@
-import { normalizeForModeration } from './text-normalization';
-
 export interface ToxicMatch {
   pattern: string;
   group: string;

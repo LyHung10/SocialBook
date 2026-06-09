@@ -18,7 +18,7 @@ export function normalizeVietnameseText(text: string): string {
       // Collapse multiple spaces/newlines into single space
       .replace(/\s+/g, ' ')
       // Remove special characters but keep Vietnamese diacritics and basic punctuation
-      .replace(/[^\p{L}\p{N}\s,.!?;:()\-]/gu, '')
+      .replace(/[^\p{L}\p{N}\s,.!?;:()-]/gu, '')
       .trim()
   );
 }
@@ -48,11 +48,20 @@ export function extractKeywords(text: string, limit: number = 10): string[] {
     .map(([word]) => word);
 }
 
+interface BookDoc {
+  title?: string;
+  authorId?: { name?: string } | string;
+  author?: string;
+  description?: string;
+  genres?: Array<{ name?: string } | string>;
+  alternativeTitles?: string[];
+}
+
 /**
  * Create searchable document text for a book
  * Combines all relevant fields for semantic search
  */
-export function createBookDocument(book: any): string {
+export function createBookDocument(book: BookDoc): string {
   const parts: string[] = [];
 
   // Title (most important - add multiple times for weight)
@@ -62,8 +71,10 @@ export function createBookDocument(book: any): string {
   }
 
   // Author name (high importance)
-  const authorName =
-    typeof book.authorId === 'object' ? book.authorId?.name : book.author;
+  const authorName: string | undefined =
+    typeof book.authorId === 'object'
+      ? (book.authorId as { name?: string }).name
+      : book.author;
   if (authorName) {
     parts.push(`Tác giả: ${authorName}`);
     parts.push(authorName);
@@ -77,7 +88,7 @@ export function createBookDocument(book: any): string {
   // Genres
   if (book.genres && Array.isArray(book.genres)) {
     const genreNames = book.genres
-      .map((g: any) => (typeof g === 'object' ? g.name : g))
+      .map((g) => (typeof g === 'object' ? (g as { name?: string }).name : g))
       .filter(Boolean)
       .join(', ');
     if (genreNames) {
@@ -87,9 +98,9 @@ export function createBookDocument(book: any): string {
 
   // Alternative titles (if exists)
   if (book.alternativeTitles && Array.isArray(book.alternativeTitles)) {
-    book.alternativeTitles.forEach((altTitle: string) => {
+    for (const altTitle of book.alternativeTitles) {
       parts.push(`Tên khác: ${altTitle}`);
-    });
+    }
   }
 
   return parts.join('\n');
@@ -157,25 +168,48 @@ export function chunkText(
  * Each chunk becomes a separate document in ChromaDB
  * Returns array of {text, metadata} objects
  */
-export function createChunkedBookDocuments(
-  book: any,
-): Array<{ text: string; metadata: any }> {
-  const documents: Array<{ text: string; metadata: any }> = [];
+interface ChunkMetadata {
+  type: string;
+  bookId: string;
+  title: string;
+  author: string;
+  genres: string;
+  slug: string;
+  coverUrl: string;
+  chunkIndex?: number;
+  chunkType?: string;
+  totalChunks?: number;
+  [key: string]: unknown;
+}
 
-  const bookId = book._id?.toString() || book.id;
-  const authorName =
-    typeof book.authorId === 'object' ? book.authorId?.name : book.author;
-  const genreNames =
+export function createChunkedBookDocuments(
+  book: BookDoc & {
+    _id?: { toString(): string };
+    id?: string;
+    slug?: string;
+    coverUrl?: string;
+  },
+): Array<{ text: string; metadata: ChunkMetadata }> {
+  const documents: Array<{ text: string; metadata: ChunkMetadata }> = [];
+
+  const bookId = (book._id?.toString() || book.id) as string;
+  const authorName: string | undefined =
+    typeof book.authorId === 'object'
+      ? (book.authorId as { name?: string }).name
+      : book.author;
+  const genreNames: string =
     book.genres && Array.isArray(book.genres)
       ? book.genres
-          .map((g: any) => (typeof g === 'object' ? g.name : g))
+          .map((g) =>
+            typeof g === 'object' ? (g as { name?: string }).name : g,
+          )
           .filter(Boolean)
           .join(', ')
       : '';
 
   // Base metadata for all chunks
-  const baseMetadata = {
-    type: 'book',
+  const baseMetadata: ChunkMetadata = {
+    type: 'book' as const,
     bookId,
     title: book.title || '',
     author: authorName || 'Unknown',

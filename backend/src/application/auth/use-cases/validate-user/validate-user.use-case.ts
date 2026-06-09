@@ -4,6 +4,7 @@ import type { IPasswordHasher } from '@/shared/domain/password-hasher.interface'
 import { Inject } from '@nestjs/common';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
 import { UserEmail } from '@/domain/users/value-objects/user-email.vo';
+import { User } from '@/domain/users/entities/user.entity';
 
 @Injectable()
 export class ValidateUserUseCase {
@@ -12,7 +13,7 @@ export class ValidateUserUseCase {
     @Inject('IPasswordHasher') private readonly passwordHasher: IPasswordHasher,
   ) {}
 
-  async execute(email: string, pass: string): Promise<any> {
+  async execute(email: string, pass: string): Promise<User | null> {
     const emailVO = UserEmail.create(email);
     const user = await this.userRepository.findByEmail(emailVO);
 
@@ -34,7 +35,6 @@ export class ValidateUserUseCase {
       );
     }
 
-    const { password, ...result } = user;
     return user;
   }
 }

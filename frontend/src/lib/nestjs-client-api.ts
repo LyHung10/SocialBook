@@ -66,12 +66,7 @@ export const axiosBaseQuery =
           params,
         });
 
-        // Backend returns { message, data } or { message, data, meta }
         const responseData = result.data;
-
-        if (method !== 'GET' && responseData?.message) {
-          //toast.success(responseData.message);
-        }
 
         if (responseData.meta !== undefined || responseData.warning !== undefined) {
           return {
@@ -107,14 +102,14 @@ export const axiosBaseQuery =
 
               const responseData = retryResult.data;
               return { data: responseData.data !== undefined ? responseData.data : responseData };
-            } catch (retryError) {
-              // Thử lại vẫn thất bại, tiếp tục xử lý báo lỗi bên dưới
+            } catch {
+              // Retry thất bại — fall through để trả error bên dưới
             }
           } else {
-            // Refresh token không thành công (vd: refresh token cũng hết hạn)
             await signOut({ redirect: false });
-            typeof window !== 'undefined' && (window.location.href = '/login?error=SessionExpired');
-            toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login?error=SessionExpired';
+            }
           }
         }
 

@@ -97,7 +97,7 @@ export default function BooksPage() {
             <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
               Kết quả cho:{' '}
               <span className="font-bold text-gray-900 dark:text-white">
-                "{searchQuery}"
+                &quot;{searchQuery}&quot;
               </span>{' '}
               ({metaData?.total || 0} truyện)
             </div>

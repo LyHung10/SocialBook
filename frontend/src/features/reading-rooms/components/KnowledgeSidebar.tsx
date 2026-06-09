@@ -44,14 +44,15 @@ interface KnowledgeSidebarProps {
 
 export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: KnowledgeSidebarProps) => {
   const [shouldForce, setShouldForce] = useState(false);
-  const { data, isLoading, error, refetch } = useGetChapterKnowledgeQuery(
+  const { data, isLoading, error } = useGetChapterKnowledgeQuery(
     { bookSlug, chapterId, force: shouldForce },
     { skip: !chapterId }
   );
 
   useEffect(() => {
     if (shouldForce && !isLoading) {
-      setShouldForce(false);
+      const timer = setTimeout(() => setShouldForce(false), 0);
+      return () => clearTimeout(timer);
     }
   }, [shouldForce, isLoading]);
 
@@ -67,22 +68,22 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-
-  // Load local messages from localStorage on mount
   useEffect(() => {
     if (!roomId) {
       const savedMessages = localStorage.getItem(`chat_solo_${chapterId}`);
       if (savedMessages) {
         try {
-          setLocalChatMessages(JSON.parse(savedMessages));
-        } catch (e) {
+          const timer = setTimeout(() => {
+            setLocalChatMessages(JSON.parse(savedMessages));
+          }, 0);
+          return () => clearTimeout(timer);
+        } catch {
           toast.error('Không thể đọc tin nhắn đã lưu');
         }
       }
     }
   }, [roomId, chapterId]);
 
-  // Save local messages to localStorage when they change
   useEffect(() => {
     if (!roomId && localChatMessages.length > 0) {
       localStorage.setItem(`chat_solo_${chapterId}`, JSON.stringify(localChatMessages));
@@ -143,7 +144,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
           createdAt: response.createdAt
         };
         setLocalChatMessages(prev => [...prev, aiMsg]);
-      } catch (err) {
+      } catch {
         toast.error('AI không thể trả lời lúc này. Vui lòng thử lại!');
       }
     }
@@ -214,7 +215,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId, askAI }: Knowled
                     <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl">
                       <h4 className="text-[10px] font-black uppercase text-primary mb-2">Tóm tắt chương</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed italic">
-                        "{summary}"
+                        &ldquo;{summary}&rdquo;
                       </p>
                     </div>
                   )}

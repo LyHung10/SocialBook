@@ -8,15 +8,19 @@ import { BookListReadModel } from '@/domain/books/read-models/book-list.read-mod
 import { IBookQueryProvider } from '@/domain/books/repositories/book-query.provider.interface';
 import { BookFilter } from '@/domain/books/repositories/book.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
 import { Genre, GenreDocument } from '../../schemas/genre.schema';
-import { BookMapper, RawBookDocument } from './book.mapper';
+import {
+  BookMapper,
+  RawBookDetailAggregation,
+  RawBookDocument,
+} from './book.mapper';
 import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { SearchQuery } from '@/domain/chroma/entities/search-query.entity';
-import { ContentType } from '@/domain/chroma/value-objects/content-type.vo';
 
 @Injectable()
 export class BookQueryProvider implements IBookQueryProvider {
@@ -129,7 +133,10 @@ export class BookQueryProvider implements IBookQueryProvider {
     }
 
     const [result] = await this.bookModel
-      .aggregate([
+      .aggregate<{
+        metadata: Array<{ total: number }>;
+        data: Array<RawBookDocument>;
+      }>([
         ...pipeline,
         {
           $facet: {
@@ -217,7 +224,7 @@ export class BookQueryProvider implements IBookQueryProvider {
 
   async findDetailBySlug(slug: string): Promise<BookDetailReadModel | null> {
     const results = await this.bookModel
-      .aggregate([
+      .aggregate<RawBookDetailAggregation>([
         { $match: { slug, isDeleted: false } },
         {
           $lookup: {
@@ -319,7 +326,7 @@ export class BookQueryProvider implements IBookQueryProvider {
     }
 
     return await this.bookModel
-      .aggregate([
+      .aggregate<{ _id: string; count: number }>([
         { $match: { createdAt: { $gte: startDate } } },
         {
           $group: {
@@ -362,7 +369,7 @@ export class BookQueryProvider implements IBookQueryProvider {
         });
       }
     } catch (error) {
-      this.logger.error(`Text search error: ${(error as Error).message}`);
+      this.logger.error(`Text search error: ${getErrorMessage(error)}`);
     }
 
     return results;

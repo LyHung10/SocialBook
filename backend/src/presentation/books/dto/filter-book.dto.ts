@@ -11,10 +11,10 @@ export class FilterBookDto extends PaginationQueryDto {
   @IsString({ message: 'Author ID không hợp lệ' })
   authorId?: string;
 
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value || (typeof value === 'string' && value.trim() === ''))
       return undefined;
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) return value as string[];
     if (typeof value === 'string') {
       return value.includes(',')
         ? value.split(',').map((s) => s.trim())
@@ -30,10 +30,10 @@ export class FilterBookDto extends PaginationQueryDto {
   })
   genres?: string[];
 
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (!value || (typeof value === 'string' && value.trim() === ''))
       return undefined;
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) return value as string[];
     if (typeof value === 'string') {
       return value.includes(',')
         ? value.split(',').map((s) => s.trim())

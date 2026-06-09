@@ -20,22 +20,24 @@ export class ProgressRepository implements IProgressRepository {
   ) {}
 
   async getReadingHeatmap(): Promise<ReadingHeatmapData[]> {
-    const result = await this.progressModel.aggregate([
-      {
-        $project: {
-          hour: { $hour: { date: '$lastReadAt', timezone: '+07:00' } },
+    const result = await this.progressModel
+      .aggregate<{ _id: number; count: number }>([
+        {
+          $project: {
+            hour: { $hour: { date: '$lastReadAt', timezone: '+07:00' } },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$hour',
-          count: { $sum: 1 },
+        {
+          $group: {
+            _id: '$hour',
+            count: { $sum: 1 },
+          },
         },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-    ]);
+        {
+          $sort: { _id: 1 },
+        },
+      ])
+      .exec();
 
     const heatmapData: ReadingHeatmapData[] = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -52,76 +54,85 @@ export class ProgressRepository implements IProgressRepository {
   async getChapterEngagement(
     limit: number = 10,
   ): Promise<ChapterEngagementData[]> {
-    const result = await this.progressModel.aggregate([
-      {
-        $group: {
-          _id: '$chapterId',
-          viewCount: { $sum: 1 },
-          completedCount: {
-            $sum: {
+    const result = await this.progressModel
+      .aggregate<{
+        chapterId: string;
+        chapterTitle: string;
+        bookTitle: string;
+        viewCount: number;
+        completionRate: number;
+        averageTimeSpent: number;
+      }>([
+        {
+          $group: {
+            _id: '$chapterId',
+            viewCount: { $sum: 1 },
+            completedCount: {
+              $sum: {
+                $cond: [
+                  {
+                    $or: [
+                      { $eq: ['$status', 'completed'] },
+                      { $gte: ['$progress', 60] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            totalTimeSpent: { $sum: '$timeSpent' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'chapters',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'chapter',
+          },
+        },
+        { $unwind: '$chapter' },
+        {
+          $lookup: {
+            from: 'books',
+            localField: 'chapter.bookId',
+            foreignField: '_id',
+            as: 'book',
+          },
+        },
+        { $unwind: '$book' },
+        {
+          $project: {
+            chapterId: { $toString: '$_id' },
+            chapterTitle: '$chapter.title',
+            bookTitle: '$book.title',
+            viewCount: 1,
+            completionRate: {
               $cond: [
+                { $gt: ['$viewCount', 0] },
                 {
-                  $or: [
-                    { $eq: ['$status', 'completed'] },
-                    { $gte: ['$progress', 60] },
+                  $multiply: [
+                    { $divide: ['$completedCount', '$viewCount'] },
+                    100,
                   ],
                 },
-                1,
+                0,
+              ],
+            },
+            averageTimeSpent: {
+              $cond: [
+                { $gt: ['$viewCount', 0] },
+                { $divide: ['$totalTimeSpent', '$viewCount'] },
                 0,
               ],
             },
           },
-          totalTimeSpent: { $sum: '$timeSpent' },
         },
-      },
-      {
-        $lookup: {
-          from: 'chapters',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'chapter',
-        },
-      },
-      { $unwind: '$chapter' },
-      {
-        $lookup: {
-          from: 'books',
-          localField: 'chapter.bookId',
-          foreignField: '_id',
-          as: 'book',
-        },
-      },
-      { $unwind: '$book' },
-      {
-        $project: {
-          chapterId: { $toString: '$_id' },
-          chapterTitle: '$chapter.title',
-          bookTitle: '$book.title',
-          viewCount: 1,
-          completionRate: {
-            $cond: [
-              { $gt: ['$viewCount', 0] },
-              {
-                $multiply: [
-                  { $divide: ['$completedCount', '$viewCount'] },
-                  100,
-                ],
-              },
-              0,
-            ],
-          },
-          averageTimeSpent: {
-            $cond: [
-              { $gt: ['$viewCount', 0] },
-              { $divide: ['$totalTimeSpent', '$viewCount'] },
-              0,
-            ],
-          },
-        },
-      },
-      { $sort: { viewCount: -1 } },
-      { $limit: limit },
-    ]);
+        { $sort: { viewCount: -1 } },
+        { $limit: limit },
+      ])
+      .exec();
 
     return result.map((item) => ({
       chapterId: item.chapterId,
@@ -137,60 +148,66 @@ export class ProgressRepository implements IProgressRepository {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const result = await this.progressModel.aggregate([
-      {
-        $match: {
-          lastReadAt: { $gte: startDate },
-          timeSpent: { $gt: 0 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'chapters',
-          localField: 'chapterId',
-          foreignField: '_id',
-          as: 'chapter',
-        },
-      },
-      { $unwind: '$chapter' },
-      {
-        $project: {
-          date: { $dateToString: { format: '%Y-%m-%d', date: '$lastReadAt' } },
-          wordsPerMinute: {
-            $cond: [
-              { $gt: ['$timeSpent', 0] },
-              {
-                $divide: [
-                  {
-                    $size: {
-                      $split: [
-                        {
-                          $reduce: {
-                            input: '$chapter.paragraphs',
-                            initialValue: '',
-                            in: { $concat: ['$$value', ' ', '$$this.content'] },
-                          },
-                        },
-                        ' ',
-                      ],
-                    },
-                  },
-                  { $divide: ['$timeSpent', 60] },
-                ],
-              },
-              0,
-            ],
+    const result = await this.progressModel
+      .aggregate<{ _id: string; averageSpeed: number }>([
+        {
+          $match: {
+            lastReadAt: { $gte: startDate },
+            timeSpent: { $gt: 0 },
           },
         },
-      },
-      {
-        $group: {
-          _id: '$date',
-          averageSpeed: { $avg: '$wordsPerMinute' },
+        {
+          $lookup: {
+            from: 'chapters',
+            localField: 'chapterId',
+            foreignField: '_id',
+            as: 'chapter',
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-    ]);
+        { $unwind: '$chapter' },
+        {
+          $project: {
+            date: {
+              $dateToString: { format: '%Y-%m-%d', date: '$lastReadAt' },
+            },
+            wordsPerMinute: {
+              $cond: [
+                { $gt: ['$timeSpent', 0] },
+                {
+                  $divide: [
+                    {
+                      $size: {
+                        $split: [
+                          {
+                            $reduce: {
+                              input: '$chapter.paragraphs',
+                              initialValue: '',
+                              in: {
+                                $concat: ['$$value', ' ', '$$this.content'],
+                              },
+                            },
+                          },
+                          ' ',
+                        ],
+                      },
+                    },
+                    { $divide: ['$timeSpent', 60] },
+                  ],
+                },
+                0,
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: '$date',
+            averageSpeed: { $avg: '$wordsPerMinute' },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ])
+      .exec();
 
     return result.map((item) => ({
       date: item._id,
@@ -199,7 +216,7 @@ export class ProgressRepository implements IProgressRepository {
   }
 
   async countActiveUsers(since: Date): Promise<number> {
-    return await this.progressModel.countDocuments({
+    return this.progressModel.countDocuments({
       lastReadAt: { $gte: since },
     });
   }

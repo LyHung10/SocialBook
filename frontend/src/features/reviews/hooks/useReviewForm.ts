@@ -75,7 +75,7 @@ export function useReviewForm({
     const handleLike = useCallback(async (reviewId: string) => {
         try {
             await toggleLikeReview({ id: reviewId, bookId }).unwrap();
-        } catch (error) {
+        } catch {
             toast.error('Lỗi khi thích đánh giá');
         }
     }, [bookId, toggleLikeReview]);

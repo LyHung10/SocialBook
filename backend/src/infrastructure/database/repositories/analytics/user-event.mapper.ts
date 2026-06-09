@@ -1,9 +1,11 @@
 import { UserEvent as UserEventEntity } from '@/domain/analytics/entities/user-event.entity';
-import { UserEvent as UserEventSchema } from '@/infrastructure/database/schemas/user-event.schema';
-import { Types } from 'mongoose';
+import { UserEvent } from '@/infrastructure/database/schemas/user-event.schema';
+import { Types, FlattenMaps } from 'mongoose';
+
+type UserEventLean = FlattenMaps<UserEvent> & { _id: Types.ObjectId };
 
 export class UserEventMapper {
-  static toDomain(raw: any): UserEventEntity {
+  static toDomain(raw: UserEventLean): UserEventEntity {
     return UserEventEntity.reconstitute({
       id: raw._id.toString(),
       userId: raw.userId.toString(),
@@ -21,7 +23,7 @@ export class UserEventMapper {
     });
   }
 
-  static toPersistence(entity: UserEventEntity): any {
+  static toPersistence(entity: UserEventEntity): Record<string, unknown> {
     return {
       _id: new Types.ObjectId(entity.id),
       userId: new Types.ObjectId(entity.userId),

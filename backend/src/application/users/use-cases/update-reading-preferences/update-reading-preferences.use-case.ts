@@ -17,7 +17,7 @@ export class UpdateReadingPreferencesUseCase {
       throw new NotFoundDomainException('User not found');
     }
 
-    const { userId: _, ...preferences } = command;
+    const { ...preferences } = command;
     user.updateReadingPreferences(preferences);
     await this.userRepository.save(user);
 

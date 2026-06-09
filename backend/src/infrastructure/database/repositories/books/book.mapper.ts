@@ -79,18 +79,24 @@ function isPopulatedAuthor(field: unknown): field is PopulatedAuthor {
 }
 
 export class BookMapper {
+  private static getAuthorIdString(
+    authorId: Types.ObjectId | { _id: Types.ObjectId; name: string },
+  ): string {
+    return isPopulatedAuthor(authorId)
+      ? authorId._id.toString()
+      : (authorId.toString() ?? '');
+  }
+
   static toDomain(document: RawBookDocument): BookEntity {
     const genres = (document.genres || []).map((g) => {
       if (typeof g === 'object' && 'name' in g) return g._id.toString();
       return g.toString();
     });
 
-    const authorId = document.authorId;
-    const isAuthorPopulated = isPopulatedAuthor(authorId);
-    const authorName = isAuthorPopulated ? authorId.name : undefined;
-    const authorIdStr = isAuthorPopulated
-      ? authorId._id.toString()
-      : (authorId?.toString() ?? '');
+    const authorName = isPopulatedAuthor(document.authorId)
+      ? document.authorId.name
+      : undefined;
+    const authorIdStr = BookMapper.getAuthorIdString(document.authorId);
 
     return BookEntity.reconstitute({
       id: document._id.toString(),
@@ -121,12 +127,10 @@ export class BookMapper {
   }
 
   static toListReadModel(document: RawBookDocument): BookListReadModel {
-    const authorId = document.authorId;
-    const isAuthorPopulated = isPopulatedAuthor(authorId);
-    const authorIdStr = isAuthorPopulated
-      ? authorId._id.toString()
-      : (authorId?.toString() ?? '');
-    const authorName = isAuthorPopulated ? authorId.name : undefined;
+    const authorName = isPopulatedAuthor(document.authorId)
+      ? document.authorId.name
+      : undefined;
+    const authorIdStr = BookMapper.getAuthorIdString(document.authorId);
 
     return {
       id: document._id.toString(),
@@ -178,7 +182,7 @@ export class BookMapper {
       id: doc._id.toString(),
       title: doc.title,
       slug: doc.slug,
-      authorId: doc.authorId?.toString() || '',
+      authorId: BookMapper.getAuthorIdString(doc.authorId),
       authorName: doc.authorName,
       genres: (doc.genreDetails || []).map((g) => ({
         id: g._id.toString(),

@@ -7,6 +7,13 @@ import { containsVietnameseToxicWords } from '@/domain/content-moderation/utils/
 import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 
+interface ModerationAIResult {
+  action: 'ALLOW' | 'REVIEW' | 'BLOCK';
+  category: 'toxic' | 'spoiler' | 'spam' | 'hate_speech' | 'none';
+  score: number;
+  reason: string;
+}
+
 @Injectable()
 export class ContentModerationService implements IContentModerationService {
   private readonly logger = new Logger(ContentModerationService.name);
@@ -77,10 +84,11 @@ export class ContentModerationService implements IContentModerationService {
         - BLOCK: Vi phạm nghiêm trọng (toxic nặng, hate speech, spam).
       `;
 
-      let result: any;
       const moderationApiKey = this.configService.get<string>(
         'env.MODERATION_API_KEY',
       );
+
+      let result: ModerationAIResult;
 
       if (moderationApiKey) {
         this.logger.debug(
@@ -116,7 +124,11 @@ export class ContentModerationService implements IContentModerationService {
           },
         );
 
-        const responseContent = response.data?.choices?.[0]?.message?.content;
+        const responseData = response.data as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const responseContent =
+          responseData.choices?.[0]?.message?.content ?? null;
         if (!responseContent) {
           throw new Error(
             'Không nhận được nội dung phản hồi từ API kiểm duyệt.',
@@ -124,17 +136,18 @@ export class ContentModerationService implements IContentModerationService {
         }
 
         try {
-          result = JSON.parse(responseContent);
+          result = JSON.parse(responseContent) as ModerationAIResult;
         } catch (parseError) {
           const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
-            result = JSON.parse(jsonMatch[0]);
+            result = JSON.parse(jsonMatch[0]) as ModerationAIResult;
           } else {
             throw parseError;
           }
         }
       } else {
-        result = await this.geminiService.generateJSON<any>(prompt);
+        result =
+          await this.geminiService.generateJSON<ModerationAIResult>(prompt);
       }
 
       const isSafe = result.action === 'ALLOW';
@@ -157,10 +170,12 @@ export class ContentModerationService implements IContentModerationService {
         score: result.score || 0,
         reason: result.reason,
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
       this.logger.error(
-        `Lỗi khi gọi AI kiểm duyệt nội dung: ${error.message}`,
-        error.stack,
+        `Lỗi khi gọi AI kiểm duyệt nội dung: ${message}`,
+        stack,
       );
       // Fallback: Nếu AI lỗi, chuyển sang REVIEW để Admin kiểm duyệt cho an toàn
       return {

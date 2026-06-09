@@ -3,7 +3,7 @@ export interface ResponseDto<T> {
   statusCode: number;
   message: string;
   data: T;
-  meta?: any;
+  meta?: Record<string, unknown>;
   path: string;
 }
 

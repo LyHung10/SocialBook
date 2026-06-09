@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import {
   Chapter,
   ChapterDocument,
@@ -9,6 +9,15 @@ import {
   Book,
   BookDocument,
 } from '@/infrastructure/database/schemas/book.schema';
+
+interface ChapterSeedData {
+  bookId: BookDocument['_id'];
+  title: string;
+  slug: string;
+  paragraphs: { content: string }[];
+  viewsCount: number;
+  orderIndex: number;
+}
 
 @Injectable()
 export class ChaptersSeed {
@@ -33,7 +42,7 @@ export class ChaptersSeed {
         return;
       }
 
-      const chapters: any[] = []; // 👈 Đổi sang any[] để tránh type error khi seed
+      const chapters: ChapterSeedData[] = [];
 
       // Helper để tạo nội dung dài
       const generateParagraphs = (count: number) => {

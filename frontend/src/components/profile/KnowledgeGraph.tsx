@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useRef, useEffect, useState } from 'react';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { KnowledgeGraphData, GraphNode } from '@/features/library/types/library.interface';
 import { useTheme } from 'next-themes';
@@ -14,7 +15,21 @@ import type { ComponentType } from 'react';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
   ssr: false,
-}) as ComponentType<any>;
+}) as ComponentType<Record<string, unknown>>;
+
+interface ForceGraphNode {
+  x: number;
+  y: number;
+  val: number;
+  id: string;
+  label: string;
+  color?: string;
+  img?: string;
+  isGap?: boolean;
+  slug?: string;
+  type?: string;
+  reason?: string;
+}
 
 interface GraphRef {
   zoomToFit(durationMs?: number, padding?: number): void;
@@ -41,7 +56,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 700 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
+
 
   // Clone data to avoid "object is not extensible" error from RTK Query frozen objects
   const graphData = React.useMemo(() => {
@@ -66,7 +81,6 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
         
         if (width > 0) {
           setDimensions({ width, height });
-          setIsReady(true);
         }
       }
     };
@@ -80,7 +94,6 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
         const { width, height } = entry.contentRect;
         if (width > 0) {
           setDimensions({ width, height: height || 700 });
-          setIsReady(true);
         }
       }
     });
@@ -107,7 +120,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
 
 
 
-  const handleNodeClick = useCallback((node: any) => {
+  const handleNodeClick = useCallback((node: ForceGraphNode) => {
     fgRef.current?.centerAt(node.x, node.y, 1000);
     fgRef.current?.zoom(3, 1000);
     setSelectedNode(node as GraphNode);
@@ -150,11 +163,11 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           height={dimensions.height || 700}
 
           nodeLabel="label"
-          nodeVal={(node: any) => node.val}
-          nodeColor={(node: any) => node.color || (isDark ? '#94a3b8' : '#64748b')}
+          nodeVal={(node: ForceGraphNode) => node.val}
+          nodeColor={(node: ForceGraphNode) => node.color || (isDark ? '#94a3b8' : '#64748b')}
           linkColor={() => (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)')}
           linkWidth={1.5}
-          nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+          nodeCanvasObject={(node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
             const size = node.val || 10;
             const label = node.label || '';
             const safeScale = globalScale || 1;
@@ -176,7 +189,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
             if (node.img) {
               let img = imgCache.current[node.img];
               if (!img) {
-                img = new Image();
+                img = new window.Image();
                 img.src = node.img;
                 imgCache.current[node.img] = img;
                 img.onload = () => {
@@ -288,7 +301,15 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
             <Card className="p-5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-primary/20 shadow-2xl rounded-3xl">
               <div className="flex flex-col gap-4">
                 {selectedNode.img && (
-                  <img src={selectedNode.img} alt={selectedNode.label} loading="lazy" width={288} height={160} className="w-full h-40 object-cover rounded-2xl shadow-md" />
+                  <div className="relative w-full h-40">
+                    <Image
+                      src={selectedNode.img}
+                      alt={selectedNode.label}
+                      fill
+                      sizes="(max-width: 288px) 100vw, 288px"
+                      className="object-cover rounded-2xl shadow-md"
+                    />
+                  </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">

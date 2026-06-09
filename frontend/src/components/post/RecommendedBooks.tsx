@@ -6,6 +6,15 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useGetBooksQuery } from "@/features/books/api/bookApi";
 import { PAGINATION } from "@/features/books/books.constants";
+import type { BookRecommendation } from '@/features/recommendations/types/recommendation.interface';
+import type { Book } from '@/features/books/types/book.interface';
+
+interface BookRenderItem {
+    id: string;
+    book: Book;
+    matchScore?: number;
+    reason?: string;
+}
 
 export default function RecommendedBooks() {
     const { isAuthenticated } = useAppAuth();
@@ -17,7 +26,7 @@ export default function RecommendedBooks() {
         { page: 1, limit },
         { skip: !isAuthenticated }
     );
-    const { data: dataBook, isLoading: isLoadingBook, isFetching } = useGetBooksQuery({
+    const { data: dataBook, isLoading: isLoadingBook } = useGetBooksQuery({
         page: 1,
         limit: PAGINATION.BOOKS_PER_PAGE,
         sortBy: 'views',
@@ -63,9 +72,17 @@ export default function RecommendedBooks() {
     }
 
 
-    const booksToRender = isAuthenticated
-        ? data?.recommendations || []
-        : dataBook?.data || [];
+    const booksToRender: BookRenderItem[] = isAuthenticated
+        ? (data?.recommendations || []).map((item: BookRecommendation) => ({
+            id: item.bookId,
+            book: item.book,
+            matchScore: item.matchScore,
+            reason: item.reason,
+        }))
+        : (dataBook?.data || []).map((item: Book) => ({
+            id: item.id,
+            book: item,
+        }));
 
     if (!booksToRender.length) {
         return (
@@ -90,12 +107,11 @@ export default function RecommendedBooks() {
 
             {/* Book list */}
             <div className="max-h-[600px] overflow-y-auto thin-scrollbar">
-                {booksToRender.map((item: any) => {
-                    const book = isAuthenticated ? item.book : item;
+                {booksToRender.map(({ book, id: itemId, matchScore, reason }: BookRenderItem) => {
 
                     return (
                         <div
-                            key={isAuthenticated ? item.bookId : book.id}
+                            key={itemId}
                             onClick={() => router.push(`/books/${book.slug}`)}
                             className="px-4 py-2 border-b border-slate-50 dark:border-gray-800 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
                         >
@@ -127,16 +143,16 @@ export default function RecommendedBooks() {
                                     </div>
 
                                     {/* CHỈ HIỂN THỊ KHI ĐÃ LOGIN */}
-                                    {isAuthenticated && item.matchScore && (
+                                    {matchScore && (
                                         <span
                                             className="inline-block mb-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                                            Phù hợp {item.matchScore}%
+                                            Phù hợp {matchScore}%
                                         </span>
                                     )}
 
-                                    {isAuthenticated && item.reason && (
+                                    {reason && (
                                         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                            {item.reason}
+                                            {reason}
                                         </p>
                                     )}
                                 </div>

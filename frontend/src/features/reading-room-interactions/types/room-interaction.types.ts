@@ -42,6 +42,10 @@ export interface QuoteVote {
   type: 'up' | 'down';
 }
 
+export interface RoomSocket {
+  on(event: string, handler: (...args: unknown[]) => void): void;
+}
+
 export interface RoomQuote {
   id: string;
   content: string;

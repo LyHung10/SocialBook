@@ -74,12 +74,11 @@ export function FollowButton({
     );
 }
 
-interface FollowButtonCompactProps extends Omit<FollowButtonProps, 'variant'> {}
+type FollowButtonCompactProps = Omit<FollowButtonProps, 'variant'>;
 
 export function FollowButtonCompact({
     userId,
     initialIsFollowing,
-    size = 'sm',
     className,
     onFollowChange,
 }: FollowButtonCompactProps) {

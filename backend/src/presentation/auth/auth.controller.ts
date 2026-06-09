@@ -37,7 +37,6 @@ import { VerifyOtpUseCase } from '@/application/auth/use-cases/verify-otp/verify
 
 import {
   ForgotPasswordDto,
-  LoginDto,
   RefreshTokenDto,
   ResendOtpDto,
   ResetPasswordDto,
@@ -80,7 +79,7 @@ export class AuthController {
   @Throttle({ global: { limit: 5 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: { user: User }, @Body() _dto: LoginDto) {
+  async login(@Req() req: { user: User }) {
     const command = new LoginCommand(req.user);
     const result = await this.loginUseCase.execute(command);
 
@@ -159,9 +158,8 @@ export class AuthController {
       );
     }
 
-    const payload = await this.refreshTokenUseCase.validateRefreshToken(
-      refreshToken,
-    );
+    const payload =
+      await this.refreshTokenUseCase.validateRefreshToken(refreshToken);
     if (!payload) {
       throw new HttpException(
         'Refresh token không hợp lệ',

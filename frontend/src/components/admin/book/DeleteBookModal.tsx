@@ -43,7 +43,7 @@ export default function DeleteBookModal() {
                 <div className="p-6 bg-white">
                     <p className="text-gray-700 leading-relaxed">
                         Bạn có chắc chắn muốn xóa sách{' '}
-                        <span className="font-bold text-gray-900">"{book?.title}"</span>?
+                        <span className="font-bold text-gray-900">&ldquo;{book?.title}&rdquo;</span>?
                     </p>
                     
                     <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
