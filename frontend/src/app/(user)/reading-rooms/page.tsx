@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useAppAuth } from '@/features/auth/hooks';
 import LoginWall from '@/components/auth/LoginWall';
 import { BookOpen, History, Plus, LogIn, DoorOpen, ArrowRight, Users, RefreshCw } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 
 function RoomCardSkeleton() {
   return (
@@ -36,6 +37,7 @@ function RoomCardSkeleton() {
 export default function ReadingRoomsHub() {
   const [roomCode, setRoomCode] = useState('');
   const [selectedBook, setSelectedBook] = useState('');
+  const [maxMembers, setMaxMembers] = useState(10);
   const [activeTab, setActiveTab] = useState('active');
   const [createRoom, { isLoading }] = useCreateRoomMutation();
   const { data: booksData, isLoading: isBooksLoading } = useGetBooksQuery({ page: 1, limit: 100 });
@@ -73,7 +75,7 @@ export default function ReadingRoomsHub() {
         bookId: selectedBook,
         currentChapterSlug: 'chuong-1',
         mode: 'sync',
-        maxMembers: 10,
+        maxMembers,
       }).unwrap();
       toast.success('Tạo phòng thành công!');
       router.push(`/reading-rooms/${res.roomId}`);
@@ -389,6 +391,25 @@ export default function ReadingRoomsHub() {
                         </div>
                       </div>
                     )}
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        Số người tối đa: <span className="font-bold text-primary">{maxMembers}</span>
+                      </label>
+                      <Slider
+                        min={2}
+                        max={20}
+                        step={1}
+                        value={[maxMembers]}
+                        onValueChange={([v]) => setMaxMembers(v)}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                        <span>2</span>
+                        <span>20</span>
+                      </div>
+                    </div>
 
                     <Button
                       size="lg"
