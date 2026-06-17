@@ -1,12 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useReducer } from 'react';
 import { useUpdatePostMutation } from '@/features/posts/api/postApi';
 import { X, Image as ImageIcon } from 'lucide-react';
 import { toast } from "sonner";
 import { getErrorMessage, cn } from '@/lib/utils';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useModalStore } from '@/store/useModalStore';
@@ -38,6 +38,52 @@ const editPostSchema = z.object({
 
 type EditPostFormValues = z.infer<typeof editPostSchema>;
 
+type PostEditState = {
+    existingImages: string[];
+    selectedFiles: File[];
+    previewUrls: string[];
+};
+
+type PostEditAction =
+    | { type: 'init'; existingImages: string[]; selectedFiles: File[]; previewUrls: string[] }
+    | { type: 'addFiles'; files: File[]; previews: string[] }
+    | { type: 'removeExistingImage'; index: number }
+    | { type: 'removeNewImage'; index: number };
+
+function postEditReducer(state: PostEditState, action: PostEditAction): PostEditState {
+    switch (action.type) {
+        case 'init':
+            return {
+                existingImages: action.existingImages,
+                selectedFiles: action.selectedFiles,
+                previewUrls: action.previewUrls,
+            };
+        case 'addFiles':
+            return {
+                ...state,
+                selectedFiles: [...state.selectedFiles, ...action.files],
+                previewUrls: [...state.previewUrls, ...action.previews],
+            };
+        case 'removeExistingImage':
+            return {
+                ...state,
+                existingImages: state.existingImages.filter((_, i) => i !== action.index),
+            };
+        case 'removeNewImage':
+            return {
+                ...state,
+                selectedFiles: state.selectedFiles.filter((_, i) => i !== action.index),
+                previewUrls: state.previewUrls.filter((_, i) => i !== action.index),
+            };
+    }
+}
+
+const initialState: PostEditState = {
+    existingImages: [],
+    selectedFiles: [],
+    previewUrls: [],
+};
+
 export default function EditPostModal() {
     const { isEditPostOpen, closeEditPost, editPostData } = useModalStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,9 +91,11 @@ export default function EditPostModal() {
 
     const post = editPostData?.post;
 
-    const [existingImages, setExistingImages] = useState<string[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const [postEditState, dispatch] = useReducer(
+        postEditReducer,
+        initialState
+    );
+    const { existingImages, selectedFiles, previewUrls } = postEditState;
 
     const form = useForm<EditPostFormValues>({
         resolver: zodResolver(editPostSchema),
@@ -57,26 +105,27 @@ export default function EditPostModal() {
         },
     });
 
-    const content = form.watch('content');
+    const content = useWatch({ control: form.control, name: 'content' });
 
-    const initializedPostIdRef = useRef<string | null>(null);
+    const [initializedPostId, setInitializedPostId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isEditPostOpen && post) {
-            if (initializedPostIdRef.current !== post.id) {
-                form.reset({
-                    content: post.content,
-                    bookId: post.book?.id || '',
-                });
-                setExistingImages(post.imageUrls || []);
-                setSelectedFiles([]);
-                setPreviewUrls([]);
-                initializedPostIdRef.current = post.id;
-            }
-        } else if (!isEditPostOpen) {
-            initializedPostIdRef.current = null;
+    if (isEditPostOpen && post) {
+        if (initializedPostId !== post.id) {
+            form.reset({
+                content: post.content,
+                bookId: post.book?.id || '',
+            });
+            dispatch({
+                type: 'init',
+                existingImages: post.imageUrls || [],
+                selectedFiles: [],
+                previewUrls: [],
+            });
+            setInitializedPostId(post.id);
         }
-    }, [isEditPostOpen, post, form]);
+    } else if (initializedPostId !== null) {
+        setInitializedPostId(null);
+    }
 
     const previewUrlsRef = useRef<string[]>([]);
     useEffect(() => {
@@ -101,9 +150,8 @@ export default function EditPostModal() {
 
         const validFiles = files.filter(file => file.type.startsWith('image/'));
         if (validFiles.length > 0) {
-            setSelectedFiles(prev => [...prev, ...validFiles]);
             const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-            setPreviewUrls(prev => [...prev, ...newPreviews]);
+            dispatch({ type: 'addFiles', files: validFiles, previews: newPreviews });
         }
         
         if (fileInputRef.current) {
@@ -113,19 +161,18 @@ export default function EditPostModal() {
 
     const removeNewImage = (index: number) => {
         URL.revokeObjectURL(previewUrls[index]);
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-        setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+        dispatch({ type: 'removeNewImage', index });
     };
 
     const removeExistingImage = (index: number) => {
-        setExistingImages(prev => prev.filter((_, i) => i !== index));
+        dispatch({ type: 'removeExistingImage', index });
     };
 
     const onSubmit = async (values: EditPostFormValues) => {
         if (!post) return;
 
         try {
-            const imageUrlsToSend = existingImages.length === 0 ? '' : existingImages;
+            const imageUrlsToSend = existingImages.length === 0 ? undefined : existingImages;
 
             const response = await updatePost({
                 id: post.id,
@@ -133,7 +180,7 @@ export default function EditPostModal() {
                     content: values.content,
                     bookId: values.bookId || undefined,
                     images: selectedFiles.length > 0 ? selectedFiles : undefined,
-                    imageUrls: imageUrlsToSend as any,
+                    imageUrls: imageUrlsToSend,
                 },
             }).unwrap();
 
@@ -257,12 +304,13 @@ export default function EditPostModal() {
                                                         key={index}
                                                         className="relative aspect-square group rounded-xl overflow-hidden border border-border"
                                                     >
-                                                        <img
-                                                            src={preview}
-                                                            alt={`New ${index + 1}`}
-                                                            loading="lazy"
-                                                            className="object-cover w-full h-full"
-                                                        />
+                                                    <Image
+                                                        src={preview}
+                                                        alt={`New ${index + 1}`}
+                                                        fill
+                                                        sizes="(max-width: 640px) 33vw, 25vw"
+                                                        className="object-cover"
+                                                    />
                                                         <Button
                                                             type="button"
                                                             size="icon"

@@ -33,7 +33,9 @@ function createMockReviewRepository(): jest.Mocked<IReviewRepository> {
   };
 }
 
-function createMockBookDetail(overrides?: Partial<BookDetailReadModel>): BookDetailReadModel {
+function createMockBookDetail(
+  overrides?: Partial<BookDetailReadModel>,
+): BookDetailReadModel {
   return {
     id: 'book-1',
     title: 'Đắc Nhân Tâm',
@@ -93,7 +95,9 @@ describe('GetBookBySlugUseCase (Unit)', () => {
     const cachedBook = createMockBookDetail();
     mockCache.get.mockResolvedValue(cachedBook);
 
-    const result = await useCase.execute(new GetBookBySlugQuery('dac-nhan-tam'));
+    const result = await useCase.execute(
+      new GetBookBySlugQuery('dac-nhan-tam'),
+    );
 
     expect(result).toEqual(cachedBook);
     expect(mockQueryProvider.findDetailBySlug).not.toHaveBeenCalled();
@@ -108,7 +112,9 @@ describe('GetBookBySlugUseCase (Unit)', () => {
     ratingStats.set(book.id, { rating: 4.5, count: 10 });
     mockReviewRepo.getStatsForBooks.mockResolvedValue(ratingStats);
 
-    const result = await useCase.execute(new GetBookBySlugQuery('dac-nhan-tam'));
+    const result = await useCase.execute(
+      new GetBookBySlugQuery('dac-nhan-tam'),
+    );
 
     expect(result.stats.averageRating).toBe(4.5);
     expect(result.stats.totalRatings).toBe(10);
@@ -119,9 +125,9 @@ describe('GetBookBySlugUseCase (Unit)', () => {
   });
 
   it('should throw BadRequestDomainException when slug is empty', async () => {
-    await expect(
-      useCase.execute(new GetBookBySlugQuery('')),
-    ).rejects.toThrow(BadRequestDomainException);
+    await expect(useCase.execute(new GetBookBySlugQuery(''))).rejects.toThrow(
+      BadRequestDomainException,
+    );
   });
 
   it('should throw NotFoundDomainException when book not found', async () => {
@@ -139,7 +145,9 @@ describe('GetBookBySlugUseCase (Unit)', () => {
     mockQueryProvider.findDetailBySlug.mockResolvedValue(book);
     mockReviewRepo.getStatsForBooks.mockResolvedValue(new Map());
 
-    const result = await useCase.execute(new GetBookBySlugQuery('dac-nhan-tam'));
+    const result = await useCase.execute(
+      new GetBookBySlugQuery('dac-nhan-tam'),
+    );
 
     expect(result.stats.averageRating).toBe(0);
     expect(result.stats.totalRatings).toBe(0);

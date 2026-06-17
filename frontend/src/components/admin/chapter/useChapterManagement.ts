@@ -20,6 +20,7 @@ import {
 } from "@/features/chapters/types/chapter.interface";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
+import { getErrorMessage } from '@/lib/utils';
 
 export function useChapterManagement() {
   const params = useParams();
@@ -63,7 +64,6 @@ export function useChapterManagement() {
     }
   };
 
-  // Effect to handle forced refetch when page resets to 1
   useEffect(() => {
     if (page === 1 && shouldRefetchRef.current) {
       shouldRefetchRef.current = false;
@@ -73,19 +73,19 @@ export function useChapterManagement() {
     }
   }, [page, bookData?.slug, refetchChaptersQuery]);
 
-  // Infinite Scroll Effect
-  useEffect(() => {
-    if (chaptersData?.chapters && !isFetchingChapters) {
-      if (page === 1) {
-        setChapters(chaptersData.chapters);
-      } else {
-        setChapters((prev) => [...prev, ...chaptersData.chapters]);
-      }
-      const total = chaptersData.total || 0;
-      const currentCount = (page - 1) * 20 + chaptersData.chapters.length;
-      setHasMore(currentCount < total);
+  const [processedPage, setProcessedPage] = useState(0);
+
+  if (chaptersData?.chapters && !isFetchingChapters && page !== processedPage) {
+    setProcessedPage(page);
+    if (page === 1) {
+      setChapters(chaptersData.chapters);
+    } else {
+      setChapters((prev) => [...prev, ...chaptersData.chapters]);
     }
-  }, [chaptersData, page, isFetchingChapters]);
+    const total = chaptersData.total || 0;
+    const currentCount = (page - 1) * 20 + chaptersData.chapters.length;
+    setHasMore(currentCount < total);
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -112,7 +112,7 @@ export function useChapterManagement() {
   const [startChaptersImport, { isLoading: isStartingImport }] =
     useStartChaptersImportMutation();
   const [triggerImportStatus] = useLazyGetChaptersImportStatusQuery();
-  const [generateChapterAudio, { isLoading: isGeneratingAudio }] =
+  const [generateChapterAudio] =
     useGenerateChapterAudioMutation();
   const [generateBookAudio, { isLoading: isGeneratingAllAudio }] =
     useGenerateBookAudioMutation();
@@ -135,7 +135,7 @@ export function useChapterManagement() {
 
   const book = bookData;
 
-  const handleToggleExpand = (chapterId: string, e?: React.MouseEvent) => {
+  const handleToggleExpand = (chapterId: string) => {
     if (expandedChapterId === chapterId) {
       setExpandedChapterId(null);
       setEditingChapterId(null);
@@ -144,7 +144,6 @@ export function useChapterManagement() {
     }
   };
 
-  // Mở rộng chapter rồi bắt đầu edit — gom 2 action thành 1 handler
   const handleExpandAndEdit = (chapter: Chapter) => {
     if (expandedChapterId !== chapter.id) {
       setExpandedChapterId(chapter.id);
@@ -326,10 +325,8 @@ export function useChapterManagement() {
       setShowNewChapterForm(false);
       setNewChapterTitle("");
       setNewChapterParagraphs([{ id: uuidv4(), content: "" }]);
-    } catch (error: any) {
-      toast.error(
-        `Tạo thất bại: ${error?.data?.message || "Lỗi không xác định"}`,
-      );
+    } catch (error: unknown) {
+      toast.error(`Tạo thất bại: ${getErrorMessage(error)}`);
     }
   };
 
@@ -349,10 +346,8 @@ export function useChapterManagement() {
         ),
       );
       refetchChaptersQuery();
-    } catch (error: any) {
-      toast.error(
-        `Tạo audio thất bại: ${error?.data?.message || "Lỗi không xác định"}`,
-      );
+    } catch (error: unknown) {
+      toast.error(`Tạo audio thất bại: ${getErrorMessage(error)}`);
     }
   };
 
@@ -370,8 +365,8 @@ export function useChapterManagement() {
         `Hoàn thành!\nThành công: ${result.successful}/${result.total}\nThất bại: ${result.failed}`,
       );
       refetchChapters();
-    } catch (error: any) {
-      alert(`Lỗi: ${error?.data?.message || "Lỗi không xác định"}`);
+    } catch (error: unknown) {
+      alert(`Lỗi: ${getErrorMessage(error)}`);
     }
   };
 
@@ -435,8 +430,8 @@ export function useChapterManagement() {
 
         await new Promise((r) => setTimeout(r, POLL_MS));
       }
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Lỗi", { id: toastId });
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error), { id: toastId });
     }
   };
 

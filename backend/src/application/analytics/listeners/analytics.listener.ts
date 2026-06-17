@@ -5,7 +5,6 @@ import { ScoringService } from '../services/scoring.service';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { IGenreRepository } from '@/domain/genres/repositories/genre.repository.interface';
-import { GenreId } from '@/domain/genres/value-objects/genre-id.vo';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { ChapterId } from '@/domain/chapters/value-objects/chapter-id.vo';
 import { IPostRepository } from '@/domain/posts/repositories/post.repository.interface';
@@ -48,7 +47,8 @@ export class AnalyticsListener {
     }
 
     if (event.eventType === UserEventType.SEARCH && event.metadata?.keyword) {
-      const keyword = event.metadata.keyword.toLowerCase();
+      const metadata = event.metadata ?? {};
+      const keyword = String(metadata.keyword).toLowerCase();
       const allGenres = await this.genreRepository.findAllSimple();
 
       const matchedGenreIds = allGenres

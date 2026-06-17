@@ -102,34 +102,55 @@ export class TextToSpeechRepository implements ITextToSpeechRepository {
       .exec();
   }
 
-  private mapToEntity(doc: Record<string, any>): TextToSpeechEntity {
+  private mapToEntity(doc: object): TextToSpeechEntity {
+    const d = doc as {
+      _id: Types.ObjectId;
+      chapterId: Types.ObjectId;
+      bookId: Types.ObjectId;
+      text: string;
+      voice: string;
+      language: string;
+      speed: number;
+      status: TTSStatus;
+      audioUrl?: string;
+      audioFormat?: string;
+      audioDuration?: number;
+      characterCount?: number;
+      paragraphCount?: number;
+      errorMessage?: string;
+      playCount?: number;
+      lastPlayedAt?: Date;
+      createdAt: Date;
+      updatedAt: Date;
+      processedAt?: Date;
+    };
     return TextToSpeechEntity.reconstitute({
-      id: doc._id.toString(),
-      chapterId: doc.chapterId.toString(),
-      bookId: doc.bookId.toString(),
-      text: doc.text,
-      voice: doc.voice,
-      language: doc.language,
-      speed: doc.speed,
-      status: doc.status,
-      audioUrl: doc.audioUrl,
-      audioFormat: doc.audioFormat,
-      audioDuration: doc.audioDuration,
-      characterCount: doc.characterCount,
-      paragraphCount: doc.paragraphCount,
-      errorMessage: doc.errorMessage,
-      playCount: doc.playCount,
-      lastPlayedAt: doc.lastPlayedAt,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
-      processedAt: doc.processedAt,
+      id: d._id.toString(),
+      chapterId: d.chapterId.toString(),
+      bookId: d.bookId.toString(),
+      text: d.text,
+      voice: d.voice,
+      language: d.language,
+      speed: d.speed,
+      status: d.status,
+      audioUrl: d.audioUrl,
+      audioFormat: d.audioFormat,
+      audioDuration: d.audioDuration,
+      characterCount: d.characterCount,
+      paragraphCount: d.paragraphCount,
+      errorMessage: d.errorMessage,
+      playCount: d.playCount ?? 0,
+      lastPlayedAt: d.lastPlayedAt,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+      processedAt: d.processedAt,
     });
   }
 
   private mapToPersistence(
     entity: TextToSpeechEntity,
-  ): Record<string, unknown> {
-    return {
+  ): Partial<TextToSpeechDocument> {
+    const persistence: Partial<TextToSpeechDocument> = {
       chapterId: new Types.ObjectId(entity.chapterId),
       bookId: new Types.ObjectId(entity.bookId),
       text: entity.text,
@@ -141,18 +162,11 @@ export class TextToSpeechRepository implements ITextToSpeechRepository {
       audioFormat: entity.audioFormat,
       audioDuration: entity.audioDuration,
       characterCount: entity.text.length,
-      // paragraphCount is not stored in entity props explicitly usually but we added it
-      // Let's assume entity has it or we calculate it? Entity has it.
-      // But wait, entity.text is a string. Paragraph count might need to be passed or calculated.
-      // In the entity props I added paragraphCount.
-      // Let's assume it's passed during creation.
-      // ...
-      // Wait, for simplicity, mapping back to persistence might need careful handling of IDs if they are strings.
-      _id: entity.id ? new Types.ObjectId(entity.id) : undefined,
       updatedAt: entity.updatedAt || new Date(),
-      // Other fields...
-      // It's safer to use what's in the entity if accessible.
-      // I'll stick to a simple mapping.
     };
+    if (entity.id) {
+      persistence._id = new Types.ObjectId(entity.id);
+    }
+    return persistence;
   }
 }

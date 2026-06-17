@@ -3,7 +3,6 @@ import {
   ReadingListResult,
   ReadingProgressResult,
 } from '@/application/library/dto/library.dto';
-import { CollectionResult } from '@/application/library/use-cases/get-book-library-info/get-book-library-info.use-case';
 import { LibraryItemReadModel } from '@/domain/library/read-models/library-item.read-model';
 
 /** Accepts either domain Collection entity (userId: UserId) or CollectionResult (userId: string) */
@@ -30,7 +29,9 @@ export class BookLibraryInfoResponseDto {
     totalChapters: number,
   ) {
     this.status =
-      readingList?.status === 'NONE' ? null : readingList?.status || null;
+      readingList?.status === ReadingStatus.NONE
+        ? null
+        : readingList?.status || null;
     this.collections = collections;
     this.completedChaptersCount = completedChaptersCount;
     this.totalChapters = totalChapters;

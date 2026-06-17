@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useGetBookByIdQuery } from "@/features/books/api/bookApi";
 import {
@@ -51,7 +51,7 @@ export function useChapterManagement() {
   const [startChaptersImport, { isLoading: isStartingImport }] =
     useStartChaptersImportMutation();
   const [triggerImportStatus] = useLazyGetChaptersImportStatusQuery();
-  const [generateChapterAudio, { isLoading: isGeneratingAudio }] =
+  const [generateChapterAudio] =
     useGenerateChapterAudioMutation();
   const [generateBookAudio, { isLoading: isGeneratingAllAudio }] =
     useGenerateBookAudioMutation();
@@ -76,17 +76,14 @@ export function useChapterManagement() {
     },
   );
 
-
-
-  // Lazy query for direct fetching from polling (no closure issues)
   const [triggerFetchChapters] = useLazyGetAdminChaptersQuery();
 
-  const directFetchChapters = async () => {
+  const directFetchChapters = useCallback(async () => {
     if (!bookData?.slug) return;
     try {
       const result = await triggerFetchChapters(
         { bookSlug: bookData.slug, page: 1, limit: 20 },
-        false, // preferCacheValue = false → always fetch fresh from API
+        false,
       ).unwrap();
       if (isMountedRef.current && result?.chapters) {
         setPage(1);
@@ -97,7 +94,7 @@ export function useChapterManagement() {
     } catch (e) {
       console.error("Direct fetch chapters failed:", e);
     }
-  };
+  }, [bookData, triggerFetchChapters]);
 
   const refetchChapters = () => {
     setChapters([]);
@@ -112,7 +109,6 @@ export function useChapterManagement() {
     if (!activeJobId || !bookData?.slug) return;
 
     let isCleared = false;
-    let pollInterval: NodeJS.Timeout;
 
     const poll = async () => {
       try {
@@ -172,6 +168,8 @@ export function useChapterManagement() {
       }
     };
 
+    const pollInterval = setInterval(poll, 2000);
+
     const cleanup = () => {
       isCleared = true;
       clearInterval(pollInterval);
@@ -179,25 +177,23 @@ export function useChapterManagement() {
     };
 
     void poll(); // poll immediately
-    pollInterval = setInterval(poll, 2000);
 
     return () => {
       isCleared = true;
       clearInterval(pollInterval);
     };
-  }, [activeJobId, bookData?.slug, triggerImportStatus]);
+  }, [activeJobId, bookData?.slug, triggerImportStatus, directFetchChapters]);
 
-  // Infinite Scroll Effect
   useEffect(() => {
     if (chaptersData?.chapters && !isFetchingChapters) {
       if (page === 1) {
-        setChapters(chaptersData.chapters);
+        queueMicrotask(() => setChapters(chaptersData.chapters));
       } else {
-        setChapters((prev) => [...prev, ...chaptersData.chapters]);
+        queueMicrotask(() => setChapters((prev) => [...prev, ...chaptersData.chapters]));
       }
       const total = chaptersData.total || 0;
       const currentCount = (page - 1) * 20 + chaptersData.chapters.length;
-      setHasMore(currentCount < total);
+      queueMicrotask(() => setHasMore(currentCount < total));
     }
   }, [chaptersData, page, isFetchingChapters]);
 
@@ -240,7 +236,7 @@ export function useChapterManagement() {
 
   const book = bookData;
 
-  const handleToggleExpand = (chapterId: string, e?: React.MouseEvent) => {
+  const handleToggleExpand = (chapterId: string) => {
     if (expandedChapterId === chapterId) {
       setExpandedChapterId(null);
       setEditingChapterId(null);
@@ -249,7 +245,6 @@ export function useChapterManagement() {
     }
   };
 
-  // Mở rộng chapter rồi bắt đầu edit — gom 2 action thành 1 handler
   const handleExpandAndEdit = (chapter: Chapter) => {
     if (expandedChapterId !== chapter.id) {
       setExpandedChapterId(chapter.id);

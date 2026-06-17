@@ -8,7 +8,8 @@ export class GetBookFiltersUseCase {
 
   constructor(private readonly bookRepository: IBookRepository) {}
 
-  async execute(query: GetBookFiltersQuery) {
+  async execute(_query: GetBookFiltersQuery) {
+    void _query;
     try {
       const [genres, tags] = await Promise.all([
         this.bookRepository.countByGenreName(),

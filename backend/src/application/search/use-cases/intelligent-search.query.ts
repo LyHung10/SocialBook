@@ -42,10 +42,18 @@ export class IntelligentSearchQuery {
       'score',
     ];
 
-    this.sortBy = (
+    this.sortBy =
       props.sortBy && validSearchSortFields.includes(props.sortBy)
-        ? props.sortBy
-        : 'score'
-    ) as any;
+        ? (props.sortBy as
+            | 'views'
+            | 'likes'
+            | 'rating'
+            | 'popular'
+            | 'createdAt'
+            | 'updatedAt'
+            | 'title'
+            | 'publishedYear'
+            | 'score')
+        : 'score';
   }
 }

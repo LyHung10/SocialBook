@@ -4,7 +4,6 @@ import {
   IsOptional,
   IsString,
   IsObject,
-  IsUUID,
 } from 'class-validator';
 import { UserEventType } from '@/domain/analytics/enums/user-event-type.enum';
 

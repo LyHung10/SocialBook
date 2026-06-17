@@ -65,8 +65,8 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
 
     // Load user preferences từ backend khi có
     useEffect(() => {
-        if (userPrefs?.data && !isInitialized) {
-            loadUserPreferences(userPrefs.data);
+        if (userPrefs && !isInitialized) {
+            loadUserPreferences(userPrefs);
             setIsInitialized(true);
         }
     }, [userPrefs, loadUserPreferences, isInitialized]);
@@ -89,7 +89,7 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
             // Thêm delay nhỏ để có thể thấy loading state
             await new Promise(resolve => setTimeout(resolve, 300));
             setShowResetDialog(false);
-        } catch (error) {
+        } catch {
             toast.error('Đặt lại thất bại');
         } finally {
             setIsResetting(false);

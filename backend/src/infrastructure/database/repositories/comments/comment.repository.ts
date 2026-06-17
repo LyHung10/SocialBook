@@ -52,7 +52,7 @@ export class CommentRepository
     return this.mapToEntity(doc);
   }
 
-  protected toPersistence(entity: CommentEntity): any {
+  protected toPersistence(entity: CommentEntity): Partial<CommentDocument> {
     return this.mapToDocument(entity);
   }
 
@@ -75,6 +75,7 @@ export class CommentRepository
       targetId: new Types.ObjectId(targetId.toString()),
       targetType: targetType.toString(),
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     if (parentId) {
@@ -119,6 +120,7 @@ export class CommentRepository
     const queryFilter: FilterQuery<CommentDocument> = {
       parentId: new Types.ObjectId(parentId.toString()),
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     return this.executePaginatedQuery(
@@ -141,6 +143,7 @@ export class CommentRepository
       targetType: targetType.toString(),
       parentId: null,
       isDeleted: false,
+      moderationStatus: { $ne: 'rejected' },
     };
 
     return this.executePaginatedQuery(
@@ -338,13 +341,14 @@ export class CommentRepository
     }
 
     if (filter.dateFrom || filter.dateTo) {
-      queryFilter.createdAt = {};
+      const createdAtFilter: Record<string, Date> = {};
       if (filter.dateFrom) {
-        queryFilter.createdAt.$gte = new Date(filter.dateFrom);
+        createdAtFilter.$gte = new Date(filter.dateFrom);
       }
       if (filter.dateTo) {
-        queryFilter.createdAt.$lte = new Date(filter.dateTo);
+        createdAtFilter.$lte = new Date(filter.dateTo);
       }
+      queryFilter.createdAt = createdAtFilter;
     }
 
     const result = await this.executePaginatedQuery(
@@ -364,8 +368,9 @@ export class CommentRepository
   async getRepliesTree(
     targetId: TargetId,
     targetType: CommentTargetType,
-    maxDepth?: number,
+    _maxDepth?: number,
   ): Promise<CommentReplies[]> {
+    void _maxDepth;
     // This is a complex operation that would require recursive queries
     // For now, return top-level comments
     const topLevelComments = await this.findTopLevel(targetId, targetType);
@@ -536,7 +541,7 @@ export class CommentRepository
     );
     const [replyCounts, likedDocs] = await Promise.all([
       this.commentModel
-        .aggregate([
+        .aggregate<{ _id: Types.ObjectId; count: number }>([
           {
             $match: {
               parentId: { $in: commentIds },
@@ -560,13 +565,13 @@ export class CommentRepository
               status: true,
             })
             .select('targetId')
-            .lean()
+            .lean<Array<{ targetId: Types.ObjectId }>>()
             .exec()
         : Promise.resolve([] as Array<{ targetId: Types.ObjectId }>),
     ]);
 
     const replyCountMap = new Map(
-      replyCounts.map((item) => [item._id.toString(), item.count as number]),
+      replyCounts.map((item) => [item._id.toString(), item.count]),
     );
     const likedCommentIds = new Set(
       likedDocs.map((item) => item.targetId.toString()),

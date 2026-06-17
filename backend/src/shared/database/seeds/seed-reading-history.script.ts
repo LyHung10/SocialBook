@@ -5,14 +5,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import {
   User,
+  UserDocument,
   UserSchema,
 } from '@/infrastructure/database/schemas/user.schema';
 import {
   Chapter,
+  ChapterDocument,
   ChapterSchema,
 } from '@/infrastructure/database/schemas/chapter.schema';
 import {
   Progress,
+  ProgressDocument,
   ProgressSchema,
 } from '@/infrastructure/database/schemas/progress.schema';
 
@@ -24,7 +27,7 @@ import {
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>(
           'MONGO_URI',
           'mongodb://localhost:27017/socialbook',
@@ -48,9 +51,11 @@ async function seedReadingHistory() {
 
   const app = await NestFactory.createApplicationContext(SeedModule);
 
-  const userModel = app.get<Model<any>>(`${User.name}Model`);
-  const chapterModel = app.get<Model<any>>(`${Chapter.name}Model`);
-  const progressModel = app.get<Model<any>>(`${Progress.name}Model`);
+  const userModel = app.get<Model<UserDocument>>(`${User.name}Model`);
+  const chapterModel = app.get<Model<ChapterDocument>>(`${Chapter.name}Model`);
+  const progressModel = app.get<Model<ProgressDocument>>(
+    `${Progress.name}Model`,
+  );
 
   const users = await userModel.find().limit(20);
   const chapters = await chapterModel.find().limit(50);

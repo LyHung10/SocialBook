@@ -28,7 +28,6 @@ export default function ChapterListDrawer({
   bookSlug,
   currentChapterSlug,
   totalChapters,
-  hasHeader = false,
 }: ChapterListDrawerProps) {
   const router = useRouter();
 

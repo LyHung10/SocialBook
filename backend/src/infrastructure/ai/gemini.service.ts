@@ -22,10 +22,11 @@ export class GeminiService implements IGeminiService {
   async generateText(prompt: string): Promise<string> {
     try {
       const result = await this.model.generateContent(prompt);
-      const response = await result.response;
+      const response = result.response;
       return response.text();
-    } catch (error) {
-      throw new Error(`Failed to generate text: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate text: ${message}`);
     }
   }
 
@@ -34,7 +35,7 @@ export class GeminiService implements IGeminiService {
       // Quay lại cách truyền thống để tương thích với bản v1 (Stable)
       const jsonPrompt = `${prompt}\n\nIMPORTANT: Return ONLY a valid JSON object. No markdown, no code blocks.`;
       const result = await this.model.generateContent(jsonPrompt);
-      const response = await result.response;
+      const response = result.response;
       const text = response.text();
 
       try {
@@ -46,21 +47,23 @@ export class GeminiService implements IGeminiService {
           try {
             return JSON.parse(jsonMatch[0]) as T;
           } catch (e) {
-            throw new Error(`Parse matched JSON failed: ${e.message}`);
+            const msg = e instanceof Error ? e.message : String(e);
+            throw new Error(`Parse matched JSON failed: ${msg}`);
           }
         }
-        this.logger.error(
-          `JSON Parse Error: ${parseError.message}. Content: ${text}`,
-        );
+        const parseMsg =
+          parseError instanceof Error ? parseError.message : String(parseError);
+        this.logger.error(`JSON Parse Error: ${parseMsg}. Content: ${text}`);
         throw new Error('Could not parse JSON response');
       }
-    } catch (error) {
-      if (error.message.includes('404')) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      if (errMsg.includes('404')) {
         this.logger.error(
           'LỖI 404: Model không tồn tại hoặc API Key không có quyền. Hãy thử dùng model "gemini-pro" hoặc kiểm tra lại Key trên Google AI Studio.',
         );
       }
-      throw new Error(`Failed to generate JSON: ${error.message}`);
+      throw new Error(`Failed to generate JSON: ${errMsg}`);
     }
   }
 
@@ -71,8 +74,9 @@ export class GeminiService implements IGeminiService {
       });
       const result = await model.embedContent(text);
       return result.embedding.values;
-    } catch (error) {
-      throw new Error(`Failed to generate embedding: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate embedding: ${message}`);
     }
   }
 

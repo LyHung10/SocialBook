@@ -139,13 +139,14 @@ export class AIRequestRepository
     }
 
     if (filter.dateFrom || filter.dateTo) {
-      query.createdAt = {};
+      const createdAtFilter: Record<string, Date> = {};
       if (filter.dateFrom) {
-        query.createdAt.$gte = filter.dateFrom;
+        createdAtFilter.$gte = filter.dateFrom;
       }
       if (filter.dateTo) {
-        query.createdAt.$lte = filter.dateTo;
+        createdAtFilter.$lte = filter.dateTo;
       }
+      query.createdAt = createdAtFilter;
     }
 
     const skip = (pagination.page - 1) * pagination.limit;
@@ -191,9 +192,10 @@ export class AIRequestRepository
         query.response = filter.isCompleted ? { $ne: null } : null;
       }
       if (filter.dateFrom || filter.dateTo) {
-        query.createdAt = {};
-        if (filter.dateFrom) query.createdAt.$gte = filter.dateFrom;
-        if (filter.dateTo) query.createdAt.$lte = filter.dateTo;
+        const createdAtFilter: Record<string, Date> = {};
+        if (filter.dateFrom) createdAtFilter.$gte = filter.dateFrom;
+        if (filter.dateTo) createdAtFilter.$lte = filter.dateTo;
+        query.createdAt = createdAtFilter;
       }
     }
 

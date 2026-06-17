@@ -69,7 +69,7 @@ export interface CreateCollectionRequest {
   isPublic?: boolean;
 }
 
-export interface UpdateCollectionRequest extends CreateCollectionRequest { }
+export type UpdateCollectionRequest = CreateCollectionRequest;
 
 export interface GraphNode {
   id: string;

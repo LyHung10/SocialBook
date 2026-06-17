@@ -1,5 +1,20 @@
 import { Follow } from '@/domain/follows/entities/follow.entity';
 
+interface RawFollowData {
+  id?: string;
+  _id?: { toString(): string };
+  userId: string;
+  targetId: string;
+  status: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  username?: string;
+  image?: string;
+  postCount?: number;
+  readingListCount?: number;
+  followersCount?: number;
+}
+
 export class FollowResponseDto {
   id: string;
   userId: string;
@@ -15,7 +30,7 @@ export class FollowResponseDto {
   followersCount: number;
 
   constructor(
-    follow: Follow | any,
+    follow: Follow | RawFollowData,
     userInfo?: { username?: string; image?: string },
   ) {
     if (follow instanceof Follow) {
@@ -27,7 +42,7 @@ export class FollowResponseDto {
       this.createdAt = follow.createdAt;
       this.updatedAt = follow.updatedAt;
     } else {
-      this.id = follow.id ?? follow._id?.toString();
+      this.id = follow.id ?? follow._id?.toString() ?? '';
       this.userId = follow.userId;
       this.targetId = follow.targetId;
       this.status = follow.status;
@@ -36,9 +51,9 @@ export class FollowResponseDto {
       this.updatedAt = follow.updatedAt;
       this.username = follow.username;
       this.image = follow.image;
-      this.postCount = follow.postCount || 0;
-      this.readingListCount = follow.readingListCount || 0;
-      this.followersCount = follow.followersCount || 0;
+      this.postCount = follow.postCount ?? 0;
+      this.readingListCount = follow.readingListCount ?? 0;
+      this.followersCount = follow.followersCount ?? 0;
     }
 
     if (userInfo) {

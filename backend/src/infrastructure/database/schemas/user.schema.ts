@@ -69,7 +69,7 @@ export class User extends BaseSchema {
         enum: ['left', 'center', 'justify'],
         default: 'justify',
       },
-      marginWidth: { type: Number, default: 0, min: 0, max: 100 },
+      marginWidth: { type: Number, default: 40, min: 0, max: 100 },
     },
     default: {},
   })

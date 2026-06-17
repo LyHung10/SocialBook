@@ -54,16 +54,16 @@ export function useNotificationSocket(
                 });
             }
         },
-        'notification:new': (payload: NotificationItem) => {
-            onNewNotification(payload);
+        'notification:new': (payload: unknown) => {
+            onNewNotification(payload as NotificationItem);
         },
-        'notification:read': (data: { id: string }) => {
-            onReadNotification(data);
+        'notification:read': (data: unknown) => {
+            onReadNotification(data as { id: string });
         },
         'connect_error': () => {
             console.log('Kết nối thông báo thất bại');
         }
-    }, [onNotificationList, onNewNotification, onReadNotification]);
+    });
 
     useEffect(() => {
         if (!userToken) return;

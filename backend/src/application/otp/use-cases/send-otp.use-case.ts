@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { InternalServerDomainException } from '@/shared/domain/common-exceptions';
 import { IMailerPort } from '@/domain/otp/interfaces/mailer.port';
@@ -32,8 +33,10 @@ export class SendOtpUseCase {
     // 3. Save OTP
     try {
       await this.otpRepository.save(otp);
-    } catch (error) {
-      this.logger.error(`Error saving OTP for ${email}: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error saving OTP for ${email}: ${getErrorMessage(error)}`,
+      );
       throw new InternalServerDomainException('Failed to save OTP');
     }
 
@@ -52,8 +55,10 @@ export class SendOtpUseCase {
                 </div>
               `,
       });
-    } catch (error) {
-      this.logger.error(`Error sending email to ${email}: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error sending email to ${email}: ${getErrorMessage(error)}`,
+      );
       throw new InternalServerDomainException('Failed to send OTP email');
     }
 

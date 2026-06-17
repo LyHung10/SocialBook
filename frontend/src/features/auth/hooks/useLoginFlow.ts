@@ -51,7 +51,7 @@ export function useLoginFlow(): UseLoginFlowResult & {
             } else {
                 setServerError(result?.error || 'Invalid email or password.');
             }
-        } catch (error) {
+        } catch {
             setServerError('An unexpected error occurred.');
         } finally {
             setIsLoading(false);

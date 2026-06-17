@@ -4,7 +4,10 @@ import { IChapterKnowledgeRepository } from '@/domain/chapters/repositories/chap
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
-import { ChapterKnowledge } from '@/domain/chapters/entities/chapter-knowledge.entity';
+import {
+  ChapterKnowledge,
+  KnowledgeEntityType,
+} from '@/domain/chapters/entities/chapter-knowledge.entity';
 import { ChapterId } from '@/domain/chapters/value-objects/chapter-id.vo';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 
@@ -70,11 +73,28 @@ export class GetChapterKnowledgeUseCase {
     `;
 
     this.logger.log(`Extracting knowledge for chapter ${query.chapterId}...`);
-    const result = await this.geminiService.generateJSON<{
-      entities: any[];
-      relationships: any[];
+    interface KnowledgeEntity {
+      name: string;
+      type: KnowledgeEntityType;
+      description: string;
+      importance: number;
+    }
+
+    interface KnowledgeRelationship {
+      source: string;
+      target: string;
+      type: string;
+      description: string;
+    }
+
+    interface KnowledgeResult {
+      entities: KnowledgeEntity[];
+      relationships: KnowledgeRelationship[];
       summary: string;
-    }>(prompt);
+    }
+
+    const result =
+      await this.geminiService.generateJSON<KnowledgeResult>(prompt);
 
     const knowledge = ChapterKnowledge.create({
       id: existing ? existing.id : this.idGenerator.generate(),

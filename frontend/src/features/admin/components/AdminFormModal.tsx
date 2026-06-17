@@ -32,7 +32,7 @@ interface AdminFormModalProps {
   icon: React.ReactNode;
   isLoading: boolean;
   fields: FormField[];
-  initialValues?: Record<string, any>;
+  initialValues?: Record<string, string>;
   onSubmit: (values: Record<string, string>, files: Record<string, File | null>) => Promise<void>;
   submitLabel?: string;
   size?: 'default' | 'lg';
@@ -71,9 +71,11 @@ export function AdminFormModal({
         }
       });
 
-      setFormData(initialForm);
-      setFiles(initialFiles);
-      setPreviews(initialPreviews);
+      queueMicrotask(() => {
+        setFormData(initialForm);
+        setFiles(initialFiles);
+        setPreviews(initialPreviews);
+      });
     }
   }, [isOpen, fields, initialValues]);
 

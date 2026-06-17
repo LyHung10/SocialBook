@@ -81,7 +81,7 @@ export const commentApi = createApi({
                 body: data,
             }),
 
-            invalidatesTags: (result, error) => {
+            invalidatesTags: (result) => {
                 if (!result) return [];
 
                 return [

@@ -80,7 +80,7 @@ export default function ParagraphCommentDrawer({
                     </SheetTitle>
                     {paragraphContent && (
                         <div className="mt-2 text-sm text-muted-foreground bg-muted/30 p-3 rounded-md border border-border italic border-l-4 border-l-primary/50">
-                            "{paragraphContent.length > 150 ? paragraphContent.substring(0, 150) + '...' : paragraphContent}"
+                            &ldquo;{paragraphContent.length > 150 ? paragraphContent.substring(0, 150) + '...' : paragraphContent}&rdquo;
                         </div>
                     )}
                     <SheetDescription className="sr-only">

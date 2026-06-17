@@ -22,7 +22,9 @@ export function useFollowUser({ userId, initialIsFollowing = false, onFollowChan
 
     useEffect(() => {
         if (statusData) {
-            setIsFollowing(statusData.isFollowing);
+            queueMicrotask(() => {
+                setIsFollowing(statusData.isFollowing);
+            });
         }
     }, [statusData]);
 
@@ -40,7 +42,7 @@ export function useFollowUser({ userId, initialIsFollowing = false, onFollowChan
             const newState = !isFollowing;
             setIsFollowing(newState);
             onFollowChange?.(newState);
-        } catch (e) {
+        } catch {
             toast.error(MESSAGES.FOLLOW_TOGGLE_FAILED);
         }
     }, [isFollowing, userId, toggleFollow, unfollow, onFollowChange]);

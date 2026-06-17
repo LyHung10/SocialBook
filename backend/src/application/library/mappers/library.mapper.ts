@@ -1,7 +1,4 @@
-import {
-  ReadingList,
-  ReadingStatus,
-} from '@/domain/library/entities/reading-list.entity';
+import { ReadingList } from '@/domain/library/entities/reading-list.entity';
 import { ReadingProgress } from '@/domain/library/entities/reading-progress.entity';
 import { Collection } from '@/domain/library/entities/collection.entity';
 import {

@@ -79,10 +79,10 @@ export function timeAgo(dateString: string) {
 }
 
 export function buildFormData(
-  data: Record<string, unknown>,
+  data: object,
   formData: FormData = new FormData()
 ): FormData {
-  Object.entries(data).forEach(([key, value]) => {
+  Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
     if (value === undefined || value === null) {
       return;
     }

@@ -31,8 +31,7 @@ export class PostRepository implements IPostRepository {
   ) {}
 
   async create(post: PostEntity): Promise<PostEntity> {
-    const persistenceModel = PostMapper.toPersistence(post);
-    const created = await this.model.create(persistenceModel);
+    const created = await this.model.create(PostMapper.toPersistence(post));
 
     const populated = await this.model
       .findById(created._id)
@@ -91,11 +90,8 @@ export class PostRepository implements IPostRepository {
 
     if (options.isFlagged !== undefined) {
       filter.isFlagged = options.isFlagged;
-    } else {
-      if (options.userId && options.viewerUserId === options.userId) {
-      } else {
-        filter.isFlagged = { $ne: true };
-      }
+    } else if (!(options.userId && options.viewerUserId === options.userId)) {
+      filter.isFlagged = { $ne: true };
     }
 
     const docs = await this.model
@@ -139,8 +135,8 @@ export class PostRepository implements IPostRepository {
     const filter = { isFlagged: true, isDeleted: false };
     const skip = (options.page - 1) * options.limit;
 
-    const [result] = await this.model
-      .aggregate([
+    const facetResult = await this.model
+      .aggregate<{ metadata: Array<{ total: number }>; data: PostDocument[] }>([
         { $match: filter },
         {
           $facet: {
@@ -155,6 +151,7 @@ export class PostRepository implements IPostRepository {
       ])
       .exec();
 
+    const result = facetResult[0] ?? { metadata: [], data: [] };
     const total: number = result.metadata[0]?.total ?? 0;
     let documents = result.data;
 
@@ -210,7 +207,7 @@ export class PostRepository implements IPostRepository {
       groupBy === 'month' ? '%Y-%m' : groupBy === 'year' ? '%Y' : '%Y-%m-%d';
 
     return this.model
-      .aggregate([
+      .aggregate<{ _id: string; count: number }>([
         { $match: { createdAt: { $gte: startDate } } },
         {
           $group: {
@@ -234,7 +231,7 @@ export class PostRepository implements IPostRepository {
     const postIds = docs.map((doc) => new Types.ObjectId(doc._id));
     const [commentCounts, likeCounts, likedDocs] = await Promise.all([
       this.commentModel
-        .aggregate([
+        .aggregate<{ _id: Types.ObjectId; count: number }>([
           {
             $match: {
               targetType: 'post',
@@ -251,7 +248,7 @@ export class PostRepository implements IPostRepository {
         ])
         .exec(),
       this.likeModel
-        .aggregate([
+        .aggregate<{ _id: Types.ObjectId; count: number }>([
           {
             $match: {
               targetType: 'post',
@@ -281,20 +278,20 @@ export class PostRepository implements IPostRepository {
         : Promise.resolve([] as Array<{ targetId: Types.ObjectId }>),
     ]);
 
-    const commentCountMap = new Map(
-      commentCounts.map((item) => [item._id.toString(), item.count as number]),
+    const commentCountMap = new Map<string, number>(
+      commentCounts.map((item) => [item._id.toString(), item.count]),
     );
-    const likeCountMap = new Map(
-      likeCounts.map((item) => [item._id.toString(), item.count as number]),
+    const likeCountMap = new Map<string, number>(
+      likeCounts.map((item) => [item._id.toString(), item.count]),
     );
     const likedPostIds = new Set(
       likedDocs.map((item) => item.targetId.toString()),
     );
 
     return docs.map((doc) => {
-      const docObj = doc instanceof Model ? doc.toObject() : doc;
+      const docObj = typeof doc.toObject === 'function' ? doc.toObject() : doc;
       return {
-        ...docObj,
+        ...doc,
         likesCount: likeCountMap.get(doc._id.toString()) ?? 0,
         commentsCount: commentCountMap.get(doc._id.toString()) ?? 0,
         likedByCurrentUser: viewerUserId

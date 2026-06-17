@@ -5,7 +5,7 @@ import { UserAvatar } from '@/components/common/UserAvatar';
 import { FollowButton } from '@/components/user/FollowButton';
 import { memo } from 'react';
 
-const FollowerItem = memo((props: FollowingUser) => {
+const FollowerItem = memo(function FollowerItem(props: FollowingUser) {
     const {
         isCurrentUser,
         isToggling,

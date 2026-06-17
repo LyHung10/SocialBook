@@ -77,7 +77,7 @@ import { TextToSpeechSchema } from '@/infrastructure/database/schemas/text-to-sp
     // Kết nối MongoDB
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>(
           'MONGO_URI',
           'mongodb://localhost:27017/socialbook',

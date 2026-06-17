@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  BadRequestDomainException,
-  NotFoundDomainException,
-} from '@/shared/domain/common-exceptions';
+import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { ReadingRoomResult } from '../reading-room.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
@@ -15,7 +12,7 @@ export class JoinRoomUseCase {
   async execute(command: JoinRoomCommand): Promise<ReadingRoomResult> {
     const room = await this.roomRepository.findActiveByCode(command.roomCode);
     if (!room) {
-      throw new NotFoundDomainException('Reading room not found or has ended');
+      throw new NotFoundDomainException('Phòng không tồn tại hoặc đã kết thúc');
     }
 
     room.addMember(command.userId);

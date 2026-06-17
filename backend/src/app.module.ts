@@ -28,7 +28,7 @@ import { PresentationModule } from './presentation/presentation.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>(
           'env.MONGO_URI',
           'mongodb://localhost:27017/socialbook',
@@ -38,7 +38,7 @@ import { PresentationModule } from './presentation/presentation.module';
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         transport: {
           host: 'smtp.gmail.com',
           port: 587,

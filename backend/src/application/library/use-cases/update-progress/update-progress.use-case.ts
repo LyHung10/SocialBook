@@ -110,7 +110,7 @@ export class UpdateProgressUseCase {
       this.readingProgressRepository.save(readingProgress),
     ]);
 
-    this.recommendationCache.clear(command.userId);
+    void this.recommendationCache.clear(command.userId);
 
     const detail = await this.readingListRepository.findDetailByUserIdAndBookId(
       userId,

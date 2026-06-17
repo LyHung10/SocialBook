@@ -74,7 +74,7 @@ export default function SignupPage() {
               LES MISERABLES
             </h1>
             <p className="text-2xl text-primary-foreground/90 font-serif italic border-l-4 border-primary pl-4">
-              "To love another person is to see the face of God."
+              &quot;To love another person is to see the face of God.&quot;
             </p>
             <p className="mt-4 text-lg font-medium">— Victor Hugo</p>
           </div>

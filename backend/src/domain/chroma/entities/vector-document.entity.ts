@@ -7,7 +7,7 @@ export interface VectorDocumentProps {
   contentId: string;
   contentType: ContentType;
   content: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   embedding: EmbeddingVector;
 }
 
@@ -29,7 +29,7 @@ export class VectorDocument extends Entity<VectorId> {
     contentId: string;
     contentType: 'book' | 'author' | 'chapter';
     content: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     embedding: number[];
   }): VectorDocument {
     if (!props.contentId || props.contentId.trim().length === 0) {
@@ -54,7 +54,7 @@ export class VectorDocument extends Entity<VectorId> {
     contentId: string;
     contentType: 'book' | 'author' | 'chapter';
     content: string;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     embedding: number[];
     createdAt: Date;
     updatedAt: Date;
@@ -83,7 +83,7 @@ export class VectorDocument extends Entity<VectorId> {
   get content(): string {
     return this._props.content;
   }
-  get metadata(): Record<string, any> {
+  get metadata(): Record<string, unknown> {
     return { ...this._props.metadata };
   }
   get embedding(): EmbeddingVector {
@@ -100,7 +100,7 @@ export class VectorDocument extends Entity<VectorId> {
     this.markAsUpdated();
   }
 
-  updateMetadata(newMetadata: Record<string, any>): void {
+  updateMetadata(newMetadata: Record<string, unknown>): void {
     this._props.metadata = { ...newMetadata };
     this.markAsUpdated();
   }
@@ -110,7 +110,7 @@ export class VectorDocument extends Entity<VectorId> {
     this.markAsUpdated();
   }
 
-  addMetadata(key: string, value: any): void {
+  addMetadata(key: string, value: unknown): void {
     this._props.metadata[key] = value;
     this.markAsUpdated();
   }
@@ -148,7 +148,7 @@ export class VectorDocument extends Entity<VectorId> {
     return key in this._props.metadata;
   }
 
-  getMetadataValue(key: string): any {
+  getMetadataValue(key: string): unknown {
     return this._props.metadata[key];
   }
 
@@ -157,7 +157,7 @@ export class VectorDocument extends Entity<VectorId> {
     id: string,
     contentId: string,
     content: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
     embedding: number[],
   ): VectorDocument {
     return VectorDocument.create({
@@ -174,7 +174,7 @@ export class VectorDocument extends Entity<VectorId> {
     id: string,
     contentId: string,
     content: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
     embedding: number[],
   ): VectorDocument {
     return VectorDocument.create({
@@ -191,7 +191,7 @@ export class VectorDocument extends Entity<VectorId> {
     id: string,
     contentId: string,
     content: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
     embedding: number[],
   ): VectorDocument {
     return VectorDocument.create({

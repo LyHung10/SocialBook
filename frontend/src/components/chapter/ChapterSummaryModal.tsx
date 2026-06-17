@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { useSummarizeChapterMutation } from '@/features/gemini/api/geminiApi';
 import { toast } from 'sonner';
@@ -18,23 +18,24 @@ export default function ChapterSummaryModal() {
     const { user } = useAppAuth();
     const [summarize, { isLoading, error, data: summary }] = useSummarizeChapterMutation();
     const [hasFetched, setHasFetched] = useState(false);
+    const [wasOpen, setWasOpen] = useState(isChapterSummaryOpen);
 
     const chapterId = chapterSummaryData?.chapterId;
     const chapterTitle = chapterSummaryData?.chapterTitle;
 
-    // Reset state when modal closes
-    useEffect(() => {
+    if (isChapterSummaryOpen !== wasOpen) {
+        setWasOpen(isChapterSummaryOpen);
         if (!isChapterSummaryOpen) {
             setHasFetched(false);
         }
-    }, [isChapterSummaryOpen]);
+    }
 
     const handleSummarize = async () => {
         if (!chapterId) return;
         try {
             await summarize({ chapterId, userId: user?.id }).unwrap();
             setHasFetched(true);
-        } catch (err) {
+        } catch {
             toast.error('Không thể tạo tóm tắt. Vui lòng thử lại.');
         }
     };

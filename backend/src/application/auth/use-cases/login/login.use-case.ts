@@ -6,7 +6,6 @@ import {
 import { TokenService } from '../../services/token.service';
 import { IRoleRepository } from '@/domain/roles/repositories/role.repository.interface';
 import { LoginCommand } from './login.command';
-import { User } from '@/domain/users/entities/user.entity';
 
 @Injectable()
 export class LoginUseCase {
@@ -16,7 +15,7 @@ export class LoginUseCase {
   ) {}
 
   async execute(command: LoginCommand) {
-    const user = command.user as User;
+    const user = command.user;
 
     if (!user) {
       throw new UnauthorizedDomainException('Người dùng không tồn tại');

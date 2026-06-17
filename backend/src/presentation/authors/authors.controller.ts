@@ -48,7 +48,7 @@ export class AuthorsController {
   @Post()
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiFileUpload('photoUrl', CreateAuthorDto)
+  @ApiFileUpload('photoUrl')
   async create(
     @Body() createAuthorDto: CreateAuthorDto,
     @UploadedFile() file?: Express.Multer.File,
@@ -100,7 +100,7 @@ export class AuthorsController {
   @Put(':id')
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiFileUpload('photoUrl', UpdateAuthorDto)
+  @ApiFileUpload('photoUrl')
   async update(
     @Param('id') id: string,
     @Body() updateAuthorDto: UpdateAuthorDto,

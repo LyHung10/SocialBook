@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { useSocket } from '@/context/SocketProvider';
 import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
-import type { ReactionType, RoomReactionEvent } from '../types/room-interaction.types';
+import type { ReactionType, RoomReactionEvent, RoomSocket } from '../types/room-interaction.types';
 
 export const useRoomReactions = () => {
   const { getSocket } = useSocket();
@@ -26,15 +26,22 @@ export const useRoomReactions = () => {
   return { addReaction };
 };
 
-export const setupRoomReactionListeners = (socket: any, store: any) => {
-  if (!socket) return;
+interface RoomReactionStore {
+  getState(): {
+    updateReaction: (paragraphId: string, reactionType: string, userId: string, displayName: string, active: boolean) => void;
+  };
+}
 
-  socket.on(ReadingRoomServerEvent.REACTION_ADDED, (data: RoomReactionEvent) => {
+export const setupRoomReactionListeners = (socket: RoomSocket | null | undefined, store: RoomReactionStore | null | undefined) => {
+  if (!socket || !store) return;
+
+  socket.on(ReadingRoomServerEvent.REACTION_ADDED, (data: unknown) => {
+    const event = data as RoomReactionEvent;
     store.getState().updateReaction(
-      data.paragraphId,
-      data.reactionType,
-      data.userId,
-      data.displayName,
+      event.paragraphId,
+      event.reactionType,
+      event.userId,
+      event.displayName,
       true,
     );
   });

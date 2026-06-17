@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable } from '@nestjs/common';
 import {
   BadRequestDomainException,
@@ -13,7 +14,7 @@ import {
 } from '@/domain/text-to-speech/entities/text-to-speech.entity';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 
-interface GenerateAudioOptions {
+export interface GenerateAudioOptions {
   voice?: string;
   speed?: number;
   language?: string;
@@ -61,7 +62,7 @@ export class GenerateChapterAudioUseCase {
   async execute(
     chapterIdStr: string,
     options: GenerateAudioOptions = {},
-  ): Promise<any> {
+  ): Promise<TextToSpeech> {
     // 1. Validation (Optional, can rely on repository or value objects)
     const chapterId = ChapterId.create(chapterIdStr);
 
@@ -151,16 +152,16 @@ export class GenerateChapterAudioUseCase {
       );
 
       return savedTTS;
-    } catch (error) {
-      // 10. Update Failure
-      savedTTS.fail(error.message);
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      savedTTS.fail(errorMessage);
       await this.ttsRepository.save(savedTTS);
       await this.chapterRepository.updateTtsStatus(
         chapterId.toString(),
         'failed',
       );
       throw new InternalServerDomainException(
-        `Failed to generate audio: ${error.message}`,
+        `Failed to generate audio: ${errorMessage}`,
       );
     }
   }

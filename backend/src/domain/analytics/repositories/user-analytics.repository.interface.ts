@@ -24,13 +24,18 @@ export abstract class IUserAnalyticsRepository {
     days?: number,
     limit?: number,
   ): Promise<
-    { bookId: string; title: string; coverImage?: string; score: number }[]
+    {
+      bookId: string;
+      title: string;
+      coverImage: string | null;
+      score: number;
+    }[]
   >;
 
   abstract getTopActiveReaders(
     days?: number,
     limit?: number,
   ): Promise<
-    { userId: string; username: string; avatar?: string; score: number }[]
+    { userId: string; username: string; avatar: string | null; score: number }[]
   >;
 }

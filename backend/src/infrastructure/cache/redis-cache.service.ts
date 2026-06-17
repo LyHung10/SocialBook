@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
@@ -15,7 +16,7 @@ export class RedisCacheService implements ICacheService {
       return value ? (JSON.parse(value) as T) : null;
     } catch (error) {
       this.logger.error(
-        `Failed to get cache key "${key}": ${(error as Error).message}`,
+        `Failed to get cache key "${key}": ${getErrorMessage(error)}`,
       );
       return null;
     }
@@ -31,7 +32,7 @@ export class RedisCacheService implements ICacheService {
       }
     } catch (error) {
       this.logger.error(
-        `Failed to set cache key "${key}": ${(error as Error).message}`,
+        `Failed to set cache key "${key}": ${getErrorMessage(error)}`,
       );
     }
   }
@@ -41,7 +42,7 @@ export class RedisCacheService implements ICacheService {
       await this.redis.del(key);
     } catch (error) {
       this.logger.error(
-        `Failed to delete cache key "${key}": ${(error as Error).message}`,
+        `Failed to delete cache key "${key}": ${getErrorMessage(error)}`,
       );
     }
   }
@@ -50,7 +51,7 @@ export class RedisCacheService implements ICacheService {
     try {
       await this.redis.flushdb();
     } catch (error) {
-      this.logger.error(`Failed to reset cache: ${(error as Error).message}`);
+      this.logger.error(`Failed to reset cache: ${getErrorMessage(error)}`);
     }
   }
 }

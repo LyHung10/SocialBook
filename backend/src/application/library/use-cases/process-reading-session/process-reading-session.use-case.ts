@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  RecordReadingTimeUseCase,
-  RecordReadingTimeResult,
-} from '@/application/library/use-cases/record-reading-time/record-reading-time.use-case';
+import { RecordReadingTimeUseCase } from '@/application/library/use-cases/record-reading-time/record-reading-time.use-case';
 import { ProcessReadingSessionCommand } from './process-reading-session.command';
+import { RecordReadingTimeCommand } from '@/application/library/use-cases/record-reading-time/record-reading-time.command';
 
 export interface ProcessReadingSessionResult {
   timeSpentMinutes: number;
@@ -21,12 +19,9 @@ export class ProcessReadingSessionUseCase {
     command: ProcessReadingSessionCommand,
   ): Promise<ProcessReadingSessionResult> {
     try {
-      const result = await this.recordReadingTimeUseCase.execute({
-        userId: command.userId,
-        bookId: command.bookId,
-        chapterId: command.chapterId,
-        durationInSeconds: command.durationInSeconds,
-      } as any);
+      const result = await this.recordReadingTimeUseCase.execute(
+        command as RecordReadingTimeCommand,
+      );
 
       this.logger.log(
         `Processed reading session for user ${command.userId}: ${result.timeSpentMinutes} minutes`,

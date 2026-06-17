@@ -27,6 +27,7 @@ import ChapterNavigation from "@/components/chapter/ChapterNavigation";
 import CommentSection from "@/components/chapter/CommentSection";
 import ChapterHeader from "@/components/chapter/ChapterHeader";
 import { ChapterContent } from "@/components/chapter/ChapterContent";
+import ContentProtection from "@/components/chapter/ContentProtection";
 import { useReadingProgress, useReadingView } from "@/features/books/hooks";
 import { useAppAuth } from "@/features/auth/hooks";
 import { ReadingTimeTracker } from "@/features/books/components/ReadingTimeTracker";
@@ -115,14 +116,14 @@ export default function ChapterPage({ params }: ChapterPageProps) {
       router.push(
         `/books/${bookSlug}/chapters/${navigation.previous.slug}`,
       );
-  }, [navigation?.previous, bookSlug, router]);
+  }, [navigation, bookSlug, router]);
 
   const goToNextChapter = useCallback(() => {
     navigation?.next &&
       router.push(
         `/books/${bookSlug}/chapters/${navigation.next.slug}`,
       );
-  }, [navigation?.next, bookSlug, router]);
+  }, [navigation, bookSlug, router]);
 
   const defaultShareContent = useMemo(() => {
     if (!book || !chapter) return "";
@@ -220,13 +221,15 @@ ${book.description?.slice(0, 100)}...
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          <AudiobookView
-            chapterId={chapter.id}
-            chapterTitle={chapter.title}
-            paragraphs={chapter.paragraphs}
-            bookTitle={book.title}
-            bookCoverImage={book.coverUrl}
-          />
+          <ContentProtection>
+            <AudiobookView
+              chapterId={chapter.id}
+              chapterTitle={chapter.title}
+              paragraphs={chapter.paragraphs}
+              bookTitle={book.title}
+              bookCoverImage={book.coverUrl}
+            />
+          </ContentProtection>
         </div>
       </div>
     );
@@ -280,14 +283,16 @@ ${book.description?.slice(0, 100)}...
             </div>
 
             <div ref={contentRef}>
-              <ChapterContent
-                paragraphs={paragraphs}
-                chapterId={chapter.id}
-                bookId={book.id}
-                bookSlug={bookSlug}
-                bookCoverImage={book.coverUrl}
-                bookTitle={book.title}
-              />
+              <ContentProtection>
+                <ChapterContent
+                  paragraphs={paragraphs}
+                  chapterId={chapter.id}
+                  bookId={book.id}
+                  bookSlug={bookSlug}
+                  bookCoverImage={book.coverUrl}
+                  bookTitle={book.title}
+                />
+              </ContentProtection>
             </div>
 
             <div className="mt-12 pt-8 border-t border-border">

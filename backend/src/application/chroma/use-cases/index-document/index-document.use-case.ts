@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { VectorDocument } from '@/domain/chroma/entities/vector-document.entity';
@@ -51,14 +52,15 @@ export class IndexDocumentUseCase {
         success: true,
         documentId: document.id.toString(),
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       this.logger.error(
         `Failed to index document: ${command.contentId}`,
-        error,
+        errorMessage,
       );
       return {
         success: false,
-        error: error.message,
+        error: errorMessage,
       };
     }
   }

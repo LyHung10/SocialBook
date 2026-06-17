@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Book } from '@/features/books/types/book.interface';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import ChapterListDrawer from './ChapterListDrawer';
 
@@ -14,7 +13,6 @@ interface BookSidebarProps {
 }
 
 export const BookSidebar = ({ book, bookSlug }: BookSidebarProps) => {
-  const router = useRouter();
   const [showAllChapters, setShowAllChapters] = useState(false);
 
   const recentChapters = book.chapters

@@ -54,6 +54,7 @@ let nextConfig: NextConfig = {
 };
 
 if (process.env.ANALYZE === 'true') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: true,
   });

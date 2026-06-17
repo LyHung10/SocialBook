@@ -14,23 +14,25 @@ export class RecommendationCacheService extends RecommendationCachePort {
   private readonly logger = new Logger(RecommendationCacheService.name);
   private readonly cache = new Map<string, CacheEntry>();
 
-  async get(userId: string): Promise<RecommendationResponse | null> {
+  get(userId: string): Promise<RecommendationResponse | null> {
     const entry = this.cache.get(userId);
     if (!entry) {
-      return null;
+      return Promise.resolve(null);
     }
     if (Date.now() - entry.timestamp > TTL_MS) {
       this.cache.delete(userId);
-      return null;
+      return Promise.resolve(null);
     }
-    return entry.data;
+    return Promise.resolve(entry.data);
   }
 
-  async set(userId: string, data: RecommendationResponse): Promise<void> {
+  set(userId: string, data: RecommendationResponse): Promise<void> {
     this.cache.set(userId, { data, timestamp: Date.now() });
+    return Promise.resolve();
   }
 
-  async clear(userId: string): Promise<void> {
+  clear(userId: string): Promise<void> {
     this.cache.delete(userId);
+    return Promise.resolve();
   }
 }

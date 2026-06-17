@@ -32,10 +32,7 @@ export const useBookDetail = (bookSlug: string) => {
     }
   }, [book?.slug, recordView, dispatch]);
 
-  const isLiked = useMemo(() => {
-    if (!user?.id || !book?.likedBy) return false;
-    return book.likedBy.includes(user.id);
-  }, [book?.likedBy, user?.id]);
+  const isLiked = !user?.id || !book?.likedBy ? false : book.likedBy.includes(user.id);
 
   const likesCount = book?.stats?.likes ?? 0;
 

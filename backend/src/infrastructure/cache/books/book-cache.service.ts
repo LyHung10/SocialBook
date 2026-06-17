@@ -5,6 +5,26 @@ import type { ICacheService } from '@/domain/shared/interfaces/cache.service.int
 import { CACHE_TTL } from '@/common/constants/cache.constants';
 import { Book } from '@/domain/books/entities/book.entity';
 
+interface BookCacheData {
+  id: string;
+  title: string;
+  slug: string;
+  authorId: string;
+  genres: string[];
+  description: string;
+  publishedYear: string;
+  coverUrl: string;
+  status: 'draft' | 'published' | 'completed';
+  tags: string[];
+  views: number;
+  likes: number;
+  likedBy: string[];
+  createdAt: string;
+  updatedAt: string;
+  authorName: string;
+  chapterCount: number;
+}
+
 @Injectable()
 export class BookCacheService implements IBookCacheService {
   private readonly logger = new Logger(BookCacheService.name);
@@ -13,7 +33,7 @@ export class BookCacheService implements IBookCacheService {
 
   async getDetail(bookId: string): Promise<Book | null> {
     const key = `books:detail:${bookId}`;
-    const value = await this.cache.get<any>(key);
+    const value = await this.cache.get<BookCacheData>(key);
 
     if (!value || typeof value !== 'object') {
       return null;

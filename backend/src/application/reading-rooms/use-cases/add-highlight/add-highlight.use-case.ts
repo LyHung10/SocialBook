@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
@@ -25,7 +26,7 @@ export class AddHighlightUseCase {
     );
 
     if (!room) {
-      throw new NotFoundDomainException('Reading room not found');
+      throw new NotFoundDomainException('Phòng không tồn tại');
     }
 
     room.addHighlight({
@@ -43,8 +44,10 @@ export class AddHighlightUseCase {
       command.roomId,
       highlightIndex,
       command.content,
-    ).catch((err) => {
-      this.logger.error(`Failed to generate AI insight: ${err.message}`);
+    ).catch((err: unknown) => {
+      this.logger.error(
+        `Failed to generate AI insight: ${getErrorMessage(err)}`,
+      );
     });
 
     return room;

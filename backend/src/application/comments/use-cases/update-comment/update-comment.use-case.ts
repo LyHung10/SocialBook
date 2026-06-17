@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   NotFoundDomainException,
   ForbiddenDomainException,
-  BadRequestDomainException,
 } from '@/shared/domain/common-exceptions';
 import { ICommentRepository } from '@/domain/comments/repositories/comment.repository.interface';
 import { CommentId } from '@/domain/comments/value-objects/comment-id.vo';

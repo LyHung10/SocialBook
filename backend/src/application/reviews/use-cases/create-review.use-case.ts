@@ -86,7 +86,7 @@ export class CreateReviewUseCase {
 
     const created = await this.reviewRepository.create(review);
 
-    this.recommendationCache.clear(userId);
+    void this.recommendationCache.clear(userId);
 
     return created;
   }

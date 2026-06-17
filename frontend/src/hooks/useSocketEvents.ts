@@ -1,21 +1,32 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+
+interface SocketLike {
+  on(event: string, handler: (...args: unknown[]) => void): void;
+  off(event: string, handler: (...args: unknown[]) => void): void;
+}
 
 export function useSocketEvents(
-  socket: any,
-  events: Record<string, (...args: any[]) => void>,
-  dependencies: any[] = []
+  socket: SocketLike | null | undefined,
+  events: Record<string, (...args: unknown[]) => void>,
 ) {
+  const eventsRef = useRef(events);
+
+  useEffect(() => {
+    eventsRef.current = events;
+  });
+
   useEffect(() => {
     if (!socket) return;
 
-    Object.entries(events).forEach(([eventName, handler]) => {
+    const currentEvents = eventsRef.current;
+    Object.entries(currentEvents).forEach(([eventName, handler]) => {
       socket.on(eventName, handler);
     });
 
     return () => {
-      Object.entries(events).forEach(([eventName, handler]) => {
+      Object.entries(currentEvents).forEach(([eventName, handler]) => {
         socket.off(eventName, handler);
       });
     };
-  }, [socket, ...dependencies]);
+  }, [socket]);
 }

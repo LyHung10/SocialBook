@@ -66,13 +66,13 @@ const WorldMap: React.FC<WorldMapProps> = ({ data }) => {
 
     // Zoom behavior
     const zoom = d3
-      .zoom()
+      .zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
 
-    svg.call(zoom as any);
+    svg.call(zoom);
 
     // Country name mapping - maps GeoJSON names to your data names
     const countryMapping: { [key: string]: string } = {
@@ -95,24 +95,26 @@ const WorldMap: React.FC<WorldMapProps> = ({ data }) => {
     };
 
     // Load GeoJSON directly
-    d3.json(
+    d3.json<{ features: { properties: { name: string } }[] }>(
       'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson'
     )
-      .then((geojson: any) => {
+      .then((geojson) => {
+        if (!geojson) return;
         g.selectAll('path')
           .data(geojson.features)
           .enter()
           .append('path')
-          .attr('d', path as any)
-          .attr('fill', (d: any) => getCountryColor(d.properties.name))
+          .attr('d', path as unknown as string)
+          .attr('fill', (d: { properties: { name: string } }) => getCountryColor(d.properties.name))
           .attr('stroke', '#D6D6DA')
           .attr('stroke-width', 0.5)
           .style('cursor', 'pointer')
-          .on('mouseenter', function (event: any, d: any) {
+          .on('mouseenter', (event: MouseEvent, d: { properties: { name: string } }) => {
+            const el = event.currentTarget as SVGPathElement;
             const countryData = getCountryData(d.properties.name);
             const userCount = countryData ? countryData.userCount : 0;
 
-            d3.select(this).attr('fill', '#F53').attr('stroke-width', 1);
+            d3.select(el).attr('fill', '#F53').attr('stroke-width', 1);
 
             setTooltip({
               show: true,
@@ -121,7 +123,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ data }) => {
               content: `${d.properties.name}: ${userCount} người dùng`,
             });
           })
-          .on('mousemove', function (event: any, d: any) {
+          .on('mousemove', (event: MouseEvent, d: { properties: { name: string } }) => {
             const countryData = getCountryData(d.properties.name);
             const userCount = countryData ? countryData.userCount : 0;
 
@@ -132,8 +134,9 @@ const WorldMap: React.FC<WorldMapProps> = ({ data }) => {
               content: `${d.properties.name}: ${userCount} người dùng`,
             });
           })
-          .on('mouseleave', function (event: any, d: any) {
-            d3.select(this)
+          .on('mouseleave', (_event: MouseEvent, d: { properties: { name: string } }) => {
+            const el = _event.currentTarget as SVGPathElement;
+            d3.select(el)
               .attr('fill', getCountryColor(d.properties.name))
               .attr('stroke-width', 0.5);
 

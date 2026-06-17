@@ -1,8 +1,20 @@
+import { getErrorMessage } from '@/common/utils/error.util';
 import { Injectable } from '@nestjs/common';
 import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
-import { GenerateChapterAudioUseCase } from '@/application/text-to-speech/use-cases/generate-chapter-audio.use-case';
+import {
+  GenerateChapterAudioUseCase,
+  GenerateAudioOptions,
+} from '@/application/text-to-speech/use-cases/generate-chapter-audio.use-case';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
+
+export interface GenerateBookResult {
+  total: number;
+  successful: number;
+  failed: number;
+  generated: Array<{ chapterId: string; status: string; audioUrl?: string }>;
+  errors: Array<{ chapterId: string; error: string }>;
+}
 
 @Injectable()
 export class GenerateBookAudioUseCase {
@@ -11,7 +23,10 @@ export class GenerateBookAudioUseCase {
     private readonly chapterRepository: IChapterRepository,
   ) {}
 
-  async execute(bookIdStr: string, options: any = {}): Promise<any> {
+  async execute(
+    bookIdStr: string,
+    options: GenerateAudioOptions = {},
+  ): Promise<GenerateBookResult> {
     const bookId = BookId.create(bookIdStr);
 
     const chapters = await this.chapterRepository.findByBook(bookId, {
@@ -46,13 +61,14 @@ export class GenerateBookAudioUseCase {
         results.generated.push({
           chapterId: chapterId,
           status: 'success',
-          audioUrl: result.audioUrl,
+          audioUrl: result.audioUrl!,
         });
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
         results.failed++;
         results.errors.push({
           chapterId: chapterId,
-          error: error.message,
+          error: errorMessage,
         });
       }
     }
