@@ -3,6 +3,7 @@
 import { Bot, Send, X, Sparkles } from 'lucide-react';
 import { useAskChatbotMutation } from '@/features/chatbot/api/chatBotApi';
 import { useChatWidget } from '@/features/chatbot/hooks/useChatWidget';
+import { useAppAuth } from '@/features/auth/hooks/useAppAuth';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const ChatWidget = () => {
   const [askChatbot] = useAskChatbotMutation();
+  const { isAuthenticated } = useAppAuth();
 
   const {
     messages,
@@ -25,6 +27,7 @@ export const ChatWidget = () => {
     askChatbot: async (params) => {
       return await askChatbot(params).unwrap();
     },
+    isAuthenticated,
   });
 
   return (

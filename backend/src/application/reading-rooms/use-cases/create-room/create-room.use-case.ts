@@ -25,7 +25,7 @@ export class CreateRoomUseCase {
       BookId.create(command.bookId),
     );
     if (!book) {
-      throw new NotFoundDomainException('Book not found');
+      throw new NotFoundDomainException('Sách không tồn tại');
     }
 
     const firstChapter = await this.chapterRepository.findFirstChapter(
