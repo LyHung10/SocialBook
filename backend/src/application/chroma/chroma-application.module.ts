@@ -5,11 +5,13 @@ import { BatchIndexUseCase } from './use-cases/batch-index/batch-index.use-case'
 import { IndexDocumentUseCase } from './use-cases/index-document/index-document.use-case';
 import { SearchUseCase } from './use-cases/search/search.use-case';
 import { ReindexAllUseCase } from './use-cases/reindex-all/reindex-all.use-case';
+import { AskChatbotUseCase } from './use-cases/ask-chatbot/ask-chatbot.use-case';
 import { ChromaRepositoryModule } from '../../infrastructure/database/repositories/chroma/chroma-repository.module';
 import { BooksRepositoryModule } from '../../infrastructure/database/repositories/books/books-repository.module';
 import { AuthorsRepositoryModule } from '../../infrastructure/database/repositories/authors/authors-repository.module';
 import { ChaptersRepositoryModule } from '../../infrastructure/database/repositories/chapters/chapters-repository.module';
 import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.module';
+import { AIInfrastructureModule } from '@/infrastructure/ai/ai-infrastructure.module';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.mod
     AuthorsRepositoryModule,
     ChaptersRepositoryModule,
     IdGeneratorModule,
+    AIInfrastructureModule,
   ],
   providers: [
     GetCollectionStatsUseCase,
@@ -26,6 +29,7 @@ import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.mod
     IndexDocumentUseCase,
     SearchUseCase,
     ReindexAllUseCase,
+    AskChatbotUseCase,
   ],
   exports: [
     GetCollectionStatsUseCase,
@@ -34,6 +38,7 @@ import { IdGeneratorModule } from '@/infrastructure/database/id/id-generator.mod
     IndexDocumentUseCase,
     SearchUseCase,
     ReindexAllUseCase,
+    AskChatbotUseCase,
   ],
 })
 export class ChromaApplicationModule {}

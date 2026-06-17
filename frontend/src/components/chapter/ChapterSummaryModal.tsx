@@ -114,7 +114,7 @@ export default function ChapterSummaryModal() {
                     {summary && !isLoading && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                             <div className="bg-card border border-gray-200 dark:border-white/5 rounded-2xl p-6 text-gray-800 dark:text-gray-200 leading-7 text-[15px] shadow-sm whitespace-pre-line">
-                                {summary}
+                                {summary?.summary}
                             </div>
                             <div className="mt-6 flex justify-center">
                                 <button

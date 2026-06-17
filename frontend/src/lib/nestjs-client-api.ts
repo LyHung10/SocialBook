@@ -10,6 +10,11 @@ const clientApi = axios.create({
   withCredentials: true,
 });
 
+// Mutex: đảm bảo chỉ 1 lần refresh token chạy tại 1 thời điểm.
+// Các request 401 song song sẽ chờ chung promise này thay vì
+// mỗi cái tự gọi getSession() và gây race condition trên hashedRt.
+let refreshingPromise: Promise<string | null> | null = null;
+
 clientApi.interceptors.request.use(
   async (config) => {
     if (!(config.data instanceof FormData)) {
@@ -87,9 +92,18 @@ export const axiosBaseQuery =
           const hadToken = !!requestHeaders.Authorization;
 
           if (hadToken) {
-            const session = await getSession();
+            // Nếu chưa có refresh đang chạy thì khởi tạo, ngược lại dùng chung promise
+            if (!refreshingPromise) {
+              refreshingPromise = getSession()
+                .then((s) => s?.accessToken ?? null)
+                .finally(() => {
+                  refreshingPromise = null;
+                });
+            }
 
-            if (session?.accessToken) {
+            const newToken = await refreshingPromise;
+
+            if (newToken) {
               try {
                 const retryResult = await clientApi({
                   url,
@@ -97,7 +111,7 @@ export const axiosBaseQuery =
                   data: body,
                   headers: {
                     ...requestHeaders,
-                    Authorization: `Bearer ${session.accessToken}`,
+                    Authorization: `Bearer ${newToken}`,
                   },
                   params,
                 });

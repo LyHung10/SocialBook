@@ -70,11 +70,4 @@ export class RoomMember {
     this._props.joinedAt = new Date();
   }
 
-  makeHost(): void {
-    this._props.role = 'host';
-  }
-
-  makeMember(): void {
-    this._props.role = 'member';
-  }
 }

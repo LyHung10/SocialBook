@@ -301,14 +301,6 @@ export class ReadingRoomGateway
         .to(`room:${roomId}`)
         .emit(ReadingRoomServerEvent.MEMBER_LEFT, { userId });
 
-      if (room && room.hostId !== userId) {
-        this.server
-          .to(`room:${roomId}`)
-          .emit(ReadingRoomServerEvent.HOST_CHANGED, {
-            newHostId: room.hostId,
-          });
-      }
-
       const presences = await this.presenceService.getRoomPresences(roomId);
       this.server
         .to(`room:${roomId}`)

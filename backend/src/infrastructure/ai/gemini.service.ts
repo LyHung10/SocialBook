@@ -80,12 +80,14 @@ export class GeminiService implements IGeminiService {
     }
   }
 
-  async summarizeChapter(chapterId: string): Promise<string> {
-    // This would typically fetch chapter content from database
-    // For now, we'll generate a summary based on the chapter ID
-    const prompt = `Please provide a concise summary for the chapter with ID: ${chapterId}. 
+  async summarizeChapter(content: string, title?: string): Promise<string> {
+    const prompt = `Please provide a concise summary for the following chapter content${title ? ` titled "${title}"` : ''}. 
         Focus on the main events, character development, and key plot points. 
-        Keep the summary to 2-3 paragraphs.`;
+        Keep the summary to 2-3 paragraphs.
+        
+        Chapter Content:
+        ${content.substring(0, 25000)} // Limit to roughly 25k chars
+        `;
 
     return this.generateText(prompt);
   }

@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "@/lib/nestjs-client-api";
 import { NESTJS_LIKES_ENDPOINTS } from "@/constants/server-endpoints";
+import { recommendationsApi } from '../../recommendations/api/recommendationsApi';
 
 export interface LikeRequest {
     targetId: string;
@@ -22,6 +23,15 @@ export const likeApi = createApi({
             invalidatesTags: (result, error, arg) => [
                 { type: "Like", id: `${arg.targetType}-${arg.targetId}` },
             ],
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    if (arg.targetType === 'Book') {
+                        dispatch(recommendationsApi.util.resetApiState());
+                    }
+                } catch {
+                }
+            },
         }),
 
         getCount: builder.query<{ count: number }, LikeRequest>({

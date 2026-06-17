@@ -16,10 +16,12 @@ import { GetCollectionStatsUseCase } from '@/application/chroma/use-cases/get-co
 import { IndexDocumentUseCase } from '@/application/chroma/use-cases/index-document/index-document.use-case';
 import { ReindexAllUseCase } from '@/application/chroma/use-cases/reindex-all/reindex-all.use-case';
 import { SearchUseCase } from '@/application/chroma/use-cases/search/search.use-case';
+import { AskChatbotUseCase } from '@/application/chroma/use-cases/ask-chatbot/ask-chatbot.use-case';
 
 import { BatchIndexCommand } from '@/application/chroma/use-cases/batch-index/batch-index.command';
 import { IndexDocumentCommand } from '@/application/chroma/use-cases/index-document/index-document.command';
 import { SearchCommand } from '@/application/chroma/use-cases/search/search.command';
+import { AskChatbotCommand } from '@/application/chroma/use-cases/ask-chatbot/ask-chatbot.command';
 
 @Controller('chroma')
 export class ChromaController {
@@ -30,6 +32,7 @@ export class ChromaController {
     private readonly clearCollectionUseCase: ClearCollectionUseCase,
     private readonly getCollectionStatsUseCase: GetCollectionStatsUseCase,
     private readonly reindexAllUseCase: ReindexAllUseCase,
+    private readonly askChatbotUseCase: AskChatbotUseCase,
   ) {}
 
   @Public()
@@ -134,6 +137,17 @@ export class ChromaController {
         status: 'healthy',
         timestamp: new Date().toISOString(),
       },
+    };
+  }
+
+  @Public()
+  @Post('chat/ask')
+  async askChatbot(@Body() body: { question: string }) {
+    const command = new AskChatbotCommand(body.question);
+    const result = await this.askChatbotUseCase.execute(command);
+    return {
+      message: 'Chatbot answered successfully',
+      data: result,
     };
   }
 }

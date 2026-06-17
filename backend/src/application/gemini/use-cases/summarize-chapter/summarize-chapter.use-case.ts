@@ -1,7 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import type { IAIRequestRepository } from '@/domain/gemini/repositories/ai-request.repository.interface';
+import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
+import { ChapterId } from '@/domain/chapters/value-objects/chapter-id.vo';
 import {
   AIRequest,
   AIRequestType,
@@ -27,23 +30,33 @@ export class SummarizeChapterUseCase {
     private readonly geminiService: IGeminiService,
     @Inject(GEMINI_TOKENS.AI_REQUEST_REPOSITORY)
     private readonly aiRequestRepository: IAIRequestRepository,
+    private readonly chapterRepository: IChapterRepository,
     private readonly idGenerator: IIdGenerator,
   ) {}
 
   async execute(
     request: SummarizeChapterRequest,
   ): Promise<SummarizeChapterResponse> {
+    const chapter = await this.chapterRepository.findById(
+      ChapterId.create(request.chapterId),
+    );
+    if (!chapter) {
+      throw new NotFoundDomainException('Chapter not found');
+    }
+
     const aiRequest = AIRequest.create({
       id: this.idGenerator.generate(),
-      prompt: `Summarize chapter with ID: ${request.chapterId}`,
+      prompt: `Summarize chapter "${String(chapter.title)}" (ID: ${request.chapterId})`,
       type: AIRequestType.CHAPTER_SUMMARY,
       userId: request.userId,
       metadata: { chapterId: request.chapterId },
     });
 
     try {
+      const content = chapter.paragraphs.map((p) => p.content).join('\n');
       const summary = await this.geminiService.summarizeChapter(
-        request.chapterId,
+        content,
+        String(chapter.title),
       );
 
       aiRequest.setResponse(summary);

@@ -14,6 +14,7 @@ import {
   Settings,
   Share2,
   Sparkles,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -361,6 +362,17 @@ ${book.description?.slice(0, 100)}...
             icon={<Share2 size={20} />}
             label="Chia sẻ"
             onClick={handleOpenShareModal}
+          />
+
+          <DockButton
+            icon={<FileText size={20} />}
+            label="Tóm tắt"
+            onClick={() =>
+              openChapterSummary({
+                chapterId: chapter.id,
+                chapterTitle: chapter.title,
+              })
+            }
           />
 
           <DockButton
