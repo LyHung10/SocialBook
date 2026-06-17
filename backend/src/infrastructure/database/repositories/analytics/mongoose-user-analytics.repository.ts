@@ -118,7 +118,8 @@ export class MongooseUserAnalyticsRepository
 
     return result.map((item) => ({
       bookId: item._id.toString(),
-      title: item.bookInfo?.title || 'Không rõ',
+      title: item.bookInfo?.title,
+      slug: item.bookInfo?.slug,
       coverImage: item.bookInfo?.coverUrl || null,
       score: item.score,
     }));
