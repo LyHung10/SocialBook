@@ -101,7 +101,7 @@ export class ContentModerationService implements IContentModerationService {
           this.configService.get<string>('env.MODERATION_MODEL') ||
           'gemini-2.5-flash';
         const moderationTimeout =
-          this.configService.get<number>('env.MODERATION_TIMEOUT') || 30000;
+          this.configService.get<number>('env.MODERATION_TIMEOUT') || 15000;
 
         const response = await axios.post(
           `${moderationApiBaseUrl}/chat/completions`,

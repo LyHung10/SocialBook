@@ -107,7 +107,10 @@ describe('GetChapterBySlugUseCase (Unit)', () => {
 
   it('should return null navigation for first/last chapters', async () => {
     const firstChapter = createMockChapterDetail({
-      navigation: { previous: null, next: { id: 'ch2', title: 'Chương 2', slug: 'chuong-2', orderIndex: 2 } },
+      navigation: {
+        previous: null,
+        next: { id: 'ch2', title: 'Chương 2', slug: 'chuong-2', orderIndex: 2 },
+      },
     });
     mockChapterRepo.findDetailBySlug.mockResolvedValue(firstChapter);
 
@@ -133,9 +136,7 @@ describe('GetChapterBySlugUseCase (Unit)', () => {
     );
 
     await expect(
-      useCase.execute(
-        new GetChapterBySlugQuery('chuong-1', 'dac-nhan-tam'),
-      ),
+      useCase.execute(new GetChapterBySlugQuery('chuong-1', 'dac-nhan-tam')),
     ).rejects.toThrow('DB query failed');
   });
 });

@@ -289,6 +289,7 @@ export class PostRepository implements IPostRepository {
     );
 
     return docs.map((doc) => {
+      const docObj = typeof doc.toObject === 'function' ? doc.toObject() : doc;
       return {
         ...doc,
         likesCount: likeCountMap.get(doc._id.toString()) ?? 0,

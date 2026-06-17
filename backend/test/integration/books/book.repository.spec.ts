@@ -251,10 +251,7 @@ describe('BookRepository (Integration)', () => {
 
   describe('pagination', () => {
     it('should return paginated results with correct meta', async () => {
-      const result = await bookRepository.findAll(
-        {},
-        { page: 1, limit: 1 },
-      );
+      const result = await bookRepository.findAll({}, { page: 1, limit: 1 });
 
       expect(result.meta.current).toBe(1);
       expect(result.meta.pageSize).toBe(1);

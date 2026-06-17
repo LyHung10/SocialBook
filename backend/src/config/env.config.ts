@@ -39,7 +39,7 @@ export default registerAs('env', () => ({
     process.env.MODERATION_API_BASE_URL || 'https://platform.beeknoee.com/v1',
   MODERATION_MODEL: process.env.MODERATION_MODEL || 'gemini-2.5-flash-lite',
   MODERATION_TIMEOUT:
-    parseInt(process.env.MODERATION_TIMEOUT ?? '', 10) || 30000,
+    parseInt(process.env.MODERATION_TIMEOUT ?? '', 10) || 15000,
 
   // Chroma
   CHROMA_URL: process.env.CHROMA_URL || 'http://localhost:8000',
