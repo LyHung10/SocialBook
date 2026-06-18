@@ -8,13 +8,15 @@ interface SearchBarProps {
   onSearch: (value: string) => void;
   onClear: () => void;
   debounceMs?: number;
+  compact?: boolean;
 }
 
 export const SearchBar = ({
   initialValue,
   onSearch,
   onClear,
-  debounceMs = 500
+  debounceMs = 500,
+  compact = false,
 }: SearchBarProps) => {
   const [input, setInput] = useState(initialValue);
   const debouncedInput = useDebounce(input, debounceMs);
@@ -68,7 +70,7 @@ export const SearchBar = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-10 max-w-3xl mx-auto relative group"
+      className={compact ? 'relative flex-1' : 'max-w-3xl mx-auto relative group'}
     >
       <input
         type="text"
@@ -77,15 +79,21 @@ export const SearchBar = ({
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         placeholder="Tìm kiếm tên truyện, tác giả..."
-        className="block w-full pl-5 pr-12 py-4 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 shadow-lg backdrop-blur-sm transition-all"
+        className={
+          compact
+            ? 'block w-full pl-4 pr-10 py-2.5 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 transition-all text-sm'
+            : 'block w-full pl-5 pr-12 py-4 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600/50 shadow-lg backdrop-blur-sm transition-all'
+        }
       />
       {(input || initialValue) && (
         <button
           type="button"
           onClick={handleClear}
-          className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-red-500 transition-colors"
+          className={`absolute inset-y-0 flex items-center text-gray-400 hover:text-red-500 transition-colors ${
+            compact ? 'right-3' : 'right-4'
+          }`}
         >
-          <X size={20} />
+          <X size={compact ? 16 : 20} />
         </button>
       )}
     </form>

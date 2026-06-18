@@ -11,9 +11,10 @@ import { useBookPagination } from '@/features/books/hooks/useBookPagination';
 import { SearchBar } from '@/components/book/SearchBar';
 import { FilterSection } from '@/components/book/FilterSection';
 import { SortDropdown } from '@/components/book/SortDropdown';
-import { ActiveFilters } from '@/components/book/ActiveFilters';
 import { useTracking, UserEventType } from '@/hooks/use-tracking';
 import { useEffect } from 'react';
+import { HorizontalFilters } from '@/components/book/HorizontalFilters';
+import { ActiveFilters } from '@/components/book/ActiveFilters';
 
 export default function BooksPage() {
   const {
@@ -27,11 +28,11 @@ export default function BooksPage() {
     setSearch,
     clearSearch,
     clearFilters,
-    clearAll,
     clearGenres,
+    clearAll,
   } = useBookParams();
 
-  const { data: filtersData, isLoading: isFiltersLoading } =
+  const { data: filtersData } =
     useGetFiltersQuery();
 
   const {
@@ -62,120 +63,140 @@ export default function BooksPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative transition-colors duration-300">
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      {/* HERO BANNER */}
+      <div className="relative w-full h-[30vh] min-h-[260px] max-h-[350px] flex items-center justify-center overflow-hidden bg-slate-900 dark:bg-black">
         <Image
           src="/main-background.jpg"
           alt="Background"
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-10 dark:opacity-40"
+          className="object-cover opacity-40 dark:opacity-30 mix-blend-overlay"
         />
-        <div className="absolute inset-0 bg-white/60 dark:bg-[#0f0f0f]/70"></div>
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/50" />
+        <div className="relative z-10 text-center w-full max-w-3xl px-4 flex flex-col items-center">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+            Khám Phá Thư Viện
+          </h1>
+          <p className="text-white/90 mb-8 text-sm md:text-base font-medium max-w-xl drop-shadow-sm">
+            Hàng ngàn tựa sách hấp dẫn đang chờ bạn khám phá. Tìm kiếm ngay để bắt đầu hành trình đọc sách của bạn!
+          </p>
+          <div className="w-full max-w-xl shadow-2xl rounded-full bg-background p-1.5 flex items-center">
+            <div className="flex-1">
+              <SearchBar
+                compact={false}
+                initialValue={searchQuery}
+                onSearch={setSearch}
+                onClear={clearSearch}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10">
-        <main className="container mx-auto px-4 md:px-12 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-gray-200 dark:border-white/10 pb-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-wide mb-2">
-                Thư Viện
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Khám phá hàng ngàn đầu sách hấp dẫn
-              </p>
-            </div>
-          </div>
+      {/* HORIZONTAL CATEGORIES */}
+      <HorizontalFilters
+        allGenres={filtersData?.genres || []}
+        allTags={filtersData?.tags || []}
+        selectedGenres={genres}
+        selectedTags={tags}
+        onToggleGenre={(slug: string) => toggleFilter('genres', slug)}
+        onToggleTag={(tag: string) => toggleFilter('tags', tag)}
+        onClearGenres={clearGenres}
+        onClearFilters={clearFilters}
+      />
 
-          <SearchBar
-            initialValue={searchQuery}
-            onSearch={setSearch}
-            onClear={clearSearch}
-          />
-
-          {searchQuery && (
-            <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Kết quả cho:{' '}
-              <span className="font-bold text-gray-900 dark:text-white">
-                &quot;{searchQuery}&quot;
-              </span>{' '}
-              ({metaData?.total || 0} truyện)
-            </div>
-          )}
-
-          <div className="flex flex-col lg:flex-row gap-8 mb-10">
-            <FilterSection
-              allGenres={filtersData?.genres || []}
-              allTags={filtersData?.tags || []}
-              selectedGenres={genres}
-              selectedTags={tags}
-              onToggleGenre={(slug: string) => toggleFilter('genres', slug)}
-              onToggleTag={(tag: string) => toggleFilter('tags', tag)}
-              onClearGenres={clearGenres}
-            />
-            <SortDropdown
-              currentSort={sortBy}
-              currentOrder={order}
-              onSortChange={setSort}
-            />
-          </div>
-
-          <ActiveFilters
-            genres={genres}
-            tags={tags}
-            allGenres={filtersData?.genres || []}
-            onRemoveGenre={(slug: string) => toggleFilter('genres', slug)}
-            onRemoveTag={(tag: string) => toggleFilter('tags', tag)}
-            onClearAll={clearFilters}
-          />
-
-          {isBooksLoading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
-            </div>
-          ) : books.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
-              {books.map((book, index) => (
-                <div
-                  key={`${book.id}-${index}`}
-                  ref={index === books.length - 1 ? lastBookRef : null}
-                  className="w-full"
-                >
-                  <BookCard book={book} />
+      {/* MAIN CONTENT */}
+      <main className="container mx-auto px-4 md:px-8 py-8 lg:py-10 relative z-10">
+        <div className="flex flex-col gap-8">
+          {/* RIGHT CONTENT (BOOKS) - Now Full Width */}
+          <section className="flex-1 min-w-0">
+            {/* Header: Results count, Active Filters & Sort */}
+            <div className="flex flex-col gap-4 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">
+                    {searchQuery ? `Kết quả tìm kiếm cho "${searchQuery}"` : 'Tất cả sách'}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {metaData?.total ? `Hiển thị ${metaData.total} kết quả` : 'Đang tải...'}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-white/5 rounded-2xl border border-gray-300 dark:border-white/10 mt-8">
-              <div className="bg-gray-200 dark:bg-white/10 p-4 rounded-full mb-4">
-                <Search size={32} className="text-gray-400" />
+                <SortDropdown
+                  currentSort={sortBy}
+                  currentOrder={order}
+                  onSortChange={setSort}
+                />
               </div>
-              <p className="text-xl font-medium mb-2">
-                Không tìm thấy truyện nào
-              </p>
-              <button
-                onClick={clearAll}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors font-medium"
-              >
-                Xóa tất cả bộ lọc
-              </button>
-            </div>
-          )}
 
-          {isFetchingMore && (
-            <div className="flex justify-center py-8 gap-2 text-gray-600 dark:text-gray-400">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-red-600 border-t-transparent"></div>
-              <span>Đang tải thêm sách...</span>
+              {/* Active Filters Row */}
+              <ActiveFilters
+                genres={genres}
+                tags={tags}
+                allGenres={filtersData?.genres || []}
+                onRemoveGenre={(slug: string) => toggleFilter('genres', slug)}
+                onRemoveTag={(tag: string) => toggleFilter('tags', tag)}
+                onClearAll={clearFilters}
+              />
             </div>
-          )}
 
-          {!hasMore && books.length > 0 && (
-            <div className="flex justify-center py-8 text-muted-foreground">
-              <p>Đã hiển thị tất cả sách</p>
-            </div>
-          )}
-        </main>
-      </div>
+            {/* Books Grid */}
+            {isBooksLoading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
+              </div>
+            ) : books.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4 md:gap-5">
+                {books.map((book, index) => (
+                  <div
+                    key={`${book.id}-${index}`}
+                    ref={index === books.length - 1 ? lastBookRef : null}
+                    className="w-full"
+                  >
+                    <BookCard book={book} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 bg-muted/30 rounded-2xl border border-border/50 mt-4">
+                <div className="bg-background shadow-sm p-4 rounded-full mb-4">
+                  <Search size={32} className="text-muted-foreground/50" />
+                </div>
+                <p className="text-lg font-medium text-foreground mb-2">
+                  Không tìm thấy truyện nào
+                </p>
+                <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
+                  Thử thay đổi từ khóa hoặc xóa bớt các bộ lọc để xem nhiều kết quả hơn.
+                </p>
+                <button
+                  onClick={clearAll}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors font-medium shadow-sm hover:shadow"
+                >
+                  Xóa tất cả bộ lọc
+                </button>
+              </div>
+            )}
+
+            {isFetchingMore && (
+              <div className="flex justify-center py-8 gap-2 text-muted-foreground">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-red-600 border-t-transparent"></div>
+                <span className="text-sm font-medium">Đang tải thêm sách...</span>
+              </div>
+            )}
+
+            {!hasMore && books.length > 0 && (
+              <div className="flex justify-center py-10 text-muted-foreground relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-border/60"></div>
+                </div>
+                <div className="relative bg-background px-4">
+                  <p className="text-sm font-medium">Bạn đã xem hết sách!</p>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

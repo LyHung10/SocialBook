@@ -36,9 +36,9 @@ export const ChatWidget = () => {
         <PopoverTrigger asChild>
           <Button
             size="icon"
-            className="w-14 h-14 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-12 h-12 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {isOpen ? <X size={22} /> : <Sparkles size={22} />}
+            {isOpen ? <X size={20} /> : <Bot size={24} />}
           </Button>
         </PopoverTrigger>
         <PopoverContent

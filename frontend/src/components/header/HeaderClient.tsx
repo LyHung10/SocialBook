@@ -17,6 +17,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { SearchTrigger } from '@/components/search/SearchTrigger';
 
 const LazyNotificationBell = dynamic(
     () =>
@@ -101,7 +102,8 @@ function Logo({ onClick }: { onClick: () => void }) {
 function HeaderNav({ onBooks, onPosts, onLibrary, onReadingRooms }: { onBooks: () => void; onPosts: () => void; onLibrary: () => void; onReadingRooms: () => void }) {
     return (
         <nav className="hidden md:flex items-center gap-1">
-            <NavButton onClick={onBooks} icon={<Search className="w-4 h-4" />}>Tìm kiếm</NavButton>
+            <SearchTrigger />
+            <NavButton onClick={onBooks} icon={<BookOpen className="w-4 h-4" />}>Khám phá</NavButton>
             <NavButton onClick={onPosts} icon={<Globe className="w-4 h-4" />}>Bảng tin</NavButton>
             <NavButton onClick={onLibrary} icon={<Library className="w-4 h-4" />}>Thư viện</NavButton>
             <NavButton onClick={onReadingRooms} icon={<Users className="w-4 h-4" />}>Phòng đọc</NavButton>
@@ -242,7 +244,7 @@ function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, o
 
                         <div className="h-4" />
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Khám phá</p>
-                        <MobileNavItem onClick={onBooks} icon={<Search className="w-5 h-5" />}>Tìm kiếm sách</MobileNavItem>
+                        <MobileNavItem onClick={onBooks} icon={<Search className="w-5 h-5" />}>Tìm kiếm</MobileNavItem>
                         <MobileNavItem onClick={onPosts} icon={<Globe className="w-5 h-5" />}>Bảng tin cộng đồng</MobileNavItem>
                         <MobileNavItem onClick={onReadingRooms} icon={<Users className="w-5 h-5" />}>Phòng đọc chung</MobileNavItem>
                         <MobileNavItem onClick={onKnowledgeMap} icon={<Network className="w-5 h-5" />}>Bản đồ tri thức</MobileNavItem>
