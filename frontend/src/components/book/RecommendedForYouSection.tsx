@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGetPersonalizedRecommendationsQuery } from '@/features/recommendations/api/recommendationsApi';
 import { useAppAuth } from '@/features/auth/hooks';
-import { ChevronRight, LogIn } from 'lucide-react';
+import { ChevronRight, LogIn, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -67,10 +67,10 @@ export const RecommendedForYouSection = () => {
           <div className="flex flex-col gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse flex gap-3 p-2">
-                <div className="w-16 h-24 bg-gray-200 dark:bg-accent/10 rounded-lg flex-shrink-0" />
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-200 dark:bg-accent/10 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-gray-200 dark:bg-accent/10 rounded w-1/2" />
+                <div className="w-16 h-24 bg-black/10 dark:bg-white/10 rounded-lg flex-shrink-0" />
+                <div className="flex-1 mt-2">
+                  <div className="h-4 bg-black/10 dark:bg-white/10 rounded w-3/4 mb-3" />
+                  <div className="h-3 bg-black/10 dark:bg-white/10 rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -106,63 +106,79 @@ export const RecommendedForYouSection = () => {
         Sách hay cho bạn
       </h2>
 
-      {/* Books List - Single Column */}
-      <div className="flex flex-col gap-3">
-        {displayedBooks.map((rec, index) => (
-          <div
-            key={rec.bookId}
-            className="relative"
-            onMouseEnter={() => setHoveredId(rec.bookId)}
-            onMouseLeave={() => setHoveredId(null)}
-          >
-            <Button
-              variant="ghost"
-              onClick={() => router.push(`/books/${rec.book.slug}`)}
-              className="flex gap-3 w-full h-auto text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
+      {/* Empty State */}
+      {!isLoading && displayedBooks.length === 0 ? (
+        <Card className="bg-transparent border border-border/50 shadow-none border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center px-4">
+            <div className="w-14 h-14 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+              <BookOpen size={24} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground mb-2">
+              Chưa có gợi ý
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Hãy theo dõi, đọc hoặc đánh giá thêm các sách để nhận được những gợi ý tác phẩm phù hợp nhất với bạn nhé!
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {displayedBooks.map((rec, index) => (
+            <div
+              key={rec.bookId}
+              className="relative"
+              onMouseEnter={() => setHoveredId(rec.bookId)}
+              onMouseLeave={() => setHoveredId(null)}
             >
-              {/* Book Cover */}
-              <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
-                {rec.book.coverUrl ? (
-                  <Image
-                    src={rec.book.coverUrl}
-                    alt={rec.book.title}
-                    fill
-                    sizes="64px"
-                    priority={index < 4}
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800" />
-                )}
-                {rec.matchScore && (
-                  <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                    {rec.matchScore}%
-                  </div>
-                )}
-              </div>
+              <Button
+                variant="ghost"
+                onClick={() => router.push(`/books/${rec.book.slug}`)}
+                className="flex gap-3 w-full h-auto text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
+              >
+                {/* Book Cover */}
+                <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+                  {rec.book.coverUrl ? (
+                    <Image
+                      src={rec.book.coverUrl}
+                      alt={rec.book.title}
+                      fill
+                      sizes="64px"
+                      priority={index < 4}
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800" />
+                  )}
+                  {rec.matchScore && (
+                    <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                      {rec.matchScore}%
+                    </div>
+                  )}
+                </div>
 
-              {/* Book Info */}
-              <div className="flex-1 min-w-0 flex flex-col pt-1">
-                <h3 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1 break-words whitespace-normal text-left">
-                  {rec.book.title}
-                </h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  {rec.book.authorId?.name || 'Unknown Author'}
-                </p>
-              </div>
-            </Button>
+                {/* Book Info */}
+                <div className="flex-1 min-w-0 flex flex-col pt-1">
+                  <h3 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1 break-words whitespace-normal text-left">
+                    {rec.book.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {rec.book.authorId?.name || 'Unknown Author'}
+                  </p>
+                </div>
+              </Button>
 
-            {/* Tooltip */}
-            {hoveredId === rec.bookId && rec.reason && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg p-3 shadow-xl pointer-events-none">
-                {rec.reason}
-                {/* Arrow */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-gray-800" />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              {/* Tooltip */}
+              {hoveredId === rec.bookId && rec.reason && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg p-3 shadow-xl pointer-events-none">
+                  {rec.reason}
+                  {/* Arrow */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-gray-800" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

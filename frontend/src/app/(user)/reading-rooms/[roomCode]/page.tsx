@@ -656,19 +656,19 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             <aside className="w-full lg:w-80 sticky top-28 shrink-0 space-y-6 hidden sm:block">
               <Tabs defaultValue="activity" className="w-full">
                 <TabsList variant="glass" className="grid grid-cols-4 mb-4">
-                  <TabsTrigger value="activity" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger value="activity" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
                     <Info className="w-3.5 h-3.5" />
                     <span className="hidden lg:inline">HĐ</span>
                   </TabsTrigger>
-                  <TabsTrigger value="members" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger value="members" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
                     <Users className="w-3.5 h-3.5" />
                     <span className="hidden lg:inline">TV</span>
                   </TabsTrigger>
-                  <TabsTrigger value="quotes" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger value="quotes" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
                     <span className="text-sm leading-none">&ldquo;</span>
                     <span className="hidden lg:inline">TD</span>
                   </TabsTrigger>
-                  <TabsTrigger value="knowledge" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger value="knowledge" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
                     <BrainCircuit className="w-3.5 h-3.5" />
                     <span className="hidden lg:inline">KT</span>
                   </TabsTrigger>

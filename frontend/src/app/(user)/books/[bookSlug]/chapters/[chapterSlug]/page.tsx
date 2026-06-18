@@ -13,7 +13,7 @@ import {
   BookOpen,
   Settings,
   Share2,
-  Sparkles,
+  Bot,
   FileText,
 } from "lucide-react";
 
@@ -365,19 +365,8 @@ ${book.description?.slice(0, 100)}...
           />
 
           <DockButton
-            icon={<FileText size={20} />}
-            label="Tóm tắt"
-            onClick={() =>
-              openChapterSummary({
-                chapterId: chapter.id,
-                chapterTitle: chapter.title,
-              })
-            }
-          />
-
-          <DockButton
             icon={
-              <Sparkles
+              <Bot
                 size={20}
                 className={showAISidebar ? "text-primary" : ""}
               />
