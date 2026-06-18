@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react';
+import { List } from 'lucide-react';
 import { ReadingListItem } from '@/components/user/reading-list-item';
 import { useGetCollectionsQuery } from '@/features/library/api/libraryApi';
 import { Collection } from '@/features/library/types/library.interface';
@@ -34,7 +34,7 @@ export function ReadingLists() {
               transition-colors
             "
               >
-                <Settings className="h-5 w-5" strokeWidth={2.5} />
+                <List className="h-5 w-5" strokeWidth={2.5} />
               </button>
             </div>
           </div>

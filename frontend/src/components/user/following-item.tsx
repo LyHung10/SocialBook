@@ -26,14 +26,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
                     "
         >
             {/* Cover Image */}
-            <div className="h-24 w-full relative bg-secondary overflow-hidden">
-                <Image
-                    src="/img_1.png"
-                    alt={`${props.username} cover`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 200px"
-                    className=" object-cover transition-transform duration-700 grayscale-[20%] group-hover:grayscale-0"
-                />
+            <div className="h-16 w-full relative bg-secondary overflow-hidden">
                 <div className="absolute inset-0 bg-black/0 dark:bg-black/20" />
             </div>
 
@@ -89,7 +82,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
             {/* Stats */}
             <div
                 className="relative z-10 mt-1 p-1 grid grid-cols-3 w-full text-center text-xs 
-                        bg-green-50 dark:bg-neutral-900 border-t border-border"
+                        bg-white dark:bg-neutral-900 border-t border-border"
             >
                 <div className="flex flex-col items-center">
                     <span className="font-bold text-xs text-foreground">
