@@ -233,6 +233,28 @@ export class ReadingRoom extends Entity<RoomId> {
     this.markAsUpdated();
   }
 
+  transferHost(newHostId: string): void {
+    const newHost = this._props.members.find(
+      (m) => m.userId === newHostId && m.isActive,
+    );
+    if (!newHost) {
+      throw new BadRequestDomainException(
+        'Người dùng không phải thành viên đang hoạt động',
+      );
+    }
+
+    const oldHost = this._props.members.find(
+      (m) => m.userId === this.hostId && m.isActive,
+    );
+    if (oldHost) {
+      oldHost.changeRole('member');
+    }
+
+    newHost.changeRole('host');
+    this._props.hostId = UserId.create(newHostId);
+    this.markAsUpdated();
+  }
+
   removeMember(userId: string): void {
     const member = this._props.members.find((m) => m.userId === userId);
     if (member && member.isActive) {

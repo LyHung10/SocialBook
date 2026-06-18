@@ -10,6 +10,8 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { GenerateHighlightInsightUseCase } from '@/application/reading-rooms/use-cases/generate-highlight-insight/generate-highlight-insight.use-case';
+import { GenerateHighlightInsightCommand } from '@/application/reading-rooms/use-cases/generate-highlight-insight/generate-highlight-insight.command';
 import { ReadingRoomPresenceService } from './reading-room-presence.service';
 import { JoinRoomUseCase } from '@/application/reading-rooms/use-cases/join-room/join-room.use-case';
 import { LeaveRoomUseCase } from '@/application/reading-rooms/use-cases/leave-room/leave-room.use-case';
@@ -79,6 +81,7 @@ export class ReadingRoomGateway
     private readonly addReactionUseCase: AddReactionUseCase,
     private readonly addQuoteUseCase: AddQuoteUseCase,
     private readonly voteQuoteUseCase: VoteQuoteUseCase,
+    private readonly generateHighlightInsightUseCase: GenerateHighlightInsightUseCase,
   ) {}
 
   @OnEvent('reading-room.highlight_insight_updated')
@@ -170,6 +173,29 @@ export class ReadingRoomGateway
         socket,
         'HIGHLIGHT_REMOVE_FAILED',
         'Remove highlight failed',
+        error,
+      );
+    }
+  }
+
+  @SubscribeMessage('generate_highlight_insight')
+  async handleGenerateHighlightInsight(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; highlightId: string },
+  ) {
+    try {
+      const command = new GenerateHighlightInsightCommand(
+        body.roomId,
+        body.highlightId,
+      );
+      // Generate AI Insight. The use-case will emit 'reading-room.highlight_insight_updated'
+      // which will then be broadcasted to the room.
+      await this.generateHighlightInsightUseCase.execute(command);
+    } catch (error: unknown) {
+      this.emitError(
+        socket,
+        'GENERATE_INSIGHT_FAILED',
+        'Generate insight failed',
         error,
       );
     }
@@ -283,19 +309,27 @@ export class ReadingRoomGateway
   @SubscribeMessage('leave_room')
   async handleLeaveRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string },
+    @MessageBody() body: { roomId: string; newHostId?: string },
   ) {
     const sd = socket.data as SocketData;
     const userId = sd.userId ?? '';
     const roomId = body.roomId;
 
     try {
-      const command = new LeaveRoomCommand(userId, roomId);
+      const command = new LeaveRoomCommand(userId, roomId, body.newHostId);
       const room = await this.leaveRoomUseCase.execute(command);
       await this.presenceService.removePresence(roomId, userId);
 
       void socket.leave(`room:${roomId}`);
       delete sd.roomId;
+
+      if (body.newHostId) {
+        this.server
+          .to(`room:${roomId}`)
+          .emit(ReadingRoomServerEvent.HOST_CHANGED, {
+            newHostId: body.newHostId,
+          });
+      }
 
       this.server
         .to(`room:${roomId}`)
@@ -430,6 +464,57 @@ export class ReadingRoomGateway
     return false;
   }
 
+  @SubscribeMessage('party:selection_update')
+  handleSelectionUpdate(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      paragraphId: string;
+      startOffset: number;
+      endOffset: number;
+    },
+  ) {
+    if (this.isRateLimited(socket, 'party:selection_update', 60)) return;
+    const sd = socket.data as SocketData;
+    const { userId, displayName, avatarUrl } = sd;
+    if (!userId || !body.roomId) return;
+
+    socket.to(`room:${body.roomId}`).emit(
+      ReadingRoomServerEvent.PARTY_REMOTE_SELECTION,
+      {
+        userId,
+        displayName: displayName ?? '',
+        avatarUrl: avatarUrl ?? '',
+        paragraphId: body.paragraphId,
+        startOffset: body.startOffset,
+        endOffset: body.endOffset,
+      },
+    );
+  }
+
+  @SubscribeMessage('party:selection_cleared')
+  handleSelectionCleared(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string },
+  ) {
+    const sd = socket.data as SocketData;
+    const { userId } = sd;
+    if (!userId || !body.roomId) return;
+
+    socket.to(`room:${body.roomId}`).emit(
+      ReadingRoomServerEvent.PARTY_REMOTE_SELECTION,
+      {
+        userId,
+        displayName: '',
+        avatarUrl: '',
+        paragraphId: null,
+        startOffset: 0,
+        endOffset: 0,
+      },
+    );
+  }
+
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,
@@ -524,6 +609,18 @@ export class ReadingRoomGateway
         role: 'user',
         content: data.content,
         createdAt: new Date(),
+      });
+  }
+
+  @OnEvent('reading-room.reactivated')
+  handleRoomReactivated(payload: {
+    roomId: string;
+    reactivatedBy: string;
+  }) {
+    this.server
+      .to(`room:${payload.roomId}`)
+      .emit(ReadingRoomServerEvent.ROOM_REACTIVATED, {
+        reactivatedBy: payload.reactivatedBy,
       });
   }
 

@@ -1,5 +1,5 @@
 'use client';
-import { use, useEffect } from 'react';
+import { use, useEffect, useState, useCallback } from 'react';
 import { useGetRoomQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
@@ -10,7 +10,10 @@ import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2 } from 'lucide-react';
+import { useReadingView } from '@/features/books/hooks';
+import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
+import { TransferHostModal } from '@/features/reading-rooms/components/TransferHostModal';
 import LoginWall from '@/components/auth/LoginWall';
 import { GlassCard } from '@/components/common/GlassCard';
 import { LoadingOverlay } from '@/components/common/LoadingSpinner';
@@ -28,10 +31,29 @@ import { RoomChat } from '@/features/reading-room-interactions/components/RoomCh
 import { ReadingProgress } from '@/features/reading-room-interactions/components/ReadingProgress';
 import { QuoteBoard } from '@/features/reading-room-interactions/components/QuoteBoard';
 import { useGetRoomQuotesQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
+import { useCreatePostMutation } from '@/features/posts/api/postApi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useModalStore } from '@/store/useModalStore';
+import { EmotionStream } from '@/features/reading-rooms/components/EmotionStream';
+import { ProgressRadar } from '@/features/reading-rooms/components/ProgressRadar';
+
 
 const ROOM_BTN_BASE = "font-bold px-4 h-9 rounded-full transition-all shadow-sm gap-2";
+
+function DockButton({ icon, label, onClick, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group disabled:opacity-30 disabled:cursor-not-allowed"
+    >
+      {icon}
+      <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border">
+        {label}
+      </span>
+    </button>
+  );
+}
 
 export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode: string }> }) {
   const { roomCode } = use(params);
@@ -39,7 +61,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const searchParams = useSearchParams();
   const { copy, copiedText } = useCopyToClipboard();
   const copied = !!copiedText;
-  const { openConfirm } = useModalStore();
+  const { openConfirm, openAddToLibrary, openCreatePost } = useModalStore();
   
   const handleCopyCode = () => {
     copy(roomCode, 'Đã sao chép mã phòng!');
@@ -50,11 +72,11 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const { data: initialRoom, isLoading: isLoadingRoom, error } = useGetRoomQuery(roomCode, { skip: !isAuthenticated });
   
   const storeRoom = useReadingRoomStore(state => state.room);
-  const isEnded = initialRoom?.status === 'ended' || storeRoom?.status === 'ended';
-  const shouldConnectSocket = isAuthenticated && !!initialRoom && !isEnded;
+  const room = storeRoom || initialRoom;
+  const isEnded = room?.status === 'ended';
+  const shouldConnectSocket = isAuthenticated && !!initialRoom;
   const { endRoom, deleteRoom, leaveRoom, changeChapter, changeMode, sendHeartbeat, sendChatMessage } = useReadingRoomSocket(shouldConnectSocket ? roomCode : undefined);
   const [reactivateRoom, { isLoading: isReactivating }] = useReactivateRoomMutation();
-  const room = storeRoom || initialRoom;
   const isHost = room?.hostId === user?.id;
   const presences = useReadingRoomStore(state => state.presences);
 
@@ -89,7 +111,43 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     }
   }, [isEnded, initialRoom]);
 
-  useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, null);
+  const [readingParagraphId, setReadingParagraphId] = useState<string | null>(null);
+
+  let readingProgress = 0;
+  if (chapter?.paragraphs?.length && readingParagraphId) {
+    const index = chapter.paragraphs.findIndex(p => p.id === readingParagraphId);
+    if (index >= 0) {
+      readingProgress = Math.round(((index + 1) / chapter.paragraphs.length) * 100);
+    }
+  }
+
+  const [transferHostOpen, setTransferHostOpen] = useState(false);
+  const { isControlsVisible, showSettings, setShowSettings } = useReadingView();
+  const [createPost] = useCreatePostMutation();
+
+  const handleShareRoom = () => {
+    if (!bookData || !chapter) return;
+    openCreatePost({
+      title: `Chia sẻ "${chapter.title}"`,
+      contentPlaceholder: 'Chia sẻ cảm nghĩ của bạn về chương này...',
+      defaultContent: `📖 Đang đọc cùng nhóm: ${bookData.title} - ${chapter.title}\n\n#${bookData.title.replace(/\s+/g, '')}`,
+      defaultBookId: bookData.id,
+      defaultBookTitle: bookData.title,
+      onSubmit: async (data) => {
+        if (!bookData?.id) return;
+        try {
+          await createPost({ bookId: bookData.id, content: data.content, images: data.images }).unwrap();
+        } catch { /* silent */ }
+      },
+    });
+  };
+
+  const handleTransferHost = useCallback((newHostId?: string) => {
+    leaveRoom(newHostId);
+    router.push('/reading-rooms');
+  }, [leaveRoom, router]);
+
+  useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, readingParagraphId, readingProgress);
 
   if (!isAuthenticated) {
     return (
@@ -139,9 +197,21 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-xl transition-all">
+        <EmotionStream />
+        
+        {/* Mobile Horizontal Header */}
+        <header className="sticky top-16 z-50 w-full border-b border-border bg-background transition-all sm:hidden">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push('/reading-rooms')}
+                className="w-8 h-8 rounded-full hover:bg-muted text-muted-foreground shrink-0"
+                title="Quay lại danh sách phòng"
+              >
+                <ChevronLeft size={18} />
+              </Button>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold tracking-tight">Phòng: {roomCode}</h1>
@@ -248,7 +318,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           endRoom();
                           setTimeout(() => {
                             store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
-                            router.push('/reading-rooms');
+                            router.refresh();
                           }, 300);
                         }
                       })}
@@ -280,20 +350,37 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   </>
                 )}
 
-                {!isEnded ? (
+                {!isHost && !isEnded && (
+                  <>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background/50 text-xs font-medium">
+                      {room?.mode === 'sync' ? (
+                        <><Lock className="w-3 h-3 text-primary" /><span className="text-primary">Đồng bộ</span></>
+                      ) : (
+                        <><LockOpen className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground">Tự do</span></>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleCopyCode}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background/50 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                      <span className="hidden sm:inline">{roomCode}</span>
+                    </button>
+                  </>
+                )}
+
+                {!isEnded && isHost ? (
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`${ROOM_BTN_BASE} hover:bg-accent/50`}
-                    onClick={() => {
-                      leaveRoom();
-                      router.push('/reading-rooms');
-                    }}
+                    className={`${ROOM_BTN_BASE} hover:bg-destructive/10 hover:text-destructive`}
+                    title="Chuyển quyền trưởng phòng"
+                    onClick={() => setTransferHostOpen(true)}
                   >
-                    <Info size={15} className="text-muted-foreground" />
-                    <span className="text-xs">Rời phòng</span>
+                    <DoorOpen size={15} className="text-muted-foreground" />
+                    <span className="text-xs hidden sm:inline">Chuyển quyền</span>
                   </Button>
-                ) : isHost ? (
+                ) : isEnded && isHost ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -301,8 +388,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     disabled={isReactivating}
                     onClick={async () => {
                       try {
-                        await reactivateRoom(roomCode).unwrap();
-                        useReadingRoomStore.getState().setRoom({ ...(storeRoom || initialRoom)!, status: 'active' });
+                        const result = await reactivateRoom(roomCode).unwrap();
+                        useReadingRoomStore.getState().setRoom(result);
                         toast.success('Phòng đã được mở lại!');
                         router.refresh();
                       } catch {
@@ -313,24 +400,176 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LockOpen size={15} />}
                     <span className="text-xs">{isReactivating ? 'Đang mở...' : 'Mở lại phòng'}</span>
                   </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`${ROOM_BTN_BASE} hover:bg-accent/50`}
-                    onClick={() => router.push('/reading-rooms')}
-                  >
-                    <Info size={15} />
-                    <span className="text-xs">Danh sách phòng</span>
-                  </Button>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-8 flex-1">
-          <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
+        {/* Desktop Vertical Sidebar */}
+        <TooltipProvider delayDuration={0}>
+          <aside className="fixed left-0 top-16 bottom-0 w-16 border-r border-border bg-background flex-col items-center py-4 z-40 hidden sm:flex justify-between">
+            {/* Top: Info & Actions */}
+            <div className="flex flex-col gap-4 items-center w-full">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => router.push('/reading-rooms')} className="w-10 h-10 rounded-full hover:bg-muted text-muted-foreground">
+                    <ChevronLeft size={20} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Quay lại danh sách</TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={handleCopyCode} className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground transition-colors group">
+                    {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} className="group-hover:text-primary" />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-popover text-popover-foreground border border-border shadow-md py-2 px-3">
+                  <p className="font-bold text-foreground">Phòng: {roomCode}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 max-w-[200px] truncate">{bookData?.title}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {isHost && !isEnded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full" onClick={() => changeMode(room?.mode === 'sync' ? 'free' : 'sync')}>
+                      {room?.mode === 'sync' ? <Lock className="w-4 h-4 text-primary" /> : <LockOpen className="w-4 h-4 text-muted-foreground" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Chế độ: {room?.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}</TooltipContent>
+                </Tooltip>
+              )}
+
+              {!isHost && !isEnded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground bg-muted/50 cursor-default">
+                      {room?.mode === 'sync' ? <Lock className="w-4 h-4 text-primary" /> : <LockOpen className="w-4 h-4 text-muted-foreground" />}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p className="font-semibold">{room?.mode === 'sync' ? 'Chế độ Đồng bộ' : 'Chế độ Tự do'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {room?.mode === 'sync' ? 'Chương đọc theo trưởng phòng' : 'Mỗi người đọc chương riêng'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+
+            {/* Middle: Presence */}
+            <div className="flex flex-col gap-6 items-center w-full">
+              {!isEnded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex flex-col -space-y-2 mt-2 items-center cursor-pointer">
+                      {Object.values(presences).slice(0, 4).map(p =>
+                        p.avatarUrl ? (
+                          <img key={p.userId} src={p.avatarUrl} alt="Avatar" width={28} height={28} className="w-7 h-7 rounded-full border-2 border-background z-10 hover:z-20 relative" />
+                        ) : (
+                          <div key={p.userId} className="w-7 h-7 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold z-10 hover:z-20 relative">
+                            {p.displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )
+                      )}
+                      {Object.keys(presences).length > 4 && (
+                        <div className="w-7 h-7 rounded-full border-2 border-background bg-muted text-[9px] font-bold flex items-center justify-center z-10 relative">
+                          +{Object.keys(presences).length - 4}
+                        </div>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{Object.keys(presences).length} thành viên đang online</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+
+            {/* Bottom: Actions */}
+            <div className="flex flex-col gap-4 items-center w-full">
+              {isHost && !isEnded && (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full hover:bg-destructive/10 hover:text-destructive" onClick={() => openConfirm({
+                        title: "Kết thúc phòng đọc?",
+                        description: "Hành động này sẽ đóng phòng đọc đối với tất cả mọi người. Bạn không thể hoàn tác thao tác này.",
+                        confirmText: "Xác nhận kết thúc",
+                        variant: "destructive",
+                        onConfirm: () => {
+                          endRoom();
+                          setTimeout(() => {
+                            store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory']));
+                            router.refresh();
+                          }, 300);
+                        }
+                      })}>
+                        <LogOut size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">Kết thúc phòng</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full hover:bg-destructive/10 hover:text-destructive" onClick={() => openConfirm({
+                        title: "Xoá phòng đọc?",
+                        description: "Hành động này sẽ xoá vĩnh viễn phòng đọc. Không thể hoàn tác!",
+                        confirmText: "Xác nhận xoá",
+                        variant: "destructive",
+                        onConfirm: () => {
+                          deleteRoom();
+                          store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
+                          router.push('/reading-rooms');
+                        }
+                      })}>
+                        <Trash2 size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">Xoá phòng</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+
+              {!isEnded && isHost ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full hover:bg-destructive/10 hover:text-destructive" onClick={() => setTransferHostOpen(true)}>
+                      <DoorOpen size={18} className="text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Chuyển quyền</TooltipContent>
+                </Tooltip>
+              ) : isEnded && isHost ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="w-10 h-10 rounded-full" disabled={isReactivating} onClick={async () => {
+                      try {
+                        const result = await reactivateRoom(roomCode).unwrap();
+                        useReadingRoomStore.getState().setRoom(result);
+                        toast.success('Phòng đã được mở lại!');
+                        router.refresh();
+                      } catch {
+                        toast.error('Không thể mở lại phòng');
+                      }
+                    }}>
+                      {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LockOpen size={18} />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Mở lại phòng</TooltipContent>
+                </Tooltip>
+              ) : null}
+            </div>
+          </aside>
+        </TooltipProvider>
+
+        <div className="flex-1 flex flex-col sm:ml-16">
+          {!isEnded && <ProgressRadar />}
+
+          <main className="container mx-auto px-4 py-8 flex-1">
+            <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
             
             <div className="flex-1 w-full max-w-3xl mx-auto lg:mx-0">
               {isLoadingChapter ? (
@@ -339,6 +578,33 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 </div>
               ) : chapter && bookData ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <div className="mb-8 pb-8 border-b border-border">
+                    <ChapterNavigation
+                      hasPrevious={!!navigation?.previous && (isEnded || room?.mode === 'free' || isHost)}
+                      hasNext={!!navigation?.next && (isEnded || room?.mode === 'free' || isHost)}
+                      onPrevious={() => {
+                        if (navigation?.previous) {
+                          if (!isEnded && room?.mode === 'sync' && isHost) {
+                            changeChapter(navigation.previous.slug);
+                          } else {
+                            router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
+                          }
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
+                      onNext={() => {
+                        if (navigation?.next) {
+                          if (!isEnded && room?.mode === 'sync' && isHost) {
+                            changeChapter(navigation.next.slug);
+                          } else {
+                            router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
+                          }
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
+                    />
+                  </div>
+                  
                   <ChapterContent
                     paragraphs={chapter.paragraphs}
                     chapterId={chapter.id}
@@ -346,6 +612,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     bookSlug={bookData.slug}
                     bookCoverImage={bookData.coverUrl}
                     bookTitle={bookData.title}
+                    onActiveParagraphChange={setReadingParagraphId}
                   />
 
                   
@@ -386,7 +653,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
               )}
             </div>
 
-            <aside className="w-full lg:w-80 sticky top-24 shrink-0 space-y-6 hidden sm:block">
+            <aside className="w-full lg:w-80 sticky top-28 shrink-0 space-y-6 hidden sm:block">
               <Tabs defaultValue="activity" className="w-full">
                 <TabsList variant="glass" className="grid grid-cols-4 mb-4">
                   <TabsTrigger value="activity" className="rounded-xl flex items-center gap-2 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -439,7 +706,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           {Object.values(presences).map(p => (
                             <div 
                               key={p.userId} 
-                              className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors group"
+                              className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors group relative"
                             >
                                <ReadingProgress
                                  userId={p.userId}
@@ -455,6 +722,64 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                                   Chương: {p.currentChapterSlug}
                                 </p>
                               </div>
+
+                              <TooltipProvider>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary"
+                                        onClick={() => router.push(`/reading-rooms/${roomCode}?chapter=${p.currentChapterSlug}`)}
+                                      >
+                                        <BookOpen size={14} />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-xs font-medium">Đến chương này</TooltipContent>
+                                  </Tooltip>
+
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary"
+                                        onClick={() => router.push(`/users/${p.userId}`)}
+                                      >
+                                        <User size={14} />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-xs font-medium">Xem hồ sơ</TooltipContent>
+                                  </Tooltip>
+
+                                  {isHost && p.userId !== user?.id && !isEnded && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="w-7 h-7 rounded-full hover:bg-amber-500/10 text-amber-500 hover:text-amber-600"
+                                          onClick={() => {
+                                            openConfirm({
+                                              title: "Chuyển quyền trưởng phòng?",
+                                              description: `Bạn sắp chuyển quyền trưởng phòng cho ${p.displayName}. LƯU Ý: Chuyển quyền xong bạn sẽ tự động rời khỏi phòng. Bạn có chắc chắn?`,
+                                              confirmText: "Xác nhận chuyển & Rời phòng",
+                                              onConfirm: () => {
+                                                leaveRoom(p.userId);
+                                                router.push('/reading-rooms');
+                                              }
+                                            });
+                                          }}
+                                        >
+                                          <Crown size={14} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" className="text-xs font-medium text-amber-500">Chuyển quyền Host</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </div>
+                              </TooltipProvider>
                             </div>
                           ))}
                         </div>
@@ -473,7 +798,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     }
                   >
                     <div className="p-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                      <QuoteBoard />
+                      <QuoteBoard currentChapterSlug={currentChapterSlug} roomCode={roomCode} />
                     </div>
                   </GlassCard>
                 </TabsContent>
@@ -493,6 +818,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     </GlassCard>
                   )}
                 </TabsContent>
+
               </Tabs>
               
               <div className={`p-6 rounded-3xl border ${isEnded ? 'bg-muted/5 border-muted/20' : 'bg-primary/5 border-primary/10'}`}>
@@ -515,7 +841,71 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             </aside>
           </div>
         </main>
+        </div>
       </div>
+
+      {/* Floating Reading Dock */}
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-500 ${
+          isControlsVisible
+            ? 'translate-y-0 opacity-100'
+            : 'translate-y-24 opacity-0'
+        }`}
+      >
+        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl">
+          <DockButton
+            icon={<ChevronLeftIcon size={20} />}
+            label="Chương trước"
+            disabled={!navigation?.previous || (!isEnded && room?.mode === 'sync' && !isHost)}
+            onClick={() => {
+              if (navigation?.previous) {
+                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.previous.slug);
+                else router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+          />
+          <DockButton
+            icon={<ChevronRightIcon size={20} />}
+            label="Chương sau"
+            disabled={!navigation?.next || (!isEnded && room?.mode === 'sync' && !isHost)}
+            onClick={() => {
+              if (navigation?.next) {
+                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.next.slug);
+                else router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+          />
+          <div className="w-px h-6 bg-border mx-1" />
+          <DockButton
+            icon={<Settings size={20} />}
+            label="Cài đặt đọc"
+            onClick={() => setShowSettings(true)}
+          />
+          <div className="w-px h-6 bg-border mx-1" />
+          <DockButton
+            icon={<Bookmark size={20} />}
+            label="Lưu vào thư viện"
+            disabled={!bookData}
+            onClick={() => bookData && openAddToLibrary({ bookId: bookData.id })}
+          />
+          <DockButton
+            icon={<Share2 size={20} />}
+            label="Chia sẻ"
+            disabled={!chapter}
+            onClick={handleShareRoom}
+          />
+        </div>
+      </div>
+
+      <ReadingSettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
+      <TransferHostModal
+        open={transferHostOpen}
+        onOpenChange={setTransferHostOpen}
+        onConfirm={handleTransferHost}
+      />
     </div>
   );
 }

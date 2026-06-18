@@ -22,65 +22,49 @@ export function PostActions({
     onComment,
     onShare,
 }: PostActionsProps) {
-    const hasStats = likeCount > 0 || commentCount > 0;
-
     return (
         <CardFooter className="p-0 flex flex-col">
-            <div className="px-4 py-2 w-full flex items-center justify-between border-t border-border">
-                <div className="flex gap-2 w-full">
+            <div className="px-3 py-0.5 w-full flex items-center border-t border-border">
+                <div className="flex items-center gap-1">
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={onLike}
                         className={cn(
-                            'flex-1 gap-2 px-3 text-muted-foreground transition-colors py-5',
+                            'gap-1 text-muted-foreground hover:bg-transparent rounded-none py-2 h-auto px-2',
                             isLiked
-                                ? 'text-rose-500 dark:text-rose-400 hover:text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'
-                                : 'hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'
+                                ? 'text-rose-500 dark:text-rose-400 hover:text-rose-600'
+                                : 'hover:text-rose-500'
                         )}
                     >
-                        <Heart size={18} className={isLiked ? 'fill-current' : ''} />
-                        <span className="text-sm font-medium">{isLiked ? 'Đã thích' : 'Thích'}</span>
+                        <Heart size={15} className={isLiked ? 'fill-current' : ''} />
+                        {likeCount > 0 && (
+                            <span className="text-sm font-medium leading-none">{likeCount}</span>
+                        )}
                     </Button>
 
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={onComment}
-                        className="flex-1 gap-2 text-muted-foreground hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors py-5"
+                        className="gap-1 text-muted-foreground hover:text-sky-500 hover:bg-transparent transition-colors rounded-none py-2 h-auto px-2"
                     >
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm font-medium">Bình luận</span>
+                        <MessageCircle size={15} />
+                        {commentCount > 0 && (
+                            <span className="text-sm font-medium leading-none">{commentCount}</span>
+                        )}
                     </Button>
 
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={onShare}
-                        className="flex-1 gap-2 text-muted-foreground hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors py-5"
+                        className="gap-1 text-muted-foreground hover:text-sky-500 hover:bg-transparent transition-colors rounded-none py-2 h-auto px-2"
                     >
-                        <Send className="w-5 h-5" />
-                        <span className="text-sm font-medium">Chia sẻ</span>
+                        <Send size={15} />
                     </Button>
                 </div>
             </div>
-
-            {hasStats && (
-                <div className="px-4 py-2 w-full bg-slate-50/50 dark:bg-gray-900/30 text-xs text-muted-foreground flex gap-4 border-t border-border/50">
-                    {likeCount > 0 && (
-                        <span className="flex items-center gap-1">
-                            <Heart size={12} className="fill-rose-400 text-rose-400" />
-                            {likeCount} lượt thích
-                        </span>
-                    )}
-                    {commentCount > 0 && (
-                        <span className="flex items-center gap-1">
-                            <MessageCircle size={12} className="fill-primary/60 text-primary/60" />
-                            {commentCount} bình luận
-                        </span>
-                    )}
-                </div>
-            )}
         </CardFooter>
     );
 }

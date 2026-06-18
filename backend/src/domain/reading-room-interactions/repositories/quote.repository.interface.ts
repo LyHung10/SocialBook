@@ -8,5 +8,6 @@ export abstract class IQuoteRepository {
   ): Promise<RoomQuote[]>;
   abstract findById(id: string): Promise<RoomQuote | null>;
   abstract updateVotes(quote: RoomQuote): Promise<void>;
+  abstract deleteById(id: string): Promise<void>;
   abstract deleteByRoom(roomId: string): Promise<void>;
 }

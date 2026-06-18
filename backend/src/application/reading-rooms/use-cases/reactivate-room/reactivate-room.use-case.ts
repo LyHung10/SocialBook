@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NotFoundDomainException,
   BadRequestDomainException,
@@ -12,7 +13,10 @@ import { ReactivateRoomCommand } from './reactivate-room.command';
 
 @Injectable()
 export class ReactivateRoomUseCase {
-  constructor(private readonly roomRepository: IReadingRoomRepository) {}
+  constructor(
+    private readonly roomRepository: IReadingRoomRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async execute(command: ReactivateRoomCommand): Promise<ReadingRoomResult> {
     const room = await this.roomRepository.findById(
@@ -34,6 +38,11 @@ export class ReactivateRoomUseCase {
       RoomId.create(command.roomId),
       'active',
     );
+
+    this.eventEmitter.emit('reading-room.reactivated', {
+      roomId: command.roomId,
+      reactivatedBy: command.userId,
+    });
 
     const updated = await this.roomRepository.findById(
       RoomId.create(command.roomId),

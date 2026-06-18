@@ -14,13 +14,18 @@ import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingR
 import { useAppAuth } from '@/features/auth/hooks';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
 import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { toast } from 'sonner';
 
 import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ReaderAvatars } from './ReaderAvatars';
+import { RemoteSelectionOverlay } from './RemoteSelectionOverlay';
+import { FloatingReactionBubbles } from '@/features/reading-rooms/components/FloatingReactionBubbles';
+import { useShallow } from 'zustand/react/shallow';
+import { useCollaborativeSelection } from '@/hooks/useCollaborativeSelection';
 
 interface Paragraph {
     id: string;
@@ -34,6 +39,7 @@ interface ChapterContentProps {
     bookSlug: string;
     bookCoverImage?: string;
     bookTitle?: string;
+    onActiveParagraphChange?: (paragraphId: string | null) => void;
 }
 
 
@@ -43,6 +49,7 @@ export const ChapterContent = memo(function ChapterContent({
     bookId,
     bookSlug,
     bookTitle,
+    onActiveParagraphChange,
 }: ChapterContentProps) {
     const { settings } = useReadingSettings();
     const {
@@ -61,9 +68,57 @@ export const ChapterContent = memo(function ChapterContent({
 
 
     const room = useReadingRoomStore((state) => state.room);
+    const isEnded = room?.status === 'ended';
     const highlights = useReadingRoomStore((state) => state.highlights);
-    const { addHighlight, removeHighlight, addQuote } = useReadingRoomSocket();
+    const presences = useReadingRoomStore(useShallow((state) => state.presences));
+    const { addHighlight, removeHighlight, addQuote, generateHighlightInsight } = useReadingRoomSocket();
     const { user } = useAppAuth();
+
+    // Track which paragraph is most visible in the viewport
+    const paraRefsMap = useRef<Map<string, HTMLElement>>(new Map());
+    const registerParaRef = useCallback((id: string, el: HTMLElement | null) => {
+        if (el) {
+            paraRefsMap.current.set(id, el);
+        } else {
+            paraRefsMap.current.delete(id);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!onActiveParagraphChange) return;
+        const ratios = new Map<string, number>();
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    const id = (e.target as HTMLElement).dataset.paraId;
+                    if (id) ratios.set(id, e.intersectionRatio);
+                });
+                // Find paragraph with highest intersection ratio
+                let bestId: string | null = null;
+                let bestRatio = 0;
+                ratios.forEach((ratio, id) => {
+                    if (ratio > bestRatio) {
+                        bestRatio = ratio;
+                        bestId = id;
+                    }
+                });
+                onActiveParagraphChange(bestRatio > 0.1 ? bestId : null);
+            },
+            { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0] },
+        );
+        // Observe all current paragraph elements
+        paraRefsMap.current.forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+    }, [onActiveParagraphChange, paragraphs]);
+
+    // Stable color map — userId → color index, persists across renders
+    const [userColorMap] = useState(() => new Map<string, number>());
+
+    const { handleParagraphMouseUp } = useCollaborativeSelection({
+        roomId: room?.roomId ?? null,
+        currentUserId: user?.id,
+        userColorMap,
+    });
 
     const [openCommentParaId, setOpenCommentParaId] = useState<string | null>(null);
 
@@ -97,6 +152,28 @@ export const ChapterContent = memo(function ChapterContent({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Hydrate paragraph content map for excerpt previews
+    useEffect(() => {
+        if (!paragraphs || paragraphs.length === 0) return;
+        const map: Record<string, string> = {};
+        for (const p of paragraphs) {
+            map[p.id] = p.content;
+        }
+        useReadingRoomStore.getState().setParagraphContentMap(map);
+    }, [paragraphs]);
+
+    // Handle scroll-to-paragraph clicks from EmotionStream
+    const scrollTargetId = useReadingRoomStore((state) => state.scrollTargetParagraphId);
+    useEffect(() => {
+        if (!scrollTargetId) return;
+        const el = paraRefsMap.current.get(scrollTargetId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Flash effect can be added here if needed, but the scroll is the main thing
+            useReadingRoomStore.getState().setScrollTargetParagraphId(null);
+        }
+    }, [scrollTargetId]);
 
     const [fetchComments] = useLazyGetRoomCommentsQuery();
     const [fetchReactions] = useLazyGetRoomReactionsQuery();
@@ -224,10 +301,18 @@ export const ChapterContent = memo(function ChapterContent({
                         return (
                             <div
                                 key={para.id}
+                                data-para-id={para.id}
+                                ref={(el) => registerParaRef(para.id, el)}
                                 className="group relative flex items-start"
-                                onMouseUp={() => handleMouseUp(para.id)}
+                                onMouseUp={(_e) => {
+                                    handleMouseUp(para.id);
+                                    if (room) {
+                                        const container = paraRefsMap.current.get(para.id);
+                                        if (container) handleParagraphMouseUp(para.id, container);
+                                    }
+                                }}
                             >
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 relative">
                                     <p
                                         className={`transition-colors duration-300 w-full relative ${activeParagraphId === para.id
                                             ? 'bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg px-2 -mx-2'
@@ -247,8 +332,16 @@ export const ChapterContent = memo(function ChapterContent({
                                             knowledge={data?.entities || []}
                                             currentUserId={user?.id}
                                             onRemoveHighlight={removeHighlight}
+                                            generateHighlightInsight={generateHighlightInsight}
                                         />
                                     </p>
+
+                                    {/* Remote collaborative highlight overlay */}
+                                    {room && (
+                                        <RemoteSelectionOverlay
+                                            paragraphId={para.id}
+                                        />
+                                    )}
 
                                     {room && (
                                         <div className={`flex items-center gap-3 mt-1 transition-opacity duration-200 ${openCommentParaId === para.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -267,6 +360,20 @@ export const ChapterContent = memo(function ChapterContent({
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Reader avatars for this paragraph */}
+                                {room && (
+                                    <ReaderAvatars
+                                        paragraphId={para.id}
+                                        presences={presences}
+                                        currentUserId={user?.id}
+                                    />
+                                )}
+
+                                {/* Floating reaction bubbles (Feature 3) */}
+                                {room && (
+                                    <FloatingReactionBubbles paragraphId={para.id} />
+                                )}
 
                                 <div className="flex flex-col gap-2 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-0.5 shrink-0">
                                     <Tooltip>
@@ -339,7 +446,7 @@ export const ChapterContent = memo(function ChapterContent({
                                     <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
                                 </Tooltip>
 
-                                {room && (
+                                {room && !isEnded && (
                                     <>
                                         <div className="w-[1px] h-4 bg-neutral-600 mx-1" />
 
@@ -433,13 +540,18 @@ const ChapterTextRenderer = ({
     knowledge,
     currentUserId,
     onRemoveHighlight,
+    generateHighlightInsight,
 }: {
     content: string,
     highlights: RoomHighlight[],
     knowledge: KnowledgeEntity[],
     currentUserId?: string,
     onRemoveHighlight?: (highlightId: string) => void,
+    generateHighlightInsight?: (highlightId: string) => void,
 }) => {
+    // Track which highlight is currently being generated to show loading state
+    const [generatingInsightId, setGeneratingInsightId] = useState<string | null>(null);
+
     // 1. Process Knowledge (Dotted Underline)
     // Only show vocabulary and reference as underlines to avoid clutter
     const relevantKnowledge = knowledge.filter(k => ['vocabulary', 'reference', 'concept'].includes(k.type));
@@ -542,11 +654,23 @@ const ChapterTextRenderer = ({
                                             &ldquo;{h.aiInsight}&rdquo;
                                         </p>
                                     </div>
-                                ) : (
+                                ) : generatingInsightId === h.id ? (
                                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground italic">
                                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                                         AI đang suy nghĩ...
                                     </div>
+                                ) : (
+                                    <button 
+                                        className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors text-[11px] font-medium"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setGeneratingInsightId(h.id);
+                                            generateHighlightInsight?.(h.id);
+                                        }}
+                                    >
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        Giải thích bằng AI
+                                    </button>
                                 )}
                             </motion.div>
                         </PopoverContent>

@@ -35,7 +35,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
                         onDelete={actions.openDeleteConfirm}
                     />
                 </CardHeader>
-                
+
                 {post.isFlagged && (
                     <Alert className="mx-4 mb-4 overflow-hidden rounded-xl border border-amber-200/50 dark:border-amber-500/20 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500 p-0 border-none">
                         <div className="flex items-start gap-3 p-4">
@@ -62,7 +62,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
                     </Alert>
                 )}
 
-                <CardContent className="p-4 pt-0">
+                <CardContent className="px-4 pb-2 pt-0">
                     <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-wrap">
                         {post.content}
                     </p>

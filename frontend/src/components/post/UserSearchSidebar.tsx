@@ -11,7 +11,7 @@ export default function UserSearchSidebar() {
     const [keyword, setKeyword] = useState('');
     const debouncedKeyword = useDebounce(keyword, 300);
     const route = useRouter();
-    const [triggerSearch, {data, isFetching}] = useLazySearchUsersQuery();
+    const [triggerSearch, { data, isFetching }] = useLazySearchUsersQuery();
 
     useEffect(() => {
         if (!debouncedKeyword.trim()) {
@@ -45,7 +45,7 @@ export default function UserSearchSidebar() {
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                     placeholder="Tìm theo tên người dùng..."
-                    className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-zinc-800 border border-border text-foreground placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm text-foreground bg-muted hover:bg-accent hover:shadow-inner rounded-full transition-all duration-200 focus:outline-none focus:bg-background focus:ring-1 focus:ring-border placeholder:text-muted-foreground"
                 />
             </div>
 

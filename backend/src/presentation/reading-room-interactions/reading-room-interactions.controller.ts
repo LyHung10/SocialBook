@@ -24,6 +24,8 @@ import { AddQuoteUseCase } from '@/application/reading-room-interactions/use-cas
 import { AddQuoteCommand } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.command';
 import { VoteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.use-case';
 import { VoteQuoteCommand } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.command';
+import { DeleteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/delete-quote/delete-quote.use-case';
+import { DeleteQuoteCommand } from '@/application/reading-room-interactions/use-cases/delete-quote/delete-quote.command';
 import { GetRoomQuotesUseCase } from '@/application/reading-room-interactions/use-cases/get-room-quotes/get-room-quotes.use-case';
 import { GetRoomQuotesQuery } from '@/application/reading-room-interactions/use-cases/get-room-quotes/get-room-quotes.query';
 import { AddCommentDto } from './dto/add-comment.dto';
@@ -39,6 +41,7 @@ export class ReadingRoomInteractionsController {
     private readonly deleteCommentUseCase: DeleteCommentUseCase,
     private readonly addReactionUseCase: AddReactionUseCase,
     private readonly addQuoteUseCase: AddQuoteUseCase,
+    private readonly deleteQuoteUseCase: DeleteQuoteUseCase,
     private readonly voteQuoteUseCase: VoteQuoteUseCase,
     private readonly getRoomQuotesUseCase: GetRoomQuotesUseCase,
     private readonly getRoomCommentsUseCase: GetRoomCommentsUseCase,
@@ -165,6 +168,18 @@ export class ReadingRoomInteractionsController {
         createdAt: result.createdAt,
       },
     };
+  }
+
+  @Delete('quotes/:quoteId')
+  async deleteQuote(
+    @CurrentUser('id') userId: string,
+    @Param('code') code: string,
+    @Param('quoteId') quoteId: string,
+  ) {
+    await this.deleteQuoteUseCase.execute(
+      new DeleteQuoteCommand(userId, code, quoteId),
+    );
+    return { message: 'Quote deleted' };
   }
 
   @Post('quotes/:quoteId/vote')

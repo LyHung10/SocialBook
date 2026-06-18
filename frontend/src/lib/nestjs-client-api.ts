@@ -30,7 +30,7 @@ clientApi.interceptors.request.use(
       }
     }
 
-    if (accessToken) {
+    if (accessToken && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
@@ -95,7 +95,13 @@ export const axiosBaseQuery =
             // Nếu chưa có refresh đang chạy thì khởi tạo, ngược lại dùng chung promise
             if (!refreshingPromise) {
               refreshingPromise = getSession()
-                .then((s) => s?.accessToken ?? null)
+                .then((s) => {
+                  if (s?.accessToken) {
+                    setAccessToken(s.accessToken);
+                    return s.accessToken;
+                  }
+                  return null;
+                })
                 .finally(() => {
                   refreshingPromise = null;
                 });

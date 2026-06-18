@@ -35,7 +35,7 @@ export default function CreatePostModal() {
     defaultBookId = '',
     defaultBookTitle = '',
     onSubmit: externalOnSubmit,
-  } = createPostData;
+  } = createPostData || {};
 
   const { isAuthenticated } = useAppAuth();
   const router = useRouter();
