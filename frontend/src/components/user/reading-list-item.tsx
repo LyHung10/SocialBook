@@ -15,8 +15,6 @@ export function ReadingListItem(props: ReadingListItemProps) {
     const { data: response } = useGetCollectionDetailNoAuthQuery({ id, userId });
     const books = response?.books || [];
 
-    if (books.length === 0) return null;
-
     return (
         <div className="space-y-2 pb-6">
             {/* Title */}
@@ -40,7 +38,7 @@ export function ReadingListItem(props: ReadingListItemProps) {
 
             {/* Books */}
             <div className="flex items-center gap-4 overflow-x-auto pb-1 no-scrollbar">
-                {books.map((c) => (
+                {books?.length > 0 && books.map((c) => (
                     <BookItem
                         key={c.id}
                         slug={c.bookId.slug}
