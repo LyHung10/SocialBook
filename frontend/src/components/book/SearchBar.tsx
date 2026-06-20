@@ -24,8 +24,11 @@ export const SearchBar = ({
   const lastSearchedValue = useRef(initialValue);
   const onSearchRef = useRef(onSearch);
   const onClearRef = useRef(onClear);
-  onSearchRef.current = onSearch;
-  onClearRef.current = onClear;
+  
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+    onClearRef.current = onClear;
+  }, [onSearch, onClear]);
 
   const userCleared = useRef(false);
 

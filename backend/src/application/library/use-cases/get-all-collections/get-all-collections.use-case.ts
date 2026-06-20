@@ -25,9 +25,7 @@ export class GetAllCollectionsUseCase {
 
     const isOwner = query.viewerId === query.userId;
 
-    const visible = collections.filter(
-      (c) => isOwner || c.isPublic,
-    );
+    const visible = collections.filter((c) => isOwner || c.isPublic);
 
     const results = await Promise.all(
       visible.map(async (collection) => {

@@ -18,9 +18,6 @@ export default function UserSearchSidebar() {
   useEffect(() => {
     if (debouncedKeyword.trim().length >= 2) {
       searchUsers({ keyword: debouncedKeyword.trim(), current: 1, pageSize: 5 });
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
     }
   }, [debouncedKeyword, searchUsers]);
 
@@ -57,7 +54,11 @@ export default function UserSearchSidebar() {
         <input
           type="text"
           value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            if (e.target.value.trim().length >= 2) setIsOpen(true);
+            else setIsOpen(false);
+          }}
           onFocus={() => { if (debouncedKeyword.trim().length >= 2) setIsOpen(true); }}
           placeholder="Tìm người dùng..."
           className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all"

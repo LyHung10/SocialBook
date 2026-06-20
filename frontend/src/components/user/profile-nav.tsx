@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { type FollowStateResponse } from "@/features/follows/api/followApi";
 import { usersApi } from "@/features/users/api/usersApi";
-import { cn } from "@/lib/utils";
 import { Settings } from "lucide-react";
 import { useRouter, useSelectedLayoutSegment } from "next/navigation";
 import { useState } from "react";

@@ -3,7 +3,7 @@ import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
 import { cn } from '@/lib/utils';
-import { ChevronUp, ChevronDown, QuoteIcon, ArrowRightCircle, Trash2, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, QuoteIcon, ArrowRightCircle, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useDeleteRoomQuoteMutation } from '@/features/reading-room-interactions/api/roomInteractionsApi';

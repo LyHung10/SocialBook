@@ -114,12 +114,12 @@ export class NotificationSeed {
 
       // 3. Like notification — someone liked user's post
       const userPosts = posts.filter(
-        (p) =>
-          p.userId && p.userId.toString() === user._id.toString(),
+        (p) => p.userId && p.userId.toString() === user._id.toString(),
       );
-      const likedPost = userPosts.length > 0
-        ? userPosts[Math.floor(Math.random() * userPosts.length)]
-        : posts[Math.floor(Math.random() * posts.length)];
+      const likedPost =
+        userPosts.length > 0
+          ? userPosts[Math.floor(Math.random() * userPosts.length)]
+          : posts[Math.floor(Math.random() * posts.length)];
       const randomLiker = others[Math.floor(Math.random() * others.length)];
       notifications.push({
         userId: user._id,
@@ -127,9 +127,7 @@ export class NotificationSeed {
         message: `${randomLiker.username} đã thích bài viết của bạn.`,
         type: 'like',
         isRead: Math.random() > 0.7,
-        sentAt: new Date(
-          Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000,
-        ),
+        sentAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000),
         meta: {
           actorId: randomLiker._id,
           username: randomLiker.username,
@@ -152,8 +150,7 @@ export class NotificationSeed {
           (p) => p._id.toString() === comment.targetId.toString(),
         );
         const recipient = users.find(
-          (u) =>
-            post?.userId && u._id.toString() === post.userId.toString(),
+          (u) => post?.userId && u._id.toString() === post.userId.toString(),
         );
 
         if (!commenter || !recipient) continue;
@@ -181,8 +178,6 @@ export class NotificationSeed {
     }
 
     await this.notificationModel.insertMany(notifications);
-    this.logger.log(
-      `✅ Seeded ${notifications.length} notification records`,
-    );
+    this.logger.log(`✅ Seeded ${notifications.length} notification records`);
   }
 }

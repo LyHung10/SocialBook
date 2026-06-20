@@ -230,7 +230,12 @@ export class GetKnowledgeGraphUseCase {
         | undefined;
       try {
         aiResult = await this.geminiService.generateJSON<{
-          gaps: Array<{ genre: string; reason: string; suggestedBook: string; url?: string }>;
+          gaps: Array<{
+            genre: string;
+            reason: string;
+            suggestedBook: string;
+            url?: string;
+          }>;
         }>(prompt);
         this.logger.log(
           `[KnowledgeGraph] AI generated ${aiResult?.gaps?.length || 0} gaps`,
@@ -256,7 +261,7 @@ export class GetKnowledgeGraphUseCase {
               const booksInGenre = await this.bookRepository.findByGenre(
                 g.id,
                 { page: 1, limit: 1 },
-                { sortBy: 'views', order: 'desc' }
+                { sortBy: 'views', order: 'desc' },
               );
               if (booksInGenre.data.length > 0) {
                 const book = booksInGenre.data[0];
@@ -270,12 +275,13 @@ export class GetKnowledgeGraphUseCase {
 
             return {
               genre: g.name.getValue(),
-              reason: 'Chúng tôi nhận thấy bạn chưa khám phá mảng này. Hãy thử để mở rộng góc nhìn nhé!',
+              reason:
+                'Chúng tôi nhận thấy bạn chưa khám phá mảng này. Hãy thử để mở rộng góc nhìn nhé!',
               suggestedBook: suggestedBookTitle,
               slug,
               img,
             };
-          })
+          }),
         );
 
         aiResult = { gaps: fallbackGaps };
@@ -298,11 +304,13 @@ export class GetKnowledgeGraphUseCase {
             reason: gap.reason,
           });
 
-          let bookSlug = gap.slug || slugify(gap.suggestedBook, {
-            lower: true,
-            strict: true,
-            locale: 'vi',
-          });
+          const bookSlug =
+            gap.slug ||
+            slugify(gap.suggestedBook, {
+              lower: true,
+              strict: true,
+              locale: 'vi',
+            });
 
           // Add Gap Book Node
           nodes.push({
@@ -312,8 +320,8 @@ export class GetKnowledgeGraphUseCase {
             val: 10,
             color: '#f472b6', // pink-400
             isGap: true,
-            reason: gap.url 
-              ? `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn. Xem thêm tại link đính kèm.` 
+            reason: gap.url
+              ? `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn. Xem thêm tại link đính kèm.`
               : `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn.`,
             slug: bookSlug,
             img: gap.img,

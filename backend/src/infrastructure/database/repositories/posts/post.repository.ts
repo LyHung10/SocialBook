@@ -7,6 +7,7 @@ import {
   PaginatedResult,
 } from '@/domain/posts/repositories/post.repository.interface';
 import { PostMapper } from '@/infrastructure/database/repositories/posts/post.mapper';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';

@@ -5,7 +5,6 @@ import { useAppAuth } from "@/features/auth/hooks/useAppAuth";
 import { useModalStore } from "@/store/useModalStore";
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { FollowButton } from "@/components/user/FollowButton";
-import Image from "next/image";
 import { memo } from "react";
 
 const FollowingItem = memo(function FollowingItem(props: FollowingUser) {

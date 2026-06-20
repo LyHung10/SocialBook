@@ -31,6 +31,11 @@ interface ForceGraphNode {
   reason?: string;
 }
 
+interface ForceGraphLink {
+  source: string | { id: string };
+  target: string | { id: string };
+}
+
 interface GraphRef {
   zoomToFit(durationMs?: number, padding?: number): void;
   centerAt(x?: number, y?: number, durationMs?: number): void;
@@ -183,7 +188,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
         nodeLabel="label"
         nodeVal={(node: ForceGraphNode) => node.val}
         nodeColor={(node: ForceGraphNode) => node.color || (isDark ? '#94a3b8' : '#64748b')}
-        linkColor={(link: any) => {
+        linkColor={(link: ForceGraphLink) => {
           if (selectedNode) {
             const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
             const targetId = typeof link.target === 'object' ? link.target.id : link.target;
@@ -193,7 +198,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           }
           return isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
         }}
-        linkWidth={(link: any) => {
+        linkWidth={(link: ForceGraphLink) => {
           if (selectedNode) {
             const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
             const targetId = typeof link.target === 'object' ? link.target.id : link.target;
