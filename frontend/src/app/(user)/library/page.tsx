@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Lock,
   Globe,
+  Pencil,
 } from 'lucide-react';
 
 import {
@@ -306,19 +307,37 @@ function LibrarySkeleton() {
 }
 
 function CollectionCard({ col }: { col: Collection }) {
+  const router = useRouter();
   const { data: detail } = useGetCollectionDetailQuery(col.id);
   const books = detail?.books || [];
+  const { openEditCollection } = useModalStore();
   
   // Lấy tối đa 3 bìa sách
   const covers = books.slice(0, 3).map((b) => b.bookId.coverUrl);
 
   return (
-    <Link
-      href={`/collections/${col.id}`}
+    <div
+      onClick={() => router.push(`/collections/${col.id}`)}
       className="group relative flex flex-col justify-between h-36 bg-card rounded-2xl border border-border p-5 hover:border-red-500/40 hover:shadow-lg dark:hover:shadow-[0_0_30px_rgba(255,255,255,0.02)] transition-all duration-300 cursor-pointer overflow-hidden"
     >
       {/* Accent red gradient line at the top */}
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-rose-500 opacity-80 group-hover:opacity-100 transition-opacity z-10" />
+
+      {/* Edit button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          openEditCollection({
+            collectionId: col.id,
+            currentName: col.name,
+            currentIsPublic: col.isPublic,
+          });
+        }}
+        className="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted cursor-pointer"
+        title="Chỉnh sửa bộ sưu tập"
+      >
+        <Pencil size={12} className="text-muted-foreground" />
+      </button>
 
       {/* Main card body layout */}
       <div className="flex gap-4 items-start justify-between h-full min-w-0 z-10">
@@ -395,6 +414,6 @@ function CollectionCard({ col }: { col: Collection }) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
