@@ -385,14 +385,18 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
                 </p>
                 
                 <div className="flex flex-col gap-2 mt-1">
-                  {selectedNode.type === 'book' && selectedNode.slug && (
+                  {(selectedNode.type === 'book' && (selectedNode.slug || selectedNode.url)) && (
                     <Button 
                       className="w-full cursor-pointer rounded-xl gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 shadow-sm" 
                       onClick={() => {
-                        router.push(`/books/${selectedNode.slug}`);
+                        if (selectedNode.url) {
+                          window.open(selectedNode.url, '_blank', 'noopener,noreferrer');
+                        } else if (selectedNode.slug) {
+                          router.push(`/books/${selectedNode.slug}`);
+                        }
                       }}
                     >
-                      Đọc sách ngay
+                      {selectedNode.url ? 'Tìm hiểu thêm' : 'Đọc sách ngay'}
                     </Button>
                   )}
                   <Button 
