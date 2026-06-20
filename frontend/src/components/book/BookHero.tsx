@@ -69,7 +69,7 @@ export const BookHero = ({
 
             <p className="text-lg text-muted-foreground mb-6 flex items-center gap-2">
               Tác giả:{' '}
-              <span className="font-bold text-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer">
+              <span className="font-bold text-foreground hover:text-brand transition-colors cursor-pointer">
                 {book.authorId.name}
               </span>
             </p>
@@ -81,7 +81,7 @@ export const BookHero = ({
                 <Button
                   asChild
                   size="lg"
-                  className="rounded-full font-bold shadow-lg hover:-translate-y-1 transition-all bg-red-600 hover:bg-red-700 text-white"
+                  className="rounded-full font-bold shadow-lg hover:-translate-y-1 transition-all bg-brand hover:bg-brand/90 text-brand-foreground"
                 >
                   <Link href={`/books/${book.slug}/chapters/${book.chapters[0].slug}`}>
                     <BookOpen size={20} className="mr-2" /> Đọc ngay
@@ -172,8 +172,8 @@ const IconButton = ({ onClick, active, disabled, icon: Icon, title }: IconButton
     className={cn(
       "rounded-full h-12 w-12 border transition-all",
       active
-        ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-500/20 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-500/30"
-        : "border-gray-200 dark:border-white/20 text-gray-400 hover:text-red-500 hover:border-red-200 dark:hover:border-white dark:hover:text-white"
+        ? "bg-brand/10 border-brand/20 text-brand hover:bg-brand/20 dark:bg-brand/20 dark:border-brand dark:text-brand dark:hover:bg-brand/30"
+        : "border-gray-200 dark:border-white/20 text-gray-400 hover:text-brand hover:border-brand/30 dark:hover:border-white dark:hover:text-white"
     )}
   >
     <Icon size={20} className={active ? 'fill-current' : ''} />

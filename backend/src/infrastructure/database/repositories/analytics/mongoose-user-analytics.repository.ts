@@ -87,6 +87,7 @@ export class MongooseUserAnalyticsRepository
     {
       bookId: string;
       title: string;
+      slug: string;
       coverImage: string | null;
       score: number;
     }[]
@@ -98,7 +99,7 @@ export class MongooseUserAnalyticsRepository
       .aggregate<{
         _id: Types.ObjectId;
         score: number;
-        bookInfo?: { title?: string; coverUrl?: string };
+        bookInfo?: { title?: string; coverUrl?: string; slug?: string };
       }>([
         {
           $match: {
@@ -130,7 +131,8 @@ export class MongooseUserAnalyticsRepository
     return result.map((item) => ({
       bookId: item._id.toString(),
       title: item.bookInfo?.title || 'Không rõ',
-      coverImage: item.bookInfo?.coverUrl ?? null,
+      slug: item.bookInfo?.slug || 'Không rõ',
+      coverImage: item.bookInfo?.coverUrl || null,
       score: item.score,
     }));
   }

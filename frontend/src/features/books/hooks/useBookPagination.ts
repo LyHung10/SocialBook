@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, startTransition } from 'react';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
 import type { Book, BookOrderField } from '@/features/books/types/book.interface';
 import { useIntersectionPagination } from '@/hooks/useIntersectionPagination';
@@ -20,7 +20,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
 
     const queryKey = JSON.stringify({ ...params });
 
-    const { data, isLoading, isFetching } = useGetBooksQuery(
+    const { currentData, data, isLoading, isFetching } = useGetBooksQuery(
         {
             page,
             limit: 20,
@@ -36,24 +36,22 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
         const isReset = queryKey !== queryKeyRef.current;
         if (isReset) {
             queryKeyRef.current = queryKey;
+            startTransition(() => setPage(1));
         }
 
-        if (isReset) {
-            queueMicrotask(() => {
-                setPage(1);
-                setAllBooks([]);
-            });
-        } else if (data?.data) {
-            queueMicrotask(() => {
+        if (currentData?.data) {
+            startTransition(() => {
                 setAllBooks((prev) => {
-                    if (page === 1) return data.data;
+                    if (isReset || page === 1) return currentData.data;
                     const existingIds = new Set(prev.map((b) => b.id));
-                    const uniqueNewBooks = data.data.filter((b: Book) => !existingIds.has(b.id));
+                    const uniqueNewBooks = currentData.data.filter((b: Book) => !existingIds.has(b.id));
                     return [...prev, ...uniqueNewBooks];
                 });
             });
+        } else if (isReset) {
+            startTransition(() => setAllBooks([]));
         }
-    }, [queryKey, data, page]);
+    }, [queryKey, currentData, page]);
 
     const hasMore = data ? data.meta.current < data.meta.totalPages : true;
 
@@ -62,9 +60,11 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
         isEnabled: !isFetching && hasMore,
     });
 
+    const hasDataGap = !!data?.data?.length && allBooks.length === 0 && page === 1;
+
     return {
         books: allBooks,
-        isLoading: (isLoading || isFetching) && page === 1,
+        isLoading: ((isLoading || isFetching) && page === 1) || hasDataGap,
         isFetchingMore: isFetching && page > 1,
         hasMore,
         lastBookRef,

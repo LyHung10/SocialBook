@@ -14,6 +14,7 @@ import { ReadingRoomsRepositoryModule } from '@/infrastructure/database/reposito
 import { BooksRepositoryModule } from '@/infrastructure/database/repositories/books/books-repository.module';
 
 import { AddHighlightUseCase } from './use-cases/add-highlight/add-highlight.use-case';
+import { GenerateHighlightInsightUseCase } from './use-cases/generate-highlight-insight/generate-highlight-insight.use-case';
 import { RemoveHighlightUseCase } from './use-cases/remove-highlight/remove-highlight.use-case';
 import { GeminiApplicationModule } from '../gemini/gemini-application.module';
 import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories/chapters/chapters-repository.module';
@@ -40,6 +41,7 @@ import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-roo
     DeleteRoomUseCase,
     AddHighlightUseCase,
     RemoveHighlightUseCase,
+    GenerateHighlightInsightUseCase,
     GetMyActiveRoomsUseCase,
     GetMyHistoryUseCase,
     GetRoomByCodeUseCase,
@@ -55,6 +57,7 @@ import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-roo
     DeleteRoomUseCase,
     AddHighlightUseCase,
     RemoveHighlightUseCase,
+    GenerateHighlightInsightUseCase,
     GetMyActiveRoomsUseCase,
     GetMyHistoryUseCase,
     GetRoomByCodeUseCase,

@@ -233,14 +233,35 @@ export class ReadingRoom extends Entity<RoomId> {
     this.markAsUpdated();
   }
 
+  transferHost(newHostId: string): void {
+    const newHost = this._props.members.find(
+      (m) => m.userId === newHostId && m.isActive,
+    );
+    if (!newHost) {
+      throw new BadRequestDomainException(
+        'Người dùng không phải thành viên đang hoạt động',
+      );
+    }
+
+    const oldHost = this._props.members.find(
+      (m) => m.userId === this.hostId && m.isActive,
+    );
+    if (oldHost) {
+      oldHost.changeRole('member');
+    }
+
+    newHost.changeRole('host');
+    this._props.hostId = UserId.create(newHostId);
+    this.markAsUpdated();
+  }
+
   removeMember(userId: string): void {
     const member = this._props.members.find((m) => m.userId === userId);
     if (member && member.isActive) {
       member.markAsLeft();
 
-      // If host leaves, try to transfer host
-      if (member.role === 'host') {
-        this.transferHost();
+      if (member.role === 'host' && this._props.mode.toString() === 'sync') {
+        this._props.mode = RoomMode.create('free');
       }
 
       this.markAsUpdated();
@@ -280,22 +301,6 @@ export class ReadingRoom extends Entity<RoomId> {
 
     this._props.mode = RoomMode.create(newMode);
     this.markAsUpdated();
-  }
-
-  private transferHost(): void {
-    const activeMembers = this.activeMembers;
-    if (activeMembers.length > 0) {
-      activeMembers.sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime());
-      const newHost = activeMembers[0];
-      newHost.makeHost();
-      this._props.hostId = UserId.create(newHost.userId);
-
-      this._props.members.forEach((m) => {
-        if (m.userId !== newHost.userId && m.role === 'host') {
-          m.makeMember();
-        }
-      });
-    }
   }
 
   end(): void {

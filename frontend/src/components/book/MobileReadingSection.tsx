@@ -25,8 +25,8 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
           </h2>
 
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-              <LogIn size={28} className="text-blue-600 dark:text-blue-400" />
+            <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+              <LogIn size={28} className="text-brand" />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
               Đăng nhập để tiếp tục đọc
@@ -36,7 +36,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
             </p>
             <Link
               href="/login"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+              className="px-6 py-2.5 bg-brand hover:bg-brand/90 text-brand-foreground rounded-full font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
             >
               Đăng nhập ngay
               <ChevronRight size={16} />
@@ -87,7 +87,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
             </p>
             <Link
               href="/books"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+              className="px-6 py-2.5 bg-brand hover:bg-brand/90 text-brand-foreground rounded-full font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
             >
               Khám phá ngay
               <ChevronRight size={16} />
@@ -111,7 +111,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
           {hasMore && (
             <Link
               href="/library"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+              className="text-xs text-brand hover:underline font-medium"
             >
               Xem tất cả
             </Link>
@@ -167,7 +167,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
         {hasMore && (
           <Link
             href="/library"
-            className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+            className="mt-4 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-brand py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
           >
             Xem thêm {books.length - 10} sách
             <ChevronRight size={16} />

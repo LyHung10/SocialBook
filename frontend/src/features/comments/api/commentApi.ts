@@ -18,6 +18,9 @@ import {
     EditCommentResponse,
     DeleteCommentRequest
 } from '../types/comment.interface';
+import { postApi } from '../../posts/api/postApi';
+import type { PaginatedPostsResponse, Post } from '../../posts/types/post.interface';
+import type { RootState } from '@/store/store';
 
 type RawCommentsResponse = {
     comments?: GetCommentsResponse['comments'];
@@ -100,6 +103,53 @@ export const commentApi = createApi({
                         }
                         : undefined,
                 ].filter(Boolean) as { type: 'Comment'; id: string }[];
+            },
+
+            async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
+                const patchResults: { undo: () => void }[] = [];
+
+                if (arg.targetType === 'post' && !arg.parentId) {
+                    const state = getState() as RootState;
+                    const queries = state.postApi?.queries || {};
+
+                    for (const [key, query] of Object.entries(queries)) {
+                        if (!query) continue;
+
+                        const q = query as { originalArgs?: unknown };
+                        if (q.originalArgs === undefined) continue;
+
+                        const originalArgs = q.originalArgs;
+
+                        if (key.startsWith('getPosts(') || key.startsWith('getPostsByUser(')) {
+                            const endpointName = key.startsWith('getPosts(') ? 'getPosts' : 'getPostsByUser';
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const patchResult = dispatch(
+                                postApi.util.updateQueryData(endpointName, originalArgs as any, (draft: PaginatedPostsResponse) => {
+                                    const post = draft.data?.find(p => p.id === arg.targetId);
+                                    if (post) {
+                                        post.totalComments = (post.totalComments || 0) + 1;
+                                    }
+                                })
+                            );
+                            patchResults.push(patchResult);
+                        } else if (key.startsWith('getPostById(')) {
+                            const patchResult = dispatch(
+                                postApi.util.updateQueryData('getPostById', originalArgs as unknown as { id: string; userId?: string }, (draft: Post) => {
+                                    if (draft.id === arg.targetId) {
+                                        draft.totalComments = (draft.totalComments || 0) + 1;
+                                    }
+                                })
+                            );
+                            patchResults.push(patchResult);
+                        }
+                    }
+                }
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    patchResults.forEach(pr => pr.undo());
+                }
             },
         }),
 

@@ -22,7 +22,7 @@ export default function TrendingBooksWidget() {
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Sách Hot Trong Tuần
                 </h2>
             </div>
@@ -35,7 +35,6 @@ export default function TrendingBooksWidget() {
                             onClick={() => router.push(`/books/${book.slug}`)}
                             className="flex items-start gap-3 cursor-pointer group"
                         >
-                            <span className="text-xs font-bold text-muted-foreground w-4 mt-1">{index + 1}</span>
                             <div className="flex-shrink-0">
                                 <Image
                                     src={book.coverImage || '/abstract-book-pattern.png'}

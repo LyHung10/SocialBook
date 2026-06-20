@@ -9,12 +9,14 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
 import { useCreateRoomMutation, useGetMyActiveRoomsQuery, useGetMyHistoryQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAppAuth } from '@/features/auth/hooks';
 import LoginWall from '@/components/auth/LoginWall';
-import { BookOpen, History, Plus, LogIn, DoorOpen, ArrowRight, Users, RefreshCw } from 'lucide-react';
+import { BookOpen, History, Plus, ArrowRight, Users, RefreshCw, Check, ChevronsUpDown, X } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 
 function RoomCardSkeleton() {
@@ -37,6 +39,7 @@ function RoomCardSkeleton() {
 export default function ReadingRoomsHub() {
   const [roomCode, setRoomCode] = useState('');
   const [selectedBook, setSelectedBook] = useState('');
+  const [openSearchBook, setOpenSearchBook] = useState(false);
   const [maxMembers, setMaxMembers] = useState(10);
   const [activeTab, setActiveTab] = useState('active');
   const [createRoom, { isLoading }] = useCreateRoomMutation();
@@ -93,27 +96,60 @@ export default function ReadingRoomsHub() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 transition-colors duration-300 relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
+    <div className="min-h-screen bg-background text-foreground relative transition-colors duration-300">
+      {/* HERO BANNER */}
+      <div className="relative w-full h-[30vh] min-h-[260px] max-h-[350px] flex items-center justify-center overflow-hidden bg-slate-900 dark:bg-black">
         <Image
           src="/main-background.jpg"
-          alt="Background Texture"
+          alt="Background"
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-10 dark:opacity-40"
+          className="object-cover opacity-40 dark:opacity-30 mix-blend-overlay"
         />
-        <div className="absolute inset-0 bg-white/80 dark:bg-[#0f0f0f]/70 transition-colors duration-300"></div>
-      </div>
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Phòng đọc
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/50" />
+        <div className="relative z-10 text-center w-full max-w-3xl px-4 flex flex-col items-center">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+            Phòng Đọc Cùng Nhau
           </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Đọc sách đồng bộ, thảo luận cùng bạn bè trong thời gian thực.
+          <p className="text-white/90 mb-8 text-sm md:text-base font-medium max-w-xl drop-shadow-sm">
+            Đọc sách đồng bộ, thảo luận cùng bạn bè trong thời gian thực. Tham gia ngay!
           </p>
+          <div className="w-full max-w-xl shadow-2xl rounded-full bg-background p-1.5 flex items-center gap-2">
+            <div className="flex-1 relative flex items-center">
+              <Input
+                placeholder="Nhập mã phòng để tham gia..."
+                value={roomCode}
+                onChange={e => setRoomCode(e.target.value.toUpperCase())}
+                className="block w-full pl-5 pr-10 py-4 h-12 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600/50 shadow-lg backdrop-blur-sm transition-all text-base placeholder:normal-case placeholder:tracking-normal"
+                maxLength={6}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleJoin();
+                }}
+              />
+              {roomCode && (
+                <button
+                  type="button"
+                  onClick={() => setRoomCode('')}
+                  className="absolute right-4 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
+            <Button
+              size="lg"
+              className="rounded-full shrink-0 px-6 font-semibold"
+              onClick={handleJoin}
+            >
+              Vào phòng
+            </Button>
+          </div>
         </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <main className="container mx-auto px-4 md:px-8 py-8 lg:py-10 relative z-10 max-w-6xl">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList variant="underline" className="mb-8">
@@ -144,40 +180,47 @@ export default function ReadingRoomsHub() {
                   return (
                     <Card
                       key={room.roomId}
-                      className="group cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border-border/60 overflow-hidden"
+                      className="group relative h-full cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 overflow-hidden bg-card"
                       onClick={() => router.push(`/reading-rooms/${room.roomId}`)}
                     >
-                      <CardContent className="p-0 flex">
-                        <div className="w-20 shrink-0 bg-muted relative overflow-hidden">
+                      <CardContent className="p-0 flex items-stretch h-full">
+                        <div className="w-24 shrink-0 bg-muted relative overflow-hidden min-h-[128px]">
                           {book?.coverUrl ? (
                             <Image
                               src={book.coverUrl}
                               alt={book.title}
                               fill
-                              className="object-cover"
-                              sizes="80px"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              sizes="96px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="w-6 h-6 text-muted-foreground/40" />
+                              <BookOpen className="w-8 h-8 text-muted-foreground/30" />
                             </div>
                           )}
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                         </div>
                         <div className="p-4 flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge variant="outline" className="font-mono text-[10px] h-5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="font-mono text-[10px] h-5 bg-background">
                               #{room.roomId}
                             </Badge>
                             <Badge variant={room.mode === 'sync' ? 'default' : 'secondary'} className="text-[10px] h-5">
                               {room.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}
                             </Badge>
                           </div>
-                          <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                            {book?.title || 'Đang đọc chung...'}
+                          <h3 className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors mb-1">
+                            {book?.title || 'Đang tải sách...'}
                           </h3>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                            {room.currentChapterSlug}
+                          <p className="text-sm text-muted-foreground flex items-center gap-1.5 line-clamp-1">
+                            <BookOpen className="w-3.5 h-3.5" />
+                            Đang đọc: {room.currentChapterSlug}
                           </p>
+                        </div>
+                        <div className="pr-4 shrink-0 flex flex-col justify-center items-center opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 duration-300">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                            <ArrowRight className="w-5 h-5" />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -232,54 +275,55 @@ export default function ReadingRoomsHub() {
                   return (
                     <Card
                       key={room.roomId}
-                      className="transition-all hover:shadow-sm border-border/60 overflow-hidden"
+                      className="group h-full transition-all hover:shadow-md hover:bg-muted/30 border-border/60 overflow-hidden"
                     >
-                      <CardContent className="p-0 flex items-center">
-                        <div className="w-16 h-20 shrink-0 bg-muted relative overflow-hidden">
+                      <CardContent className="p-0 flex items-stretch h-full">
+                        <div className="w-20 shrink-0 bg-muted relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 opacity-80 group-hover:opacity-100 min-h-[112px]">
                           {book?.coverUrl ? (
                             <Image
                               src={book.coverUrl}
                               alt={book.title}
                               fill
                               className="object-cover"
-                              sizes="64px"
+                              sizes="80px"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="w-5 h-5 text-muted-foreground/40" />
+                            <div className="w-full h-full flex items-center justify-center bg-muted">
+                              <History className="w-6 h-6 text-muted-foreground/30" />
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0 px-4 py-3">
-                          <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex-1 min-w-0 px-5 py-3">
+                          <div className="flex items-center gap-2 mb-1.5">
                             <span className="font-mono text-xs text-muted-foreground">
                               #{room.roomId}
                             </span>
-                            <Badge variant="secondary" className="text-[10px] h-4">
+                            <Badge variant="secondary" className="text-[10px] h-5 bg-muted-foreground/10 text-muted-foreground hover:bg-muted-foreground/20 border-0">
                               Đã kết thúc
                             </Badge>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[10px] text-muted-foreground font-medium border-l border-border pl-2">
                               {room.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}
                             </span>
                           </div>
-                          <p className="font-medium text-sm truncate">
+                          <p className="font-semibold text-base truncate group-hover:text-foreground transition-colors text-muted-foreground">
                             {book?.title || 'Đã đọc chung...'}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0 px-3">
+                        <div className="flex items-center gap-2 shrink-0 px-4">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8"
+                            className="h-9 hover:bg-background"
                             onClick={() => router.push(`/reading-rooms/${room.roomId}`)}
                           >
-                            <ArrowRight className="w-4 h-4 mr-1" />
+                            <ArrowRight className="w-4 h-4 mr-2 text-muted-foreground group-hover:text-primary transition-colors" />
                             Xem
                           </Button>
                           {isHost && (
                             <Button
                               size="sm"
-                              className="h-8"
+                              variant="outline"
+                              className="h-9 border-primary/20 hover:bg-primary/5 hover:text-primary transition-colors"
                               disabled={isReactivating}
                               onClick={async (e) => {
                                 e.stopPropagation();
@@ -291,7 +335,7 @@ export default function ReadingRoomsHub() {
                                 }
                               }}
                             >
-                              <RefreshCw className="w-3 h-3 mr-1" />
+                              <RefreshCw className={cn("w-4 h-4 mr-2 text-primary", isReactivating && "animate-spin")} />
                               {isReactivating ? 'Đang mở...' : 'Mở lại'}
                             </Button>
                           )}
@@ -320,148 +364,215 @@ export default function ReadingRoomsHub() {
 
           {/* Create Room Tab */}
           <TabsContent value="create" className="mt-0">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Plus className="w-5 h-5 text-primary" />
-                      Tạo phòng mới
-                    </CardTitle>
-                    <CardDescription>
-                      Chọn sách và bắt đầu đọc cùng bạn bè.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
+            <Card className="overflow-hidden border-0 shadow-lg">
+              <div className="grid lg:grid-cols-2">
+                {/* Cột trái: Form */}
+                <div className="p-6 md:p-8 space-y-8 bg-card">
+                  <div>
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-2">
+                      <Plus className="w-6 h-6 text-primary" />
+                      Tạo phòng đọc mới
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                      Lựa chọn sách và số lượng người tham gia để bắt đầu hành trình đọc sách cùng bạn bè.
+                    </p>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-muted-foreground" />
                         Chọn sách
                       </label>
-                      <Select value={selectedBook} onValueChange={setSelectedBook} disabled={isBooksLoading}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={isBooksLoading ? 'Đang tải...' : 'Chọn một cuốn sách'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {booksData?.data.map((book) => {
-                            const noChapters = !book.stats?.chapterCount || book.stats.chapterCount === 0;
-                            return (
-                              <SelectItem key={book.id} value={book.id} disabled={noChapters}>
-                                <span className="flex items-center gap-2">
-                                  {book.title}
-                                  {noChapters && (
-                                    <Badge variant="outline" className="text-[10px] h-4 px-1 text-muted-foreground">
-                                      Chưa có chương
-                                    </Badge>
-                                  )}
-                                </span>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={openSearchBook} onOpenChange={setOpenSearchBook}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openSearchBook}
+                            disabled={isBooksLoading}
+                            className="w-full justify-between h-12 bg-muted/30 font-normal"
+                          >
+                            {isBooksLoading ? (
+                              <span className="text-muted-foreground">Đang tải...</span>
+                            ) : selectedBook ? (
+                              <span className="truncate pr-4">
+                                {booksData?.data.find((b) => b.id === selectedBook)?.title}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Tìm sách bạn muốn đọc chung...</span>
+                            )}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Tìm tên sách..." className="h-11" />
+                            <CommandList className="max-h-[300px]">
+                              <CommandEmpty>Không tìm thấy sách nào.</CommandEmpty>
+                              <CommandGroup>
+                                {booksData?.data.map((book) => {
+                                  const noChapters = !book.stats?.chapterCount || book.stats.chapterCount === 0;
+                                  return (
+                                    <CommandItem
+                                      key={book.id}
+                                      value={`${book.id} ${book.title}`}
+                                      disabled={noChapters}
+                                      onSelect={(currentValue) => {
+                                        // commanditem value is lowercased string. We use ID for state
+                                        setSelectedBook(currentValue === selectedBook ? "" : book.id);
+                                        setOpenSearchBook(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4 shrink-0",
+                                          selectedBook === book.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <span className="truncate pr-2">{book.title}</span>
+                                      {noChapters && (
+                                        <Badge variant="outline" className="ml-auto text-[10px] h-4 px-1 text-muted-foreground shrink-0">
+                                          Chưa có chương
+                                        </Badge>
+                                      )}
+                                    </CommandItem>
+                                  );
+                                })}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
-                    {selectedBookData && (
-                      <div className="flex gap-4 p-4 rounded-xl bg-muted/50">
-                        <div className="w-16 h-24 rounded-lg overflow-hidden bg-muted relative shrink-0">
+                    <div className="space-y-4 bg-muted/20 p-4 rounded-xl border border-border/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-semibold flex items-center gap-2">
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          Số người tham gia tối đa
+                        </label>
+                        <div className="bg-primary text-primary-foreground font-bold px-3 py-1 rounded-full text-sm shadow-sm">
+                          {maxMembers} người
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {[2, 5, 10, 20].map((num) => (
+                          <Button
+                            key={num}
+                            variant={maxMembers === num ? "default" : "outline"}
+                            size="sm"
+                            className="rounded-full flex-1 h-8 text-xs font-medium"
+                            onClick={() => setMaxMembers(num)}
+                          >
+                            {num} người
+                          </Button>
+                        ))}
+                      </div>
+
+                      <div className="pt-2 px-2">
+                        <Slider
+                          min={2}
+                          max={20}
+                          step={1}
+                          value={[maxMembers]}
+                          onValueChange={([v]) => setMaxMembers(v)}
+                          className="w-full cursor-pointer [&_[role=slider]]:h-5 [&_[role=slider]]:w-5"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-2 font-medium uppercase tracking-wider">
+                          <span>Ít người (2)</span>
+                          <span>Đông đúc (20)</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 p-2.5 rounded-lg text-xs flex items-start gap-2">
+                        <span className="text-[10px] mt-0.5">💡</span>
+                        <p>
+                          <strong>Mẹo:</strong> Phòng từ 5-10 người thường mang lại trải nghiệm đọc và thảo luận tập trung nhất!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <Button
+                      size="lg"
+                      className="w-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all"
+                      onClick={handleCreate}
+                      disabled={isLoading || !selectedBook || hasNoChapters}
+                    >
+                      {isLoading ? 'Đang tạo phòng...' : hasNoChapters ? 'Sách chưa có chương' : (
+                        <>
+                          <Users className="w-5 h-5 mr-2" />
+                          Mở Phòng Ngay
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Cột phải: Live Preview */}
+                <div className="bg-muted/30 p-6 md:p-8 flex items-center justify-center border-l border-border/50">
+                  {selectedBookData ? (
+                    <div className="w-full max-w-sm">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
+                        Phòng đọc của bạn sẽ có diện mạo
+                      </p>
+                      <Card className="overflow-hidden shadow-xl border-border/60 bg-background/50 backdrop-blur-sm group">
+                        <div className="aspect-[3/4] relative w-full bg-muted">
                           {selectedBookData.coverUrl ? (
                             <Image
                               src={selectedBookData.coverUrl}
                               alt={selectedBookData.title}
                               fill
-                              className="object-cover"
-                              sizes="64px"
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              sizes="(max-width: 768px) 100vw, 384px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="w-6 h-6 text-muted-foreground/40" />
+                              <BookOpen className="w-16 h-16 text-muted-foreground/30" />
                             </div>
                           )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-sm">{selectedBookData.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                            {selectedBookData.description || 'Chưa có mô tả'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <Badge variant="secondary" className="text-[10px] h-4">
-                              {selectedBookData.stats?.chapterCount || 0} chương
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                            <Badge className="bg-red-600/90 hover:bg-red-600 text-white border-0 mb-3 backdrop-blur-md">
+                              Live
                             </Badge>
+                            <h3 className="text-2xl font-bold mb-2 line-clamp-2 drop-shadow-md">
+                              {selectedBookData.title}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-white/80">
+                              <span className="flex items-center gap-1.5 bg-black/30 px-2 py-1 rounded-md backdrop-blur-md">
+                                <Users className="w-4 h-4" />
+                                1 / {maxMembers}
+                              </span>
+                              <span className="flex items-center gap-1.5 bg-black/30 px-2 py-1 rounded-md backdrop-blur-md">
+                                <BookOpen className="w-4 h-4" />
+                                {selectedBookData.stats?.chapterCount || 0} chương
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        Số người tối đa: <span className="font-bold text-primary">{maxMembers}</span>
-                      </label>
-                      <Slider
-                        min={2}
-                        max={20}
-                        step={1}
-                        value={[maxMembers]}
-                        onValueChange={([v]) => setMaxMembers(v)}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>2</span>
-                        <span>20</span>
-                      </div>
+                      </Card>
                     </div>
-
-                    <Button
-                      size="lg"
-                      className="w-full"
-                      onClick={handleCreate}
-                      disabled={isLoading || !selectedBook || hasNoChapters}
-                    >
-                      {isLoading ? 'Đang tạo...' : hasNoChapters ? 'Sách chưa có chương' : (
-                        <>
-                          <Users className="w-4 h-4 mr-2" />
-                          Tạo phòng ngay
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
+                  ) : (
+                    <div className="w-full max-w-sm text-center">
+                      <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center mb-6 shadow-inner">
+                        <BookOpen className="w-10 h-10 text-muted-foreground/40" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">Chưa chọn sách</h3>
+                      <p className="text-muted-foreground text-sm max-w-[250px] mx-auto">
+                        Bảng xem trước sẽ hiển thị ở đây sau khi bạn chọn một cuốn sách.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              <div>
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <LogIn className="w-4 h-4 text-primary" />
-                      Tham gia phòng
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      Nhập mã phòng từ bạn bè.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Input
-                      placeholder="Mã phòng"
-                      value={roomCode}
-                      onChange={e => setRoomCode(e.target.value)}
-                      className="h-10 uppercase text-center tracking-widest font-mono text-base"
-                      maxLength={6}
-                    />
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleJoin}
-                    >
-                      <DoorOpen className="w-4 h-4 mr-2" />
-                      Vào phòng
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+            </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
     </div>
   );
 }

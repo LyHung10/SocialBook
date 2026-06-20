@@ -81,6 +81,10 @@ export class QuoteRepository extends IQuoteRepository {
       .exec();
   }
 
+  async deleteById(id: string): Promise<void> {
+    await this.quoteModel.findByIdAndDelete(id).exec();
+  }
+
   async deleteByRoom(roomId: string): Promise<void> {
     await this.quoteModel.deleteMany({ roomId }).exec();
   }

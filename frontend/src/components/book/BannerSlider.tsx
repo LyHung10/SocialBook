@@ -64,9 +64,13 @@ export function BannerSlider({ books }: BannerSliderProps) {
 
           <div className="flex flex-wrap items-center gap-2 mb-4 drop-shadow-md transition-colors duration-300">
             {currentBook.genres?.map((genre) => (
-              <span key={genre.id} className="inline-flex px-3 py-1 rounded-full border border-white/20 text-white/90 text-xs font-medium backdrop-blur-sm hover:bg-white/10 transition-all">
+              <Link
+                key={genre.id}
+                href={`/books?genres=${encodeURIComponent(genre.slug)}`}
+                className="inline-flex px-3 py-1 rounded-full border border-black/10 dark:border-white/20 text-foreground/80 dark:text-white/90 text-xs font-medium backdrop-blur-sm bg-black/5 dark:bg-white/5 hover:border-brand/30 dark:hover:border-brand/30 hover:text-brand transition-all cursor-pointer"
+              >
                 {genre.name}
-              </span>
+              </Link>
             ))}
           </div>
 
@@ -134,7 +138,7 @@ export function BannerSlider({ books }: BannerSliderProps) {
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
-              ? 'w-8 bg-red-600 dark:bg-primary'
+              ? 'w-8 bg-brand'
               : 'w-2 bg-gray-400/50 hover:bg-gray-400'
               }`}
             aria-label={`Go to slide ${index + 1}`}

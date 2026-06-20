@@ -6,7 +6,7 @@ import { ChatMessage } from '@/store/useReadingRoomStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
+import { useGetChapterKnowledgeQuery, useAskChapterAIMutation, useLazyGetChapterKnowledgeQuery } from '@/features/chapters/api/chaptersApi';
 import { useState, useEffect, useRef } from 'react';
 
 import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
@@ -23,21 +23,22 @@ interface KnowledgeSidebarProps {
 }
 
 export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSidebarProps) => {
-  const [shouldForce, setShouldForce] = useState(false);
-  const { data, isLoading, error } = useGetChapterKnowledgeQuery(
-    { bookSlug, chapterId, force: shouldForce },
+  const { data, isLoading: isQueryLoading, error, refetch } = useGetChapterKnowledgeQuery(
+    { bookSlug, chapterId },
     { skip: !chapterId }
   );
 
-  useEffect(() => {
-    if (shouldForce && !isLoading) {
-      const timer = setTimeout(() => setShouldForce(false), 0);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldForce, isLoading]);
+  const [triggerForceGet, { isLoading: isForceLoading }] = useLazyGetChapterKnowledgeQuery();
 
-  const handleRefresh = () => {
-    setShouldForce(true);
+  const isLoading = isQueryLoading || isForceLoading;
+
+  const handleRefresh = async () => {
+    try {
+      await triggerForceGet({ bookSlug, chapterId, force: true }).unwrap();
+      refetch();
+    } catch (e) {
+      toast.error('Không thể tải lại kiến thức. Vui lòng thử lại sau.');
+    }
   };
 
 
@@ -130,12 +131,18 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
     <GlassCard className="flex flex-col h-[75vh]">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
         <div className="px-3 pt-3 flex items-center justify-between">
-          <TabsList variant="pill" className="flex-1 grid grid-cols-2 gap-2 rounded-2xl h-10">
-            <TabsTrigger value="knowledge" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
+          <TabsList className="flex-1 grid grid-cols-2 gap-2 rounded-2xl h-10 bg-muted/30 p-1">
+            <TabsTrigger 
+              value="knowledge" 
+              className="text-[10px] font-black uppercase tracking-wider bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-primary transition-colors rounded-xl h-full"
+            >
               <BookOpen className="w-3 h-3 mr-1.5" />
               Kiến thức
             </TabsTrigger>
-            <TabsTrigger value="chat" variant="glass" className="text-[10px] font-black uppercase tracking-wider">
+            <TabsTrigger 
+              value="chat" 
+              className="text-[10px] font-black uppercase tracking-wider bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground hover:text-primary transition-colors rounded-xl h-full"
+            >
               <MessageSquare className="w-3 h-3 mr-1.5" />
               Thảo luận
             </TabsTrigger>
@@ -144,10 +151,10 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
             variant="ghost" 
             size="icon" 
             onClick={handleRefresh} 
-            disabled={isLoading || shouldForce}
+            disabled={isLoading}
             className="ml-2 h-10 w-10 shrink-0"
           >
-            <RefreshCw className={`w-4 h-4 ${(isLoading || shouldForce) ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 

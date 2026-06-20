@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import { useAppAuth, useLogout } from '@/features/auth/hooks';
 import { useHeaderNavigation } from './hooks/useHeaderNavigation';
 import { useHeaderTheme } from './hooks/useHeaderTheme';
-import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users } from 'lucide-react';
+import { useColorTheme } from './hooks/useColorTheme';
+import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users, Palette } from 'lucide-react';
 import { memo } from 'react';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { SearchTrigger } from '@/components/search/SearchTrigger';
 
 const LazyNotificationBell = dynamic(
     () =>
@@ -33,12 +35,13 @@ export const HeaderClient = memo(function HeaderClient() {
     const { navigateToHome, navigateToBooks, navigateToPosts, navigateToLibrary, navigateToReadingRooms, navigateToProfile, navigateToSettings, navigateToKnowledgeMap, navigateToLogin } = useHeaderNavigation();
 
     const { theme, toggleTheme, mounted } = useHeaderTheme();
+    const { colorTheme, toggleColorTheme, mounted: colorMounted } = useColorTheme();
 
     const userId = user?.id;
     const avatarUrl = user?.image;
 
     return (
-        <header className="fixed top-0 z-50 w-full h-16 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300">
+        <header className="fixed top-0 z-50 w-full h-16 bg-background border-b border-border transition-all duration-300">
             <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full">
                 <div className="flex items-center justify-between h-full">
                     <Logo onClick={navigateToHome} />
@@ -46,6 +49,7 @@ export const HeaderClient = memo(function HeaderClient() {
                     <HeaderNav onBooks={navigateToBooks} onPosts={navigateToPosts} onLibrary={navigateToLibrary} onReadingRooms={navigateToReadingRooms} />
 
                     <div className="flex items-center gap-2">
+                        <ColorThemeToggle mounted={colorMounted} colorTheme={colorTheme} onToggle={toggleColorTheme} />
                         <ThemeToggle mounted={mounted} theme={theme} onToggle={toggleTheme} />
 
                         {isAuthenticated && user ? (
@@ -101,7 +105,8 @@ function Logo({ onClick }: { onClick: () => void }) {
 function HeaderNav({ onBooks, onPosts, onLibrary, onReadingRooms }: { onBooks: () => void; onPosts: () => void; onLibrary: () => void; onReadingRooms: () => void }) {
     return (
         <nav className="hidden md:flex items-center gap-1">
-            <NavButton onClick={onBooks} icon={<Search className="w-4 h-4" />}>Tìm kiếm</NavButton>
+            <SearchTrigger />
+            <NavButton onClick={onBooks} icon={<BookOpen className="w-4 h-4" />}>Khám phá</NavButton>
             <NavButton onClick={onPosts} icon={<Globe className="w-4 h-4" />}>Bảng tin</NavButton>
             <NavButton onClick={onLibrary} icon={<Library className="w-4 h-4" />}>Thư viện</NavButton>
             <NavButton onClick={onReadingRooms} icon={<Users className="w-4 h-4" />}>Phòng đọc</NavButton>
@@ -114,6 +119,27 @@ function NavButton({ onClick, icon, children }: { onClick: () => void; icon: Rea
         <Button variant="ghost" onClick={onClick} className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full font-medium px-4">
             {icon}
             {children}
+        </Button>
+    );
+}
+
+function ColorThemeToggle({ mounted, colorTheme, onToggle }: { mounted: boolean; colorTheme: 'mono' | 'red' | 'blue'; onToggle: () => void }) {
+    let titleText = "Chọn màu chủ đề";
+    if (mounted) {
+        if (colorTheme === 'mono') titleText = "Chuyển sang tông Đỏ";
+        else if (colorTheme === 'red') titleText = "Chuyển sang tông Xanh";
+        else if (colorTheme === 'blue') titleText = "Chuyển sang tông Đen Trắng";
+    }
+
+    return (
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggle}
+            className="rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50 h-9 w-9"
+            title={titleText}
+        >
+            <Palette className="w-4 h-4 text-brand" />
         </Button>
     );
 }
@@ -242,7 +268,7 @@ function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, o
 
                         <div className="h-4" />
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Khám phá</p>
-                        <MobileNavItem onClick={onBooks} icon={<Search className="w-5 h-5" />}>Tìm kiếm sách</MobileNavItem>
+                        <MobileNavItem onClick={onBooks} icon={<Search className="w-5 h-5" />}>Tìm kiếm</MobileNavItem>
                         <MobileNavItem onClick={onPosts} icon={<Globe className="w-5 h-5" />}>Bảng tin cộng đồng</MobileNavItem>
                         <MobileNavItem onClick={onReadingRooms} icon={<Users className="w-5 h-5" />}>Phòng đọc chung</MobileNavItem>
                         <MobileNavItem onClick={onKnowledgeMap} icon={<Network className="w-5 h-5" />}>Bản đồ tri thức</MobileNavItem>

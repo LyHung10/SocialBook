@@ -47,7 +47,7 @@ let nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'nhasachmienphi.com',
+        hostname: 'edit.org',
       },
     ],
   },

@@ -22,12 +22,12 @@ export default function TopActiveReadersWidget() {
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Độc Giả Tích Cực
                 </h2>
             </div>
 
-            <div className="max-h-[300px] overflow-y-auto thin-scrollbar pr-1">
+            <div className="max-h-[300px] overflow-y-auto thin-scrollbar pr-1 pt-1">
                 <div className="space-y-4">
                     {topReaders.map((reader, index) => (
                         <div
@@ -44,7 +44,7 @@ export default function TopActiveReadersWidget() {
                                     className="w-9 h-9 object-cover rounded-full border border-slate-200 dark:border-gray-700"
                                 />
                                 {index === 0 && (
-                                    <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold border-2 border-white dark:border-neutral-900">
+                                    <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold border-2 border-white dark:border-neutral-900 shadow-sm">
                                         1
                                     </div>
                                 )}

@@ -1,6 +1,7 @@
 'use client';
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useRoomReactions } from '../hooks/useRoomReactions';
 import { REACTION_META, ReactionType } from '../types/room-interaction.types';
@@ -13,11 +14,11 @@ interface ParagraphReactionsProps {
   paragraphId: string;
 }
 
-export function ParagraphReactions({ roomId, chapterSlug, paragraphId }: ParagraphReactionsProps) {
+export const ParagraphReactions = memo(function ParagraphReactions({ roomId, chapterSlug, paragraphId }: ParagraphReactionsProps) {
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const { user } = useAppAuth();
-  const reactions = useReadingRoomStore((s) => s.reactions[paragraphId]);
+  const reactions = useReadingRoomStore(useShallow((s) => s.reactions[paragraphId]));
   const { addReaction } = useRoomReactions();
 
   if (!roomId) return null;
@@ -88,4 +89,4 @@ export function ParagraphReactions({ roomId, chapterSlug, paragraphId }: Paragra
       </AnimatePresence>
     </span>
   );
-}
+});

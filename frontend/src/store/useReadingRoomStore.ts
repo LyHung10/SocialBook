@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { RoomResponse } from '@/features/reading-rooms/api/readingRoomsApi';
 import type { RoomComment, ReactionType, ParagraphReactionSummary, RoomQuote } from '@/features/reading-room-interactions/types/room-interaction.types';
+import { REACTION_META } from '@/features/reading-room-interactions/types/room-interaction.types';
 
 export interface PresenceData {
   userId: string;
@@ -34,6 +35,38 @@ export interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   createdAt: string;
+}
+
+export interface EmotionEvent {
+  id: string;
+  userId: string;
+  displayName: string;
+  avatarUrl: string;
+  emoji: string;
+  reactionType: string;
+  paragraphId: string;
+  paragraphPreview: string; // first ~50 chars of paragraph text
+  timestamp: number;
+}
+
+// User color palette for collaborative selections (assigned by hash)
+export const PARTY_COLORS = [
+  { bg: 'rgba(251,191,36,0.35)',  border: '#fbbf24' }, // amber
+  { bg: 'rgba(20,184,166,0.30)',  border: '#14b8a6' }, // teal
+  { bg: 'rgba(244,63,94,0.28)',   border: '#f43f5e' }, // rose
+  { bg: 'rgba(139,92,246,0.28)', border: '#8b5cf6' }, // violet
+  { bg: 'rgba(56,189,248,0.30)',  border: '#38bdf8' }, // sky
+  { bg: 'rgba(249,115,22,0.30)', border: '#f97316' }, // orange
+];
+
+export interface RemoteSelection {
+  userId: string;
+  displayName: string;
+  avatarUrl: string;
+  paragraphId: string;
+  startOffset: number;
+  endOffset: number;
+  colorIndex: number;
 }
 
 interface ReadingRoomState {
@@ -75,7 +108,25 @@ interface ReadingRoomState {
   setParagraphActivity: (activities: ParagraphReactionSummary[]) => void;
   setQuotes: (quotes: RoomQuote[]) => void;
   addQuote: (quote: RoomQuote) => void;
+  removeQuote: (quoteId: string) => void;
   updateQuoteVote: (quoteId: string, voteCount: number, userId: string, voteType: 'up' | 'down' | null) => void;
+
+  // Emotion stream (ephemeral, max 50 items FIFO)
+  emotionEvents: EmotionEvent[];
+  addEmotionEvent: (event: Omit<EmotionEvent, 'id' | 'emoji' | 'paragraphPreview'> & { reactionType: string }) => void;
+
+  // Collaborative selections (ephemeral, per-user, no DB)
+  remoteSelections: Record<string, RemoteSelection>; // userId → selection
+  setRemoteSelection: (selection: RemoteSelection) => void;
+  clearRemoteSelection: (userId: string) => void;
+
+  // Paragraph content registry (for EmotionStream excerpt + scroll)
+  paragraphContentMap: Record<string, string>; // paragraphId → plain text
+  setParagraphContentMap: (map: Record<string, string>) => void;
+
+  // Scroll-to-paragraph signal (ChapterContent watches this)
+  scrollTargetParagraphId: string | null;
+  setScrollTargetParagraphId: (id: string | null) => void;
 }
 
 export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
@@ -92,6 +143,10 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
   memberProgress: {},
   paragraphActivities: {},
   quotes: [],
+  emotionEvents: [],
+  remoteSelections: {},
+  paragraphContentMap: {},
+  scrollTargetParagraphId: null,
 
   setRoom: (room) => set({
     room,
@@ -158,7 +213,21 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
     memberProgress: {},
     paragraphActivities: {},
     quotes: [],
+    emotionEvents: [],
+    remoteSelections: {},
+    paragraphContentMap: {},
+    scrollTargetParagraphId: null,
   }),
+  setRemoteSelection: (selection) => set((state) => ({
+    remoteSelections: { ...state.remoteSelections, [selection.userId]: selection },
+  })),
+  clearRemoteSelection: (userId) => set((state) => {
+    const next = { ...state.remoteSelections };
+    delete next[userId];
+    return { remoteSelections: next };
+  }),
+  setParagraphContentMap: (map) => set({ paragraphContentMap: map }),
+  setScrollTargetParagraphId: (id) => set({ scrollTargetParagraphId: id }),
 
   // Room interaction actions
   setRoomComments: (comments) => set((state) => {
@@ -222,10 +291,17 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
     return { paragraphActivities: { ...state.paragraphActivities, ...paraActivities } };
   }),
   setQuotes: (quotes) => set({ quotes }),
-  addQuote: (quote) => set((state) => ({
-    quotes: [quote, ...state.quotes],
-  })),
-  updateQuoteVote: (quoteId, voteCount, userId, voteType) => set((state) => ({
+  addQuote: (quote) => set((state) => {
+      const existingIndex = state.quotes.findIndex(q => q.id === quote.id);
+      if (existingIndex >= 0) {
+        return { quotes: state.quotes.map(q => q.id === quote.id ? quote : q) };
+      }
+      return { quotes: [quote, ...state.quotes] };
+    }),
+  removeQuote: (quoteId) =>
+    set((state) => ({ quotes: state.quotes.filter((q) => q.id !== quoteId) })),
+  updateQuoteVote: (quoteId, voteCount, userId, voteType) =>
+    set((state) => ({
     quotes: state.quotes.map(q =>
       q.id === quoteId
         ? {
@@ -241,4 +317,20 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
         : q,
     ),
   })),
+  addEmotionEvent: (event) => set((state) => {
+    const emoji = (REACTION_META as Record<string, { emoji: string; label: string }>)[event.reactionType]?.emoji ?? '💬';
+    
+    // Create excerpt preview (first 40 chars)
+    const content = state.paragraphContentMap[event.paragraphId] || '';
+    const preview = content.length > 40 ? content.slice(0, 40) + '...' : content;
+
+    const newEvent: EmotionEvent = {
+      ...event,
+      paragraphPreview: preview || 'đoạn này',
+      id: `${event.userId}-${event.timestamp}-${Math.random().toString(36).slice(2, 7)}`,
+      emoji,
+    };
+    const updated = [newEvent, ...state.emotionEvents];
+    return { emotionEvents: updated.slice(0, 50) };
+  }),
 }));

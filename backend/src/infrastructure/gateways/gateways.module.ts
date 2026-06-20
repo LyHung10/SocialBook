@@ -14,6 +14,7 @@ import { ReadingRoomPresenceModule } from './reading-room-presence.module';
 import { UsersRepositoryModule } from '../database/repositories/users/users-repository.module';
 import { ChaptersRepositoryModule } from '../database/repositories/chapters/chapters-repository.module';
 import { BooksRepositoryModule } from '../database/repositories/books/books-repository.module';
+import { LibraryApplicationModule } from '@/application/library/library-application.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { BooksRepositoryModule } from '../database/repositories/books/books-repo
     ChaptersRepositoryModule,
     BooksRepositoryModule,
     ReadingRoomPresenceModule,
+    LibraryApplicationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

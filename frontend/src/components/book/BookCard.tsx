@@ -65,7 +65,7 @@ function BookInfo({ book }: { book: Book }) {
             <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted-foreground group-hover:text-foreground transition-colors">
                 {book.authorId.name}
             </p>
-            <h3 className="mb-4 text-center text-sm font-notosans font-semibold text-foreground bg-clip-text group-hover:text-red-600 dark:group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] dark:group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all line-clamp-2">
+            <h3 className="mb-4 text-center text-sm font-notosans font-semibold text-foreground bg-clip-text group-hover:text-brand dark:group-hover:text-white group-hover:drop-shadow-[0_0_8px_var(--brand)] dark:group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all line-clamp-2">
                 {book.title}
             </h3>
         </div>
@@ -85,8 +85,8 @@ function BookStats({ book, handleAddToLibrary, isCurrentBookOpen }: BookStatsPro
                 <span>VOL {book.stats?.chapterCount || 0}</span>
 
                 <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
                 </span>
 
                 <span className="flex items-center gap-1">
@@ -99,7 +99,7 @@ function BookStats({ book, handleAddToLibrary, isCurrentBookOpen }: BookStatsPro
                 size="icon"
                 aria-label="Thêm vào danh sách đọc"
                 onClick={handleAddToLibrary}
-                className="h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-white hover:bg-transparent"
+                className="h-8 w-8 text-muted-foreground hover:text-brand dark:hover:text-white hover:bg-transparent"
                 title="Save to Library"
             >
                 <Bookmark

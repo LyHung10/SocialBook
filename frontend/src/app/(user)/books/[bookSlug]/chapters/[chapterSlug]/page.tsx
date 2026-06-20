@@ -8,12 +8,13 @@ import { getErrorMessage } from "@/lib/utils";
 import {
   Bookmark,
   ChevronLeft,
+  ChevronRight,
   List,
   Headphones,
   BookOpen,
   Settings,
   Share2,
-  Sparkles,
+  Bot,
 } from "lucide-react";
 
 import {
@@ -327,6 +328,21 @@ ${book.description?.slice(0, 100)}...
       >
         <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl">
           <DockButton
+            icon={<ChevronLeft size={20} />}
+            label="Chương trước"
+            disabled={!navigation?.previous}
+            onClick={goToPreviousChapter}
+          />
+          <DockButton
+            icon={<ChevronRight size={20} />}
+            label="Chương sau"
+            disabled={!navigation?.next}
+            onClick={goToNextChapter}
+          />
+
+          <div className="w-px h-6 bg-border mx-1" />
+
+          <DockButton
             icon={<List size={20} />}
             label="Mục lục"
             onClick={() => setShowTOC(true)}
@@ -365,7 +381,7 @@ ${book.description?.slice(0, 100)}...
 
           <DockButton
             icon={
-              <Sparkles
+              <Bot
                 size={20}
                 className={showAISidebar ? "text-primary" : ""}
               />
@@ -403,20 +419,25 @@ function DockButton({
   icon,
   label,
   onClick,
+  disabled = false,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group"
+      disabled={disabled}
+      className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all group"
     >
       {icon}
-      <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border">
-        {label}
-      </span>
+      {!disabled && (
+        <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border">
+          {label}
+        </span>
+      )}
     </button>
   );
 }

@@ -75,55 +75,23 @@ export default function Post() {
 
     return (
         <div className="w-full min-h-[calc(100vh-4rem)] bg-background relative">
-          <div className="fixed inset-0 z-0 pointer-events-none">
-            <Image
-              src="/main-background.jpg"
-              alt="Background Texture"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover opacity-10 dark:opacity-40"
-            />
-            <div className="absolute inset-0 bg-white/80 dark:bg-[#0f0f0f]/70 transition-colors duration-300"></div>
-          </div>
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <Image
+                    src="/main-background.jpg"
+                    alt="Background Texture"
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover opacity-10 dark:opacity-40"
+                />
+                <div className="absolute inset-0 bg-white/80 dark:bg-[#0f0f0f]/70 transition-colors duration-300"></div>
+            </div>
 
             <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-center gap-4">
 
                 {/* LEFT SIDEBAR */}
                 <aside className="hidden lg:block w-[22%] sticky top-20 h-[calc(100vh-6rem)] self-start">
                     <div className="h-full space-y-4 overflow-y-auto thin-scrollbar pr-1">
-
-                        {/* USER BOX */}
-                        <div
-                            onClick={goToFollowing}
-                            className="bg-card rounded-2xl shadow-md border border-border p-4 cursor-pointer">
-
-                            <div className="flex items-center gap-3 mb-3">
-                                <Image
-                                    src={currentUserImage}
-                                    alt={currentUserName}
-                                    width={40}
-                                    height={40}
-                                    className="h-10 w-10 rounded-full border border-slate-200 object-cover dark:border-gray-700"
-                                />
-                                <div>
-                                    <p className="text-sm font-semibold text-foreground truncate">{currentUserName}</p>
-                                    <p className="text-xs text-muted-foreground">Hôm nay bạn đang đọc
-                                        gì?</p>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    openCreatePost();
-                                }}
-                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-muted text-xs font-medium text-foreground py-2 hover:bg-accent transition"
-                            >
-                                <PenSquare size={14} />
-                                <span>Viết bài mới</span>
-                            </button>
-                        </div>
 
                         <UserSearchSidebar />
                         {/* WIDGETS */}
@@ -139,7 +107,7 @@ export default function Post() {
                         {/* CREATE POST BOX */}
                         <div
                             className="bg-card rounded-2xl shadow-md border border-border p-4">
-                            <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-3">
                                 <Image
                                     src={currentUserImage}
                                     alt={currentUserName}
@@ -148,24 +116,13 @@ export default function Post() {
                                     onClick={() => {
                                         router.push(`/users/${currentUserId}`)
                                     }}
-                                    className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700"
+                                    className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700 hover:opacity-80 transition"
                                 />
                                 <button
                                     onClick={() => openCreatePost()}
-                                    className="flex-1 text-left text-sm text-muted-foreground bg-muted hover:bg-accent rounded-full px-4 py-2 transition"
+                                    className="flex-1 text-left text-sm text-muted-foreground bg-muted hover:bg-accent hover:shadow-inner rounded-full px-4 py-2.5 transition-all duration-200 cursor-text"
                                 >
                                     {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
-                                </button>
-                            </div>
-
-                            <div
-                                className="flex justify-between items-center border-t border-border pt-3">
-                                <button
-                                    onClick={() => openCreatePost()}
-                                    className="inline-flex items-center gap-2 bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-sky-700"
-                                >
-                                    <PenSquare size={14} />
-                                    <span>Đăng bài</span>
                                 </button>
                             </div>
                         </div>

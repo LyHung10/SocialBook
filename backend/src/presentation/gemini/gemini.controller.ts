@@ -40,9 +40,10 @@ export class GeminiController {
     if (!chapterId) {
       throw new BadRequestException('Chapter ID is required');
     }
-    return await this.summarizeChapterUseCase.execute({
+    const result = await this.summarizeChapterUseCase.execute({
       chapterId,
       userId: body?.userId || 'GUEST',
     });
+    return { data: result, message: 'Tóm tắt chương thành công' };
   }
 }

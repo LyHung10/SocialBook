@@ -79,7 +79,7 @@ function LoginPage() {
             <h1 className="text-5xl font-bold leading-tight font-serif mb-4">
               LES MISERABLES
             </h1>
-            <p className="text-2xl text-primary-foreground/90 font-serif italic border-l-4 border-primary pl-4">
+            <p className="text-2xl text-white/90 font-serif italic border-l-4 border-white/60 pl-4">
               &quot;Even the darkest night will end and the sun will rise.&quot;
             </p>
             <p className="mt-4 text-lg font-medium">— Victor Hugo</p>

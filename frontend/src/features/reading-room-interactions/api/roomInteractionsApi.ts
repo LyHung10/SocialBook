@@ -12,6 +12,7 @@ interface AddReactionParams {
 export const roomInteractionsApi = createApi({
   reducerPath: 'roomInteractionsApi',
   baseQuery: axiosBaseQuery(),
+  tagTypes: ['RoomQuotes'],
   endpoints: (builder) => ({
     addReaction: builder.mutation<RoomReactionEvent, AddReactionParams>({
       query: (body) => ({
@@ -25,6 +26,7 @@ export const roomInteractionsApi = createApi({
         url: `/reading-rooms/${code}/quotes`,
         method: 'GET',
       }),
+      providesTags: (result, error, arg) => [{ type: 'RoomQuotes', id: arg.code }],
     }),
     getRoomComments: builder.query<RoomComment[], { code: string; chapterSlug?: string }>({
       query: ({ code, chapterSlug }) => ({
@@ -40,7 +42,14 @@ export const roomInteractionsApi = createApi({
         params: { chapterSlug },
       }),
     }),
+    deleteRoomQuote: builder.mutation<void, { code: string; quoteId: string }>({
+      query: ({ code, quoteId }) => ({
+        url: `/reading-rooms/${code}/quotes/${quoteId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: 'RoomQuotes', id: arg.code }],
+    }),
   }),
 });
 
-export const { useAddReactionMutation, useGetRoomQuotesQuery, useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } = roomInteractionsApi;
+export const { useAddReactionMutation, useGetRoomQuotesQuery, useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery, useDeleteRoomQuoteMutation } = roomInteractionsApi;

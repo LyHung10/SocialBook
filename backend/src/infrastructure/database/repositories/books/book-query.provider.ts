@@ -39,7 +39,9 @@ export class BookQueryProvider implements IBookQueryProvider {
       queryFilter.title = { $regex: filter.title, $options: 'i' };
     if (filter.authorId) queryFilter.authorId = filter.authorId;
     if (filter.genres && filter.genres.length > 0)
-      queryFilter.genres = { $in: filter.genres };
+      queryFilter.genres = {
+        $in: filter.genres.map((id) => new Types.ObjectId(id)),
+      };
     if (filter.tags && filter.tags.length > 0)
       queryFilter.tags = { $in: filter.tags };
     if (filter.status) queryFilter.status = filter.status;
@@ -66,7 +68,7 @@ export class BookQueryProvider implements IBookQueryProvider {
       if (slugsToResolve.length > 0) {
         const genres = await this.genreModel
           .find({ slug: { $in: slugsToResolve } })
-          .select('_id')
+          .select('_id slug')
           .lean()
           .exec();
         validIds.push(...genres.map((g) => g._id.toString()));

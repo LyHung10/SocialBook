@@ -10,6 +10,8 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { GenerateHighlightInsightUseCase } from '@/application/reading-rooms/use-cases/generate-highlight-insight/generate-highlight-insight.use-case';
+import { GenerateHighlightInsightCommand } from '@/application/reading-rooms/use-cases/generate-highlight-insight/generate-highlight-insight.command';
 import { ReadingRoomPresenceService } from './reading-room-presence.service';
 import { JoinRoomUseCase } from '@/application/reading-rooms/use-cases/join-room/join-room.use-case';
 import { LeaveRoomUseCase } from '@/application/reading-rooms/use-cases/leave-room/leave-room.use-case';
@@ -32,6 +34,10 @@ import {
   ReadingRoomServerEvent,
   ReadingRoomClientEvent,
 } from './reading-room.events';
+import { UpdateProgressUseCase } from '@/application/library/use-cases/update-progress/update-progress.use-case';
+import { UpdateProgressCommand } from '@/application/library/use-cases/update-progress/update-progress.command';
+import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
+import { BookId as ChapterBookId } from '@/domain/chapters/value-objects/book-id.vo';
 import { AddCommentUseCase } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.use-case';
 import { AddCommentCommand } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.command';
 import { DeleteCommentUseCase } from '@/application/reading-room-interactions/use-cases/delete-comment/delete-comment.use-case';
@@ -61,6 +67,9 @@ export class ReadingRoomGateway
   private readonly logger = new Logger(ReadingRoomGateway.name);
   private readonly eventTimestamps = new Map<string, number>();
 
+  // Track last saved progress per userId:chapterSlug to avoid spamming DB
+  private readonly lastSavedProgress = new Map<string, number>();
+
   @WebSocketServer() server: Server;
 
   constructor(
@@ -79,7 +88,40 @@ export class ReadingRoomGateway
     private readonly addReactionUseCase: AddReactionUseCase,
     private readonly addQuoteUseCase: AddQuoteUseCase,
     private readonly voteQuoteUseCase: VoteQuoteUseCase,
+    private readonly generateHighlightInsightUseCase: GenerateHighlightInsightUseCase,
+    private readonly updateProgressUseCase: UpdateProgressUseCase,
+    private readonly chapterRepository: IChapterRepository,
   ) {}
+
+  private async saveReadingProgress(
+    userId: string,
+    bookId: string,
+    chapterId: string | undefined,
+    chapterSlug: string,
+    progress: number,
+  ): Promise<void> {
+    if (!chapterId) {
+      try {
+        const chapter = await this.chapterRepository.findBySlug(
+          chapterSlug,
+          ChapterBookId.create(bookId),
+        );
+        if (!chapter) return;
+        chapterId = chapter.id.toString();
+      } catch {
+        return;
+      }
+    }
+    try {
+      await this.updateProgressUseCase.execute(
+        new UpdateProgressCommand(userId, bookId, chapterId, progress),
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to save reading progress for user ${userId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 
   @OnEvent('reading-room.highlight_insight_updated')
   handleHighlightInsightUpdated(payload: {
@@ -170,6 +212,29 @@ export class ReadingRoomGateway
         socket,
         'HIGHLIGHT_REMOVE_FAILED',
         'Remove highlight failed',
+        error,
+      );
+    }
+  }
+
+  @SubscribeMessage('generate_highlight_insight')
+  async handleGenerateHighlightInsight(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string; highlightId: string },
+  ) {
+    try {
+      const command = new GenerateHighlightInsightCommand(
+        body.roomId,
+        body.highlightId,
+      );
+      // Generate AI Insight. The use-case will emit 'reading-room.highlight_insight_updated'
+      // which will then be broadcasted to the room.
+      await this.generateHighlightInsightUseCase.execute(command);
+    } catch (error: unknown) {
+      this.emitError(
+        socket,
+        'GENERATE_INSIGHT_FAILED',
+        'Generate insight failed',
         error,
       );
     }
@@ -283,31 +348,31 @@ export class ReadingRoomGateway
   @SubscribeMessage('leave_room')
   async handleLeaveRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string },
+    @MessageBody() body: { roomId: string; newHostId?: string },
   ) {
     const sd = socket.data as SocketData;
     const userId = sd.userId ?? '';
     const roomId = body.roomId;
 
     try {
-      const command = new LeaveRoomCommand(userId, roomId);
+      const command = new LeaveRoomCommand(userId, roomId, body.newHostId);
       const room = await this.leaveRoomUseCase.execute(command);
       await this.presenceService.removePresence(roomId, userId);
 
       void socket.leave(`room:${roomId}`);
       delete sd.roomId;
 
-      this.server
-        .to(`room:${roomId}`)
-        .emit(ReadingRoomServerEvent.MEMBER_LEFT, { userId });
-
-      if (room && room.hostId !== userId) {
+      if (body.newHostId) {
         this.server
           .to(`room:${roomId}`)
           .emit(ReadingRoomServerEvent.HOST_CHANGED, {
-            newHostId: room.hostId,
+            newHostId: body.newHostId,
           });
       }
+
+      this.server
+        .to(`room:${roomId}`)
+        .emit(ReadingRoomServerEvent.MEMBER_LEFT, { userId });
 
       const presences = await this.presenceService.getRoomPresences(roomId);
       this.server
@@ -321,7 +386,13 @@ export class ReadingRoomGateway
   @SubscribeMessage('chapter_change')
   async handleChapterChange(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string; chapterSlug: string },
+    @MessageBody()
+    body: {
+      roomId: string;
+      chapterSlug: string;
+      bookId?: string;
+      chapterId?: string;
+    },
   ) {
     const userId = (socket.data as SocketData).userId ?? '';
     try {
@@ -331,6 +402,22 @@ export class ReadingRoomGateway
         body.chapterSlug,
       );
       await this.changeChapterUseCase.execute(command);
+
+      // Save progress as 0 when starting a new chapter
+      if (body.bookId) {
+        this.lastSavedProgress.set(
+          `${userId}:${body.chapterSlug}`,
+          0,
+        );
+        await this.saveReadingProgress(
+          userId,
+          body.bookId,
+          body.chapterId,
+          body.chapterSlug,
+          0,
+        );
+      }
+
       this.server
         .to(`room:${body.roomId}`)
         .emit(ReadingRoomServerEvent.CHAPTER_CHANGED, {
@@ -438,6 +525,57 @@ export class ReadingRoomGateway
     return false;
   }
 
+  @SubscribeMessage('party:selection_update')
+  handleSelectionUpdate(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      paragraphId: string;
+      startOffset: number;
+      endOffset: number;
+    },
+  ) {
+    if (this.isRateLimited(socket, 'party:selection_update', 60)) return;
+    const sd = socket.data as SocketData;
+    const { userId, displayName, avatarUrl } = sd;
+    if (!userId || !body.roomId) return;
+
+    socket.to(`room:${body.roomId}`).emit(
+      ReadingRoomServerEvent.PARTY_REMOTE_SELECTION,
+      {
+        userId,
+        displayName: displayName ?? '',
+        avatarUrl: avatarUrl ?? '',
+        paragraphId: body.paragraphId,
+        startOffset: body.startOffset,
+        endOffset: body.endOffset,
+      },
+    );
+  }
+
+  @SubscribeMessage('party:selection_cleared')
+  handleSelectionCleared(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() body: { roomId: string },
+  ) {
+    const sd = socket.data as SocketData;
+    const { userId } = sd;
+    if (!userId || !body.roomId) return;
+
+    socket.to(`room:${body.roomId}`).emit(
+      ReadingRoomServerEvent.PARTY_REMOTE_SELECTION,
+      {
+        userId,
+        displayName: '',
+        avatarUrl: '',
+        paragraphId: null,
+        startOffset: 0,
+        endOffset: 0,
+      },
+    );
+  }
+
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,
@@ -447,6 +585,8 @@ export class ReadingRoomGateway
       chapterSlug: string;
       paragraphId?: string;
       progress?: number;
+      bookId?: string;
+      chapterId?: string;
     },
   ) {
     if (this.isRateLimited(socket, 'heartbeat', 30)) return;
@@ -464,6 +604,29 @@ export class ReadingRoomGateway
         paragraphId: body.paragraphId,
         progress: body.progress,
       });
+
+      // Save reading progress when threshold met
+      if (
+        body.bookId &&
+        body.chapterId &&
+        body.progress !== undefined
+      ) {
+        const cacheKey = `${userId}:${body.chapterSlug}`;
+        const lastSaved = this.lastSavedProgress.get(cacheKey) ?? -1;
+        if (
+          body.progress - lastSaved >= 10 ||
+          body.progress === 100
+        ) {
+          this.lastSavedProgress.set(cacheKey, body.progress);
+          await this.saveReadingProgress(
+            userId,
+            body.bookId,
+            body.chapterId,
+            body.chapterSlug,
+            body.progress,
+          );
+        }
+      }
 
       const presences = await this.presenceService.getRoomPresences(
         body.roomId,
@@ -532,6 +695,18 @@ export class ReadingRoomGateway
         role: 'user',
         content: data.content,
         createdAt: new Date(),
+      });
+  }
+
+  @OnEvent('reading-room.reactivated')
+  handleRoomReactivated(payload: {
+    roomId: string;
+    reactivatedBy: string;
+  }) {
+    this.server
+      .to(`room:${payload.roomId}`)
+      .emit(ReadingRoomServerEvent.ROOM_REACTIVATED, {
+        reactivatedBy: payload.reactivatedBy,
       });
   }
 

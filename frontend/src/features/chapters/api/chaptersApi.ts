@@ -235,6 +235,7 @@ export const {
   useGetChaptersImportStatusQuery,
   useLazyGetChaptersImportStatusQuery,
   useGetChapterKnowledgeQuery,
+  useLazyGetChapterKnowledgeQuery,
   useAskChapterAIMutation,
   useRecordChapterViewMutation,
 } = chaptersApi;

@@ -65,8 +65,14 @@ export class NotificationsGateway
       }
       (socket.data as SocketData).userId = userId;
       void socket.join(`user:${userId}`);
-    } catch {
-      this.logger.error('WS error in handleConnection:');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      // Token expired hoặc invalid là expected — dùng warn thay vì error
+      if (message.includes('expired') || message.includes('invalid')) {
+        this.logger.warn(`WS connection rejected (token issue): ${message}`);
+      } else {
+        this.logger.error(`WS error in handleConnection: ${message}`);
+      }
       socket.disconnect(true);
     }
   }

@@ -59,6 +59,10 @@ export class RoomMember {
     return !this._props.leftAt;
   }
 
+  changeRole(newRole: 'host' | 'member'): void {
+    this._props.role = newRole;
+  }
+
   markAsLeft(): void {
     if (!this._props.leftAt) {
       this._props.leftAt = new Date();
@@ -70,11 +74,4 @@ export class RoomMember {
     this._props.joinedAt = new Date();
   }
 
-  makeHost(): void {
-    this._props.role = 'host';
-  }
-
-  makeMember(): void {
-    this._props.role = 'member';
-  }
 }

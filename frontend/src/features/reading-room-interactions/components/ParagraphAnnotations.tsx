@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useRoomAnnotations } from '../hooks/useRoomAnnotations';
@@ -16,7 +16,7 @@ interface ParagraphAnnotationsProps {
   onToggle?: (open: boolean) => void;
 }
 
-export function ParagraphAnnotations({ roomId, chapterSlug, paragraphId, isOpen: controlledOpen, onToggle }: ParagraphAnnotationsProps) {
+export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId, chapterSlug, paragraphId, isOpen: controlledOpen, onToggle }: ParagraphAnnotationsProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setIsOpen = (value: boolean) => {
@@ -109,4 +109,4 @@ export function ParagraphAnnotations({ roomId, chapterSlug, paragraphId, isOpen:
       </AnimatePresence>
     </div>
   );
-}
+});

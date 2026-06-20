@@ -25,6 +25,10 @@ export class LeaveRoomUseCase {
       throw new BadRequestDomainException('Bạn không phải thành viên của phòng này');
     }
 
+    if (command.newHostId) {
+      room.transferHost(command.newHostId);
+    }
+
     room.removeMember(command.userId);
     await this.roomRepository.save(room);
     return ReadingRoomApplicationMapper.toResult(room);

@@ -1,89 +1,25 @@
 'use client';
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { useLazySearchUsersQuery } from '@/features/users/api/usersApi';
-import { useRouter } from "next/navigation";
-import { useDebounce } from '@/hooks/useDebounce';
+import { useRouter } from 'next/navigation';
 
 export default function UserSearchSidebar() {
-    const [keyword, setKeyword] = useState('');
-    const debouncedKeyword = useDebounce(keyword, 300);
-    const route = useRouter();
-    const [triggerSearch, {data, isFetching}] = useLazySearchUsersQuery();
+  const router = useRouter();
 
-    useEffect(() => {
-        if (!debouncedKeyword.trim()) {
-            return;
-        }
-
-        triggerSearch({
-            keyword: debouncedKeyword,
-            current: 1,
-            pageSize: 5,
-        });
-    }, [debouncedKeyword, triggerSearch]);
-
-    const users = debouncedKeyword.trim() ? (data?.data ?? []) : [];
-
-    return (
-        <div
-            className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4 space-y-2">
-            {/* HEADER */}
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Tìm người dùng
-            </h2>
-
-            {/* SEARCH INPUT */}
-            <div className="relative">
-                <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500"
-                />
-                <input
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="Tìm theo tên người dùng..."
-                    className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-slate-50 dark:bg-zinc-800 border border-border text-foreground placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-            </div>
-
-            {/* RESULT LIST */}
-            <div className="space-y-2">
-                {!isFetching && users.length === 0 && keyword && (
-                    <p className="text-xs text-muted-foreground text-center py-3">
-                        Không tìm thấy người dùng
-                    </p>
-                )}
-
-                {users
-                    .filter((user) => Boolean(user?.id))
-                    .map((user) => (
-                        <button
-                            onClick={() => route.push(`/users/${user.id}`)}
-                            key={user.id}
-                            className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition text-left"
-                        >
-                            <Image
-                                src={user.avatar || '/abstract-book-pattern.png'}
-                                alt={user.username}
-                                width={36}
-                                height={36}
-                                className="h-9 w-9 rounded-full border border-slate-200 object-cover dark:border-gray-700"
-                            />
-
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">
-                                    {user.username}
-                                </p>
-                                <p className="text-xs text-muted-foreground truncate">
-                                    Xem hồ sơ
-                                </p>
-                            </div>
-                        </button>
-                    ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        Tìm kiếm
+      </h2>
+      <button
+        onClick={() => router.push('/books')}
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-muted/30 hover:bg-accent/50 transition-colors text-left group"
+      >
+        <Search size={18} className="shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+          Tìm sách trong thư viện
+        </span>
+      </button>
+    </div>
+  );
 }
