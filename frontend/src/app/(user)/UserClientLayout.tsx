@@ -16,7 +16,7 @@ export default function UserClientLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-red-600 selection:text-white relative transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-brand selection:text-brand-foreground relative transition-colors duration-300">
       {/* Background Image */}
       <div className="fixed inset-0 z-0">
         <Image

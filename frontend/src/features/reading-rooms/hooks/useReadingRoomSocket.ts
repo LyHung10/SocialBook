@@ -45,10 +45,10 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
   }, [socket]);
 
-  const changeChapter = useCallback((chapterSlug: string) => {
+  const changeChapter = useCallback((chapterSlug: string, bookId?: string, chapterId?: string) => {
     const store = useReadingRoomStore.getState();
     if (socket && store.room) {
-      socket.emit(ReadingRoomClientEvent.CHAPTER_CHANGE, { roomId: store.room.roomId, chapterSlug });
+      socket.emit(ReadingRoomClientEvent.CHAPTER_CHANGE, { roomId: store.room.roomId, chapterSlug, bookId, chapterId });
     }
   }, [socket]);
 
@@ -77,7 +77,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
   }, [socket]);
 
-  const sendHeartbeat = useCallback((chapterSlug: string, paragraphId?: string, progress?: number) => {
+  const sendHeartbeat = useCallback((chapterSlug: string, paragraphId?: string, progress?: number, bookId?: string, chapterId?: string) => {
     const store = useReadingRoomStore.getState();
     if (socket?.connected && store.room) {
       socket.emit(ReadingRoomClientEvent.HEARTBEAT, {
@@ -85,6 +85,8 @@ export const useReadingRoomSocket = (roomId?: string) => {
         chapterSlug,
         paragraphId,
         progress,
+        bookId,
+        chapterId,
       });
     }
   }, [socket]);

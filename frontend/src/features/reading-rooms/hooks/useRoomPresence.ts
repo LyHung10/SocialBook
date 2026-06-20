@@ -3,9 +3,11 @@ import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 
 export const useRoomPresence = (
   chapterSlug: string,
-  sendHeartbeat: (slug: string, paraId?: string, progress?: number) => void,
+  sendHeartbeat: (slug: string, paraId?: string, progress?: number, bookId?: string, chapterId?: string) => void,
   activeParagraphId?: string | null,
   readingProgress?: number,
+  bookId?: string,
+  chapterId?: string,
 ) => {
   const room = useReadingRoomStore((state) => state.room);
   
@@ -17,7 +19,7 @@ export const useRoomPresence = (
     if (!room) return;
 
     const emit = () => {
-      sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress);
+      sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress, bookId, chapterId);
       lastSentAt.current = Date.now();
       if (pendingTimeout.current) {
         clearTimeout(pendingTimeout.current);

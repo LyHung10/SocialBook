@@ -22,27 +22,29 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
     return (
       <aside className="hidden xl:block xl:w-64 flex-shrink-0">
         <div className="sticky top-8">
-          <Card className="bg-transparent border border-border/50 shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-bold">
+          <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <span className="w-1 h-3.5 bg-gradient-to-b from-brand-gradient-start to-brand-gradient-end rounded-full shrink-0" />
                 Sách đang đọc
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                  <LogIn size={28} className="text-blue-600 dark:text-blue-400" />
+                <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+                  <LogIn size={28} className="text-brand" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="font-semibold text-foreground mb-2 text-sm">
                   Đăng nhập để tiếp tục đọc
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                <p className="text-xs text-muted-foreground mb-4 max-w-xs">
                   Theo dõi tiến trình đọc sách và tiếp tục từ nơi bạn dừng lại
                 </p>
-                <Button asChild className="rounded-full shadow-sm hover:shadow-md bg-blue-600 hover:bg-blue-700">
+                <Button asChild className="rounded-full shadow-sm hover:shadow-md bg-brand hover:bg-brand/90 h-8 text-xs px-4 text-brand-foreground">
                   <Link href="/login" className="flex items-center gap-2">
                     Đăng nhập ngay
-                    <ChevronRight size={16} />
+                    <ChevronRight size={14} />
                   </Link>
                 </Button>
               </div>
@@ -58,13 +60,15 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
     return (
       <aside className="hidden xl:block xl:w-64 flex-shrink-0">
         <div className="sticky top-8">
-          <Card className="bg-transparent border border-border/50 shadow-none">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold">
+          <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <span className="w-1 h-3.5 bg-gradient-to-b from-brand-gradient-start to-brand-gradient-end rounded-full shrink-0" />
                 Sách đang đọc
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-1">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-3 animate-pulse">
                   <div className="w-16 h-24 bg-gray-200 dark:bg-accent/10 rounded-lg flex-shrink-0" />
@@ -89,25 +93,26 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
     return (
       <aside className="hidden xl:block xl:w-64 flex-shrink-0">
         <div className="sticky top-8">
-          <Card className="bg-transparent border border-border/50 shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-bold">
+          <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <span className="w-1 h-3.5 bg-gradient-to-b from-brand-gradient-start to-brand-gradient-end rounded-full shrink-0" />
                 Sách đang đọc
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center py-8 text-center">
-
-                <h3 className="font-semibold text-foreground mb-2">
+                <h3 className="font-semibold text-foreground mb-2 text-sm">
                   Chưa có sách nào
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                <p className="text-xs text-muted-foreground mb-4 max-w-xs">
                   Khám phá và bắt đầu đọc sách yêu thích của bạn
                 </p>
-                <Button asChild className="rounded-full shadow-sm hover:shadow-md bg-blue-600 hover:bg-blue-700">
+                <Button asChild className="rounded-full shadow-sm hover:shadow-md bg-brand hover:bg-brand/90 h-8 text-xs px-4 text-brand-foreground">
                   <Link href="/books" className="flex items-center gap-2">
                     Khám phá ngay
-                    <ChevronRight size={16} />
+                    <ChevronRight size={14} />
                   </Link>
                 </Button>
               </div>
@@ -124,19 +129,23 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
   return (
     <aside className="hidden xl:block xl:w-64 flex-shrink-0">
       <div className="sticky top-8">
-        <Card className="bg-transparent border border-border/50 shadow-none">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-lg font-bold">
+        <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+          {/* Top accent gradient line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
+          
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <span className="w-1 h-3.5 bg-gradient-to-b from-brand-gradient-start to-brand-gradient-end rounded-full shrink-0" />
               Sách đang đọc
             </CardTitle>
             {hasMore && (
-              <Button variant="link" size="sm" asChild className="text-blue-600 dark:text-blue-400 p-0 h-auto">
+              <Button variant="link" size="sm" asChild className="text-brand p-0 h-auto text-xs">
                 <Link href="/library">Xem tất cả</Link>
               </Button>
             )}
           </CardHeader>
 
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-1">
             {displayBooks.filter(item => item.bookId).map((item, index) => (
               <div key={item.id || item.bookId?.slug || `book-${index}`} className="flex gap-3 group">
                 <Link
@@ -182,7 +191,7 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
             ))}
 
             {hasMore && (
-              <Button asChild variant="ghost" className="w-full mt-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400">
+              <Button asChild variant="ghost" className="w-full mt-2 text-muted-foreground hover:text-brand">
                 <Link href="/library" className="flex items-center gap-2">
                   Xem thêm {books.length - 5} sách
                   <ChevronRight size={16} />

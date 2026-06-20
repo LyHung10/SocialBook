@@ -40,7 +40,7 @@ export const HorizontalFilters = ({
                     <LayoutGrid size={14} className="text-muted-foreground" />
                     Thể loại
                     {selectedGenres.length > 0 && (
-                      <span className="flex items-center justify-center bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 w-5 h-5 rounded-full text-[10px] ml-1">
+                      <span className="flex items-center justify-center bg-brand/10 text-brand w-5 h-5 rounded-full text-[10px] ml-1">
                         {selectedGenres.length}
                       </span>
                     )}
@@ -53,7 +53,7 @@ export const HorizontalFilters = ({
                       <span className="font-semibold text-sm">Chọn Thể loại</span>
                     </div>
                     {selectedGenres.length > 0 && (
-                      <button onClick={onClearGenres} className="text-xs text-red-500 hover:underline">
+                      <button onClick={onClearGenres} className="text-xs text-brand hover:underline">
                         Xóa tất cả
                       </button>
                     )}
@@ -81,7 +81,7 @@ export const HorizontalFilters = ({
                             className={cn(
                               "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors border",
                               isSelected 
-                                ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-400" 
+                                ? "bg-brand/10 border-brand/20 text-brand" 
                                 : "bg-muted/30 border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground"
                             )}
                           >
@@ -107,7 +107,7 @@ export const HorizontalFilters = ({
                     <Filter size={14} className="text-muted-foreground" />
                     Lọc Tags
                     {selectedTags.length > 0 && (
-                      <span className="flex items-center justify-center bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 w-5 h-5 rounded-full text-[10px] ml-1">
+                      <span className="flex items-center justify-center bg-brand/10 text-brand w-5 h-5 rounded-full text-[10px] ml-1">
                         {selectedTags.length}
                       </span>
                     )}

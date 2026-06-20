@@ -286,7 +286,7 @@ export const ChapterContent = memo(function ChapterContent({
     return (
         <TooltipProvider>
             <main
-                className="flex-1 w-full antialiased relative transition-all duration-300 rounded-2xl p-10 selection:bg-red-500/30"
+                className="flex-1 w-full antialiased relative transition-all duration-300 rounded-2xl p-10 selection:bg-brand/30"
                 style={{
                     backgroundColor: settings.backgroundColor,
                     color: settings.textColor,
@@ -375,7 +375,7 @@ export const ChapterContent = memo(function ChapterContent({
                                     <FloatingReactionBubbles paragraphId={para.id} />
                                 )}
 
-                                <div className="flex flex-col gap-2 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-0.5 shrink-0">
+                                <div className="absolute left-full top-0 ml-16 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-0.5 shrink-0 z-10">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button

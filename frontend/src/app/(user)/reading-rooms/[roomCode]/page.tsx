@@ -12,6 +12,7 @@ import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
 import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2 } from 'lucide-react';
 import { useReadingView } from '@/features/books/hooks';
+import { useGetChapterProgressQuery } from '@/features/library/api/libraryApi';
 import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
 import { TransferHostModal } from '@/features/reading-rooms/components/TransferHostModal';
 import LoginWall from '@/components/auth/LoginWall';
@@ -147,7 +148,21 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     router.push('/reading-rooms');
   }, [leaveRoom, router]);
 
-  useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, readingParagraphId, readingProgress);
+  const { data: progressData } = useGetChapterProgressQuery(
+    { bookId: bookData?.id || '', chapterId: chapter?.id || '' },
+    { skip: !bookData?.id || !chapter?.id },
+  );
+
+  const savedProgress = progressData?.progress || 0;
+
+  useEffect(() => {
+    if (!chapter || savedProgress <= 0 || savedProgress >= 100) return;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const targetScrollY = (savedProgress / 100) * docHeight;
+    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+  }, [chapter?.id, savedProgress]);
+
+  useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, readingParagraphId, readingProgress, bookData?.id, chapter?.id);
 
   if (!isAuthenticated) {
     return (
@@ -585,7 +600,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       onPrevious={() => {
                         if (navigation?.previous) {
                           if (!isEnded && room?.mode === 'sync' && isHost) {
-                            changeChapter(navigation.previous.slug);
+                            changeChapter(navigation.previous.slug, bookData?.id);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
                           }
@@ -595,7 +610,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       onNext={() => {
                         if (navigation?.next) {
                           if (!isEnded && room?.mode === 'sync' && isHost) {
-                            changeChapter(navigation.next.slug);
+                            changeChapter(navigation.next.slug, bookData?.id);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
                           }
@@ -623,7 +638,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       onPrevious={() => {
                         if (navigation?.previous) {
                           if (!isEnded && room?.mode === 'sync' && isHost) {
-                            changeChapter(navigation.previous.slug);
+                            changeChapter(navigation.previous.slug, bookData?.id);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
                           }
@@ -633,7 +648,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       onNext={() => {
                         if (navigation?.next) {
                           if (!isEnded && room?.mode === 'sync' && isHost) {
-                            changeChapter(navigation.next.slug);
+                            changeChapter(navigation.next.slug, bookData?.id);
                           } else {
                             router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
                           }
@@ -859,7 +874,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             disabled={!navigation?.previous || (!isEnded && room?.mode === 'sync' && !isHost)}
             onClick={() => {
               if (navigation?.previous) {
-                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.previous.slug);
+                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.previous.slug, bookData?.id);
                 else router.push(`/reading-rooms/${roomCode}?chapter=${navigation.previous.slug}`);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
@@ -871,7 +886,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             disabled={!navigation?.next || (!isEnded && room?.mode === 'sync' && !isHost)}
             onClick={() => {
               if (navigation?.next) {
-                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.next.slug);
+                if (!isEnded && room?.mode === 'sync' && isHost) changeChapter(navigation.next.slug, bookData?.id);
                 else router.push(`/reading-rooms/${roomCode}?chapter=${navigation.next.slug}`);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }

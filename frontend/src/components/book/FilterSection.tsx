@@ -30,7 +30,7 @@ function Chip({
       className={cn(
         'inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-full border transition-all cursor-pointer select-none',
         active
-          ? 'bg-red-50 dark:bg-red-950/20 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-medium'
+          ? 'bg-brand/10 border-brand/30 text-brand font-medium'
           : 'bg-transparent border-border/60 text-muted-foreground hover:bg-accent hover:text-accent-foreground',
       )}
     >
@@ -55,10 +55,10 @@ export const FilterSection = ({
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-muted-foreground">
-          <Filter size={14} className="text-red-500" />
+          <Filter size={14} className="text-brand" />
           Bộ lọc
           {hasActiveFilters && (
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold">
               {selectedGenres.length + selectedTags.length}
             </span>
           )}
@@ -84,7 +84,7 @@ export const FilterSection = ({
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className={cn(
                   "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
-                  selectedGenres.length === 0 ? "bg-red-600 border-red-600 text-white" : "border-border bg-background"
+                  selectedGenres.length === 0 ? "bg-brand border-brand text-brand-foreground" : "border-border bg-background"
                 )}>
                   {selectedGenres.length === 0 && <Check size={10} strokeWidth={3} />}
                 </div>
@@ -105,19 +105,19 @@ export const FilterSection = ({
                   key={genre.id} 
                   className={cn(
                     "group flex items-center justify-between gap-2 cursor-pointer px-2 py-2 rounded-md transition-all",
-                    isSelected ? "bg-red-50/50 dark:bg-red-950/10" : "hover:bg-muted/40"
+                    isSelected ? "bg-brand/10" : "hover:bg-muted/40"
                   )}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className={cn(
                       "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
-                      isSelected ? "bg-red-600 border-red-600 text-white shadow-sm" : "border-border bg-background"
+                      isSelected ? "bg-brand border-brand text-brand-foreground shadow-sm" : "border-border bg-background"
                     )}>
                       {isSelected && <Check size={10} strokeWidth={3} />}
                     </div>
                     <span className={cn(
                       "text-sm truncate transition-colors",
-                      isSelected ? "text-red-700 dark:text-red-400 font-semibold" : "text-muted-foreground group-hover:text-foreground"
+                      isSelected ? "text-brand font-semibold" : "text-muted-foreground group-hover:text-foreground"
                     )}>
                       {genre.name}
                     </span>
@@ -125,7 +125,7 @@ export const FilterSection = ({
                   {genre.count > 0 && (
                     <span className={cn(
                       "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                      isSelected ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" : "bg-muted text-muted-foreground"
+                      isSelected ? "bg-brand/10 text-brand" : "bg-muted text-muted-foreground"
                     )}>
                       {genre.count}
                     </span>
@@ -167,7 +167,7 @@ export const FilterSection = ({
           <button
             type="button"
             onClick={onClearFilters}
-            className="w-full py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+            className="w-full py-2 text-sm font-medium text-brand bg-brand/10 hover:bg-brand/20 rounded-lg transition-colors"
           >
             Xóa tất cả bộ lọc
           </button>

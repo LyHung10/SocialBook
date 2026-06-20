@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import { useAppAuth, useLogout } from '@/features/auth/hooks';
 import { useHeaderNavigation } from './hooks/useHeaderNavigation';
 import { useHeaderTheme } from './hooks/useHeaderTheme';
-import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users } from 'lucide-react';
+import { useColorTheme } from './hooks/useColorTheme';
+import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users, Palette } from 'lucide-react';
 import { memo } from 'react';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export const HeaderClient = memo(function HeaderClient() {
     const { navigateToHome, navigateToBooks, navigateToPosts, navigateToLibrary, navigateToReadingRooms, navigateToProfile, navigateToSettings, navigateToKnowledgeMap, navigateToLogin } = useHeaderNavigation();
 
     const { theme, toggleTheme, mounted } = useHeaderTheme();
+    const { colorTheme, toggleColorTheme, mounted: colorMounted } = useColorTheme();
 
     const userId = user?.id;
     const avatarUrl = user?.image;
@@ -47,6 +49,7 @@ export const HeaderClient = memo(function HeaderClient() {
                     <HeaderNav onBooks={navigateToBooks} onPosts={navigateToPosts} onLibrary={navigateToLibrary} onReadingRooms={navigateToReadingRooms} />
 
                     <div className="flex items-center gap-2">
+                        <ColorThemeToggle mounted={colorMounted} colorTheme={colorTheme} onToggle={toggleColorTheme} />
                         <ThemeToggle mounted={mounted} theme={theme} onToggle={toggleTheme} />
 
                         {isAuthenticated && user ? (
@@ -116,6 +119,27 @@ function NavButton({ onClick, icon, children }: { onClick: () => void; icon: Rea
         <Button variant="ghost" onClick={onClick} className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full font-medium px-4">
             {icon}
             {children}
+        </Button>
+    );
+}
+
+function ColorThemeToggle({ mounted, colorTheme, onToggle }: { mounted: boolean; colorTheme: 'mono' | 'red' | 'blue'; onToggle: () => void }) {
+    let titleText = "Chọn màu chủ đề";
+    if (mounted) {
+        if (colorTheme === 'mono') titleText = "Chuyển sang tông Đỏ";
+        else if (colorTheme === 'red') titleText = "Chuyển sang tông Xanh";
+        else if (colorTheme === 'blue') titleText = "Chuyển sang tông Đen Trắng";
+    }
+
+    return (
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggle}
+            className="rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50 h-9 w-9"
+            title={titleText}
+        >
+            <Palette className="w-4 h-4 text-brand" />
         </Button>
     );
 }

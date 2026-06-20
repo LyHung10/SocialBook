@@ -115,9 +115,9 @@ export function SearchTrigger() {
             placeholder="Tìm sách..."
             className={`w-44 xl:w-56 pl-9 pr-8 py-2 text-sm rounded-full border transition-all ${
               isOpen
-                ? 'border-red-300 dark:border-red-800 bg-background ring-2 ring-red-500/20'
+                ? 'border-brand/30 bg-background ring-2 ring-brand/20'
                 : 'border-border/50 bg-muted/50'
-            } text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:bg-background`}
+            } text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:bg-background`}
           />
           {query && (
             <button
@@ -130,7 +130,7 @@ export function SearchTrigger() {
           )}
         </div>
       </form>
-
+ 
       {isOpen && (
         <div
           className="absolute top-full right-0 lg:left-0 lg:right-auto mt-2 w-[360px] bg-background border border-border/60 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
@@ -143,7 +143,7 @@ export function SearchTrigger() {
         >
           {isLoadingResults ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-red-600 border-t-transparent" />
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-brand border-t-transparent" />
               <span className="text-xs text-muted-foreground">
                 Đang tìm kiếm...
               </span>
@@ -165,7 +165,7 @@ export function SearchTrigger() {
                     <button
                       type="button"
                       onClick={() => handleResultClick(book.slug)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left group"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-brand/10 transition-colors text-left group"
                     >
                       <div className="relative w-10 h-14 shrink-0 rounded-lg overflow-hidden bg-gradient-to-b from-muted to-muted/50 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
                         {book.coverUrl && (
@@ -179,7 +179,7 @@ export function SearchTrigger() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                        <p className="text-sm font-semibold text-foreground truncate group-hover:text-brand transition-colors">
                           {book.title}
                         </p>
                         <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
@@ -189,7 +189,7 @@ export function SearchTrigger() {
                       <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity -mr-1">
                         <ArrowRight
                           size={16}
-                          className="text-red-500"
+                          className="text-brand"
                         />
                       </div>
                     </button>
@@ -213,13 +213,13 @@ export function SearchTrigger() {
               </p>
             </div>
           )}
-
+ 
           {query.trim().length >= 1 && (
             <div className="border-t border-border/60">
               <button
                 type="button"
                 onClick={handleViewAll}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-brand hover:bg-brand/10 transition-colors"
               >
                 <Search size={14} />
                 Xem tất cả kết quả &quot;{query}&quot;
