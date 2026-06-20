@@ -22,6 +22,7 @@ const ModerationQueuePage = () => {
         isRejecting,
         handleApprove,
         handleReject,
+        handleBanUser,
         openConfirm
     } = useModerationManagement();
 
@@ -60,7 +61,21 @@ const ModerationQueuePage = () => {
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                         <div className="space-y-3">
                                             <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                                <div className="flex items-center gap-1.5 text-slate-900 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm">
+                                                <div 
+                                                    className={`flex items-center gap-1.5 text-slate-900 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm ${post.user ? 'cursor-pointer hover:bg-slate-50 transition-colors' : ''}`}
+                                                    onClick={() => {
+                                                        if (post.user) {
+                                                            openConfirm({
+                                                                title: "Cập nhật trạng thái người dùng",
+                                                                description: `Bạn có chắc chắn muốn cấm/mở cấm người dùng ${post.user.username}?`,
+                                                                confirmText: "Xác nhận",
+                                                                variant: "destructive",
+                                                                onConfirm: () => handleBanUser(post.user.id)
+                                                            });
+                                                        }
+                                                    }}
+                                                    title={post.user ? "Nhấn để cấm/mở cấm người dùng này" : undefined}
+                                                >
                                                     <User className="h-3.5 w-3.5 text-indigo-500" />
                                                     {post.user?.username || 'Ẩn danh'}
                                                 </div>

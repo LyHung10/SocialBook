@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useGetFlaggedPostsQuery, useApprovePostMutation, useRejectPostMutation } from '@/features/admin/api/moderationApi';
+import { useBanUserMutation } from '@/features/users/api/usersApi';
 import { useModalStore } from '@/store/useModalStore';
+import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 function getModerationErrorMessage(error: unknown, fallback: string) {
@@ -15,6 +17,7 @@ export function useModerationManagement() {
     const { openConfirm } = useModalStore();
     const [approvePost, { isLoading: isApproving }] = useApprovePostMutation();
     const [rejectPost, { isLoading: isRejecting }] = useRejectPostMutation();
+    const [banUser, { isLoading: isBanning }] = useBanUserMutation();
 
     const posts = data?.data || [];
     const meta = data?.meta;
@@ -39,6 +42,15 @@ export function useModerationManagement() {
         }
     };
 
+    const handleBanUser = async (userId: string) => {
+        try {
+            await banUser(userId).unwrap();
+            toast.success('Cập nhật trạng thái người dùng thành công');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error));
+        }
+    };
+
     return {
         page,
         setPage,
@@ -49,8 +61,10 @@ export function useModerationManagement() {
         isFetching,
         isApproving,
         isRejecting,
+        isBanning,
         handleApprove,
         handleReject,
+        handleBanUser,
         openConfirm
     };
 }

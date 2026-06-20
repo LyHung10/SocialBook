@@ -211,10 +211,7 @@ export class Comment extends Entity<CommentId> {
   }
 
   canBeEdited(userId: string): boolean {
-    return (
-      this._props.userId.toString() === userId &&
-      this._props.moderationStatus.isPending()
-    );
+    return this._props.userId.toString() === userId;
   }
 
   canBeDeleted(userId: string): boolean {
