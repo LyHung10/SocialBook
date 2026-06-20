@@ -8,22 +8,6 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-export class TextToSpeechDto {
-  @IsString()
-  text: string;
-
-  @IsOptional()
-  @IsEnum(['en-us', 'en-gb', 'en-au', 'vi-vn'], {
-    message: 'voice must be one of: en-us, en-gb, en-au, vi-vn',
-  })
-  voice: string = 'en-au';
-
-  @IsOptional()
-  @IsEnum(['mp3', 'wav', 'ogg'], {
-    message: 'format must be one of: mp3, wav, ogg',
-  })
-  format: string = 'mp3';
-}
 
 export class GenerateChapterAudioDto {
   @IsOptional()
@@ -77,4 +61,32 @@ export class GenerateBookAudioDto {
   @IsOptional()
   @IsBoolean()
   forceRegenerate?: boolean;
+}
+
+export class TextToSpeechResponseDto {
+  static fromEntity(entity: any) {
+    if (!entity) return null;
+    return {
+      id: entity.id,
+      chapterId: entity.chapterId,
+      bookId: entity.bookId,
+      text: entity.text,
+      voice: entity.voice,
+      language: entity.language,
+      speed: entity.speed,
+      status: entity.status,
+      audioUrl: entity.audioUrl,
+      audioFormat: entity.audioFormat,
+      audioDuration: entity.audioDuration,
+      characterCount: entity._props?.characterCount,
+      paragraphCount: entity._props?.paragraphCount,
+      errorMessage: entity.errorMessage,
+      provider: entity._props?.provider,
+      playCount: entity.playCount,
+      lastPlayedAt: entity.lastPlayedAt,
+      processedAt: entity.processedAt,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
 }

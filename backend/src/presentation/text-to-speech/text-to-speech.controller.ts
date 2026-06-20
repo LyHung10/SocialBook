@@ -10,6 +10,7 @@ import {
 import {
   GenerateChapterAudioDto,
   GenerateBookAudioDto,
+  TextToSpeechResponseDto,
 } from '@/presentation/text-to-speech/dto/textToSpeech.dto';
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
@@ -47,7 +48,7 @@ export class TextToSpeechController {
     );
     return {
       message: 'Audio generated successfully',
-      data: result,
+      data: TextToSpeechResponseDto.fromEntity(result),
     };
   }
 
@@ -85,7 +86,7 @@ export class TextToSpeechController {
 
     return {
       message: 'Audio retrieved successfully',
-      data: result, // result is TextToSpeech entity, NestJS serializes it. Might need DTO mapping if strict.
+      data: TextToSpeechResponseDto.fromEntity(result),
     };
   }
 

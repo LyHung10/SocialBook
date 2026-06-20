@@ -222,13 +222,17 @@ ${book.description?.slice(0, 100)}...
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          <ContentProtection>
+          <ContentProtection className="h-full w-full">
             <AudiobookView
               chapterId={chapter.id}
               chapterTitle={chapter.title}
               paragraphs={chapter.paragraphs}
               bookTitle={book.title}
               bookCoverImage={book.coverUrl}
+              onPrevious={goToPreviousChapter}
+              onNext={goToNextChapter}
+              hasPrevious={!!navigation?.previous}
+              hasNext={!!navigation?.next}
             />
           </ContentProtection>
         </div>
