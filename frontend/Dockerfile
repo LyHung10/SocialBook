@@ -20,6 +20,6 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./ 
 
-RUN npm ci --production
+RUN npm ci --production --ignore-scripts
 EXPOSE 3000
 CMD ["npm", "start"]
