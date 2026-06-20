@@ -153,7 +153,7 @@ export default function CollectionDetailPage() {
         {/* Breadcrumb */}
         <Link
           href="/library"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500 transition-colors mb-4 font-semibold"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-brand transition-colors mb-4 font-semibold"
         >
           <ChevronLeft size={14} />
           Quay lại Thư viện
@@ -162,7 +162,7 @@ export default function CollectionDetailPage() {
         {/* Header Card */}
         <div className="bg-card rounded-2xl border border-border p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden shadow-sm">
           {/* Top accent gradient line */}
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-rose-500 opacity-80" />
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
 
           <div className="space-y-3 min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -185,7 +185,7 @@ export default function CollectionDetailPage() {
                       toast.success('Đã cập nhật quyền riêng tư');
                     },
                   })}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand/10 text-brand text-[10px] font-bold uppercase tracking-wider hover:bg-brand/20 transition-colors cursor-pointer"
                 >
                   {collection.isPublic ? (
                     <>
@@ -208,7 +208,7 @@ export default function CollectionDetailPage() {
                 onChange={(e) => setEditNameValue(e.target.value)}
                 disabled={isUpdatingName}
                 autoFocus
-                className="text-xl md:text-2xl font-bold text-foreground tracking-tight h-10 py-1 px-3 border-border focus-visible:ring-red-600/50 bg-background w-full max-w-md rounded-xl"
+                className="text-xl md:text-2xl font-bold text-foreground tracking-tight h-10 py-1 px-3 border-border focus-visible:ring-brand/50 bg-background w-full max-w-md rounded-xl"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSaveName();
                   if (e.key === 'Escape') {
@@ -236,7 +236,7 @@ export default function CollectionDetailPage() {
                     size="sm"
                     onClick={handleSaveName}
                     disabled={isUpdatingName || !editNameValue.trim()}
-                    className="h-9 px-4 rounded-xl font-semibold gap-1.5 bg-red-600 hover:bg-red-700 text-white cursor-pointer shadow-sm"
+                    className="h-9 px-4 rounded-xl font-semibold gap-1.5 bg-brand hover:bg-brand/90 text-brand-foreground cursor-pointer shadow-sm"
                   >
                     {isUpdatingName ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -303,7 +303,7 @@ export default function CollectionDetailPage() {
             {books.map((item) => (
               <Card
                 key={item.id}
-                className="group flex flex-col h-full overflow-hidden border-border/85 transition-all duration-500 hover:border-red-500/40 hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] bg-card text-foreground"
+                className="group flex flex-col h-full overflow-hidden border-border/85 transition-all duration-500 hover:border-brand/40 hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] bg-card text-foreground"
               >
                 {/* Book Cover */}
                 <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
@@ -320,7 +320,7 @@ export default function CollectionDetailPage() {
                     <button
                       onClick={(e) => handleRemoveBookFromCollection(e, item)}
                       title="Gỡ khỏi bộ sưu tập này"
-                      className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-600 border border-white/10 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 duration-200 z-20 cursor-pointer shadow-md"
+                      className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-brand border border-white/10 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 duration-200 z-20 cursor-pointer shadow-md"
                     >
                       <X size={13} />
                     </button>
@@ -330,7 +330,7 @@ export default function CollectionDetailPage() {
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[1px]">
                     <Link
                       href={`/books/${item.bookId.slug}`}
-                      className="px-4 py-2 bg-white text-black font-semibold text-xs rounded-full hover:bg-red-600 hover:text-white shadow-md transition-all duration-300 scale-90 group-hover:scale-100"
+                      className="px-4 py-2 bg-background text-foreground font-semibold text-xs rounded-full hover:bg-brand hover:text-brand-foreground shadow-md transition-all duration-300 scale-90 group-hover:scale-100"
                     >
                       Chi tiết truyện
                     </Link>
@@ -343,7 +343,7 @@ export default function CollectionDetailPage() {
                     {item.bookId.authorName || 'Tác giả'}
                   </p>
                   <Link href={`/books/${item.bookId.slug}`}>
-                    <h3 className="font-semibold text-sm line-clamp-2 hover:text-red-600 dark:hover:text-red-400 transition-colors mb-2 min-h-[40px] leading-tight text-foreground">
+                    <h3 className="font-semibold text-sm line-clamp-2 hover:text-brand transition-colors mb-2 min-h-[40px] leading-tight text-foreground">
                       {item.bookId.title}
                     </h3>
                   </Link>
@@ -360,7 +360,7 @@ export default function CollectionDetailPage() {
                         </div>
                         <Link
                           href={`/books/${item.bookId.slug}/chapters/${item.lastReadChapterId.slug}`}
-                          className="w-full flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-500/20 text-xs font-bold py-2 rounded-full transition-all duration-300"
+                          className="w-full flex items-center justify-center gap-1.5 bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 text-xs font-bold py-2 rounded-full transition-all duration-300"
                         >
                           <BookOpen size={13} />
                           Đọc tiếp
@@ -396,7 +396,7 @@ export default function CollectionDetailPage() {
             {isOwner && (
               <Link
                 href="/library"
-                className="px-8 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-bold shadow-sm hover:shadow transition-colors"
+                className="px-8 py-2.5 bg-brand hover:bg-brand/90 text-brand-foreground rounded-full text-sm font-bold shadow-sm hover:shadow transition-colors"
               >
                 Khám phá thư viện
               </Link>

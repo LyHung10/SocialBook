@@ -181,7 +181,7 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onKnowledgeMap, o
                     />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-2 rounded-2xl shadow-xl border-border bg-background/95 backdrop-blur-xl" align="end" forceMount>
+            <DropdownMenuContent className="w-64" align="end" forceMount>
                 <DropdownMenuLabel className="p-3 font-normal">
                     <div className="flex flex-col space-y-1.5">
                         <p className="text-sm font-bold leading-none text-foreground">{userName}</p>
@@ -190,22 +190,22 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onKnowledgeMap, o
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="mx-1" />
                 <div className="space-y-1 py-1">
-                    <DropdownMenuItem onClick={onProfile} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onProfile} className="cursor-pointer gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Hồ sơ của tôi</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onLibrary} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onLibrary} className="cursor-pointer gap-2">
                         <Library className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Thư viện</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onKnowledgeMap} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onKnowledgeMap} className="cursor-pointer gap-2">
                         <Network className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Bản đồ tri thức</span>
                     </DropdownMenuItem>
                 </div>
 
                 <DropdownMenuSeparator className="mx-1" />
-                <DropdownMenuItem onClick={onLogout} className="rounded-xl gap-2.5 py-2.5 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/5">
+                <DropdownMenuItem onClick={onLogout} className="cursor-pointer gap-2 text-destructive focus:text-destructive focus:bg-destructive/5">
                     <LogOut className="h-4 w-4" />
                     <span className="font-bold text-sm">Đăng xuất</span>
                 </DropdownMenuItem>
