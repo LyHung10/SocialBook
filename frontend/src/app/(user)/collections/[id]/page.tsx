@@ -40,7 +40,7 @@ export default function CollectionDetailPage() {
   const router = useRouter();
   const params = useParams();
   const collectionId = params.id as string;
-  const { isAuthenticated } = useAppAuth();
+  const { isAuthenticated, user } = useAppAuth();
   const { openConfirm } = useModalStore();
 
   const [isEditingName, setIsEditingName] = useState(false);
@@ -53,6 +53,7 @@ export default function CollectionDetailPage() {
   } = useGetCollectionDetailQuery(collectionId);
 
   const books = collection?.books || [];
+  const isOwner = !!(collection && user && collection.userId === user.id);
 
   const [deleteCollection, { isLoading: isDeleting }] =
     useDeleteCollectionMutation();
@@ -168,19 +169,37 @@ export default function CollectionDetailPage() {
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
                 {books.length} sách
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">
-                {collection.isPublic ? (
-                  <>
-                    <Globe size={11} />
-                    Công khai
-                  </>
-                ) : (
-                  <>
-                    <Lock size={11} />
-                    Chỉ mình tôi
-                  </>
-                )}
-              </span>
+              {isOwner && (
+                <button
+                  onClick={() => openConfirm({
+                    title: `Chuyển sang chế độ ${collection.isPublic ? 'riêng tư' : 'công khai'}`,
+                    description: collection.isPublic
+                      ? 'Chỉ bạn mới nhìn thấy bộ sưu tập này.'
+                      : 'Bất kỳ ai cũng có thể xem bộ sưu tập này.',
+                    confirmText: 'Xác nhận',
+                    onConfirm: async () => {
+                      await updateCollection({
+                        id: collectionId,
+                        data: { name: collection.name, isPublic: !collection.isPublic },
+                      }).unwrap();
+                      toast.success('Đã cập nhật quyền riêng tư');
+                    },
+                  })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors cursor-pointer"
+                >
+                  {collection.isPublic ? (
+                    <>
+                      <Globe size={11} />
+                      Công khai
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={11} />
+                      Chỉ mình tôi
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {isEditingName ? (
@@ -208,71 +227,72 @@ export default function CollectionDetailPage() {
             </p>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-center border-t md:border-t-0 border-border/50 pt-4 md:pt-0 w-full md:w-auto justify-end">
-            {isEditingName ? (
-              <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleSaveName}
-                  disabled={isUpdatingName || !editNameValue.trim()}
-                  className="h-9 px-4 rounded-xl font-semibold gap-1.5 bg-red-600 hover:bg-red-700 text-white cursor-pointer shadow-sm"
-                >
-                  {isUpdatingName ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Check size={14} />
-                  )}
-                  Lưu
-                </Button>
+          {isOwner && (
+            <div className="flex items-center gap-2 shrink-0 self-end md:self-center border-t md:border-t-0 border-border/50 pt-4 md:pt-0 w-full md:w-auto justify-end">
+              {isEditingName ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleSaveName}
+                    disabled={isUpdatingName || !editNameValue.trim()}
+                    className="h-9 px-4 rounded-xl font-semibold gap-1.5 bg-red-600 hover:bg-red-700 text-white cursor-pointer shadow-sm"
+                  >
+                    {isUpdatingName ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Check size={14} />
+                    )}
+                    Lưu
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditingName(false);
+                      setEditNameValue(collection?.name || '');
+                    }}
+                    disabled={isUpdatingName}
+                    className="h-9 px-4 rounded-xl font-semibold gap-1.5 hover:bg-muted cursor-pointer"
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setIsEditingName(false);
-                    setEditNameValue(collection?.name || '');
+                    setEditNameValue(collection.name);
+                    setIsEditingName(true);
                   }}
-                  disabled={isUpdatingName}
                   className="h-9 px-4 rounded-xl font-semibold gap-1.5 hover:bg-muted cursor-pointer"
                 >
-                  Hủy
+                  <Pencil size={14} />
+                  Đổi tên
                 </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setEditNameValue(collection.name);
-                  setIsEditingName(true);
-                }}
-                className="h-9 px-4 rounded-xl font-semibold gap-1.5 hover:bg-muted cursor-pointer"
-              >
-                <Pencil size={14} />
-                Đổi tên
-              </Button>
-            )}
-            
-            {!isEditingName && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => openConfirm({
-                  title: "Xóa bộ sưu tập",
-                  description: `Hành động này không thể hoàn tác.`,
-                  confirmText: "Xóa",
-                  variant: "destructive",
-                  onConfirm: handleDeleteCollection
-                })}
-                className="h-9 px-4 rounded-xl font-semibold gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer"
-                disabled={isDeleting}
-              >
-                <Trash2 size={14} />
-                Xóa
-              </Button>
-            )}
-          </div>
+              )}
+              
+              {!isEditingName && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openConfirm({
+                    title: "Xóa bộ sưu tập",
+                    description: `Hành động này không thể hoàn tác.`,
+                    confirmText: "Xóa",
+                    variant: "destructive",
+                    onConfirm: handleDeleteCollection
+                  })}
+                  className="h-9 px-4 rounded-xl font-semibold gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer"
+                  disabled={isDeleting}
+                >
+                  <Trash2 size={14} />
+                  Xóa
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -296,14 +316,15 @@ export default function CollectionDetailPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-85" />
 
-                  {/* Remove Button */}
-                  <button
-                    onClick={(e) => handleRemoveBookFromCollection(e, item)}
-                    title="Gỡ khỏi bộ sưu tập này"
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-600 border border-white/10 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 duration-200 z-20 cursor-pointer shadow-md"
-                  >
-                    <X size={13} />
-                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={(e) => handleRemoveBookFromCollection(e, item)}
+                      title="Gỡ khỏi bộ sưu tập này"
+                      className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-600 border border-white/10 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 duration-200 z-20 cursor-pointer shadow-md"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
 
                   {/* Hover Action Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[1px]">
@@ -368,15 +389,18 @@ export default function CollectionDetailPage() {
               Bộ sưu tập này đang trống
             </h3>
             <p className="text-muted-foreground text-sm max-w-xs mb-8">
-              Hãy thêm sách vào bộ sưu tập này bằng cách chọn &quot;Thêm vào danh
-              sách&quot; khi đọc sách.
+              {isOwner
+                ? 'Hãy thêm sách vào bộ sưu tập này bằng cách chọn "Thêm vào danh sách" khi đọc sách.'
+                : 'Bộ sưu tập này chưa có sách nào.'}
             </p>
-            <Link
-              href="/library"
-              className="px-8 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-bold shadow-sm hover:shadow transition-colors"
-            >
-              Khám phá thư viện
-            </Link>
+            {isOwner && (
+              <Link
+                href="/library"
+                className="px-8 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-bold shadow-sm hover:shadow transition-colors"
+              >
+                Khám phá thư viện
+              </Link>
+            )}
           </div>
         )}
       </main>

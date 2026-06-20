@@ -17,7 +17,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
         <div
             className="
                         group relative
-                        bg-white dark:bg-neutral-900
+                        bg-card
                         rounded-xl
                         border border-border
                         shadow-md dark:shadow-none
@@ -41,7 +41,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
                             closeFollowers();
                             router.push(`/users/${props.targetId}`);
                         }}
-                        className="h-20 w-20 border-4 border-white dark:border-gray-800 shadow-md bg-card"
+                        className="h-20 w-20 border-4 border-background shadow-md bg-card"
                     />
                 </div>
 
@@ -50,8 +50,6 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
                     <h3 className="
                         font-serif font-bold text-lg
                         text-foreground
-                        group-hover:text-neutral-700 dark:group-hover:text-gray-200
-                        transition-colors
                     ">
                         {props.username}
                     </h3>
@@ -82,7 +80,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
             {/* Stats */}
             <div
                 className="relative z-10 mt-1 p-1 grid grid-cols-3 w-full text-center text-xs 
-                        bg-white dark:bg-neutral-900 border-t border-border"
+                        bg-card border-t border-border"
             >
                 <div className="flex flex-col items-center">
                     <span className="font-bold text-xs text-foreground">
