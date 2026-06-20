@@ -52,7 +52,7 @@ describe('AddQuoteUseCase (Unit)', () => {
     );
 
     await expect(useCase.execute(command)).rejects.toThrow(
-      'Quote content cannot be empty',
+      'Nội dung trích dẫn không được để trống',
     );
   });
 
