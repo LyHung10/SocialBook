@@ -69,6 +69,7 @@ export class GetKnowledgeGraphUseCase {
           {
             id: user.id.getValue(),
             label: user.username,
+            img: user.image,
             type: 'user',
             val: 20,
           },
