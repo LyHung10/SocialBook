@@ -2,6 +2,7 @@
 import { X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useRecordSearchKeywordMutation } from '@/features/books/api/bookApi';
 
 interface SearchBarProps {
   initialValue: string;
@@ -20,6 +21,7 @@ export const SearchBar = ({
 }: SearchBarProps) => {
   const [input, setInput] = useState(initialValue);
   const debouncedInput = useDebounce(input, debounceMs);
+  const [recordSearchKeyword] = useRecordSearchKeywordMutation();
   const isComposing = useRef(false);
   const lastSearchedValue = useRef(initialValue);
   const onSearchRef = useRef(onSearch);
@@ -70,6 +72,10 @@ export const SearchBar = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = input.trim();
+    if (trimmed) {
+      recordSearchKeyword(trimmed);
+    }
     onSearchRef.current(input);
     lastSearchedValue.current = input;
   };

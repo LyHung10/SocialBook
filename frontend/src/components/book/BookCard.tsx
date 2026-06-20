@@ -28,11 +28,11 @@ export const BookCard = memo(function BookCard({ book, priority }: BookCardProps
         <>
             <Link
                 href={`/books/${book.slug}`}
-                className="group relative block w-full max-w-[220px]"
+                className="group relative flex flex-col w-full h-full max-w-[220px]"
             >
-                <Card className="overflow-hidden border-gray-200 dark:border-white/10 shadow-none bg-card text-card-foreground">
+                <Card className="overflow-hidden border-gray-200 dark:border-white/10 shadow-none bg-card text-card-foreground h-full flex flex-col">
                     <BookCover book={book} priority={priority} />
-                    <CardContent className="flex flex-col p-4 pt-2">
+                    <CardContent className="flex flex-col flex-1 p-4 pt-2">
                         <BookInfo book={book} />
                         <BookStats book={book} handleAddToLibrary={handleAddToLibrary} isCurrentBookOpen={isCurrentBookOpen} />
                     </CardContent>
