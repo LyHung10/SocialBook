@@ -34,15 +34,15 @@ export default function KnowledgeMapPage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-30 mix-blend-overlay"
+          className="object-cover opacity-40 dark:opacity-30 mix-blend-overlay"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/50" />
         <div className="relative z-10 text-center w-full max-w-4xl px-6 flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-bold uppercase tracking-widest mb-4 shadow-sm backdrop-blur-md"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-white text-xs font-bold uppercase tracking-widest mb-4 shadow-sm backdrop-blur-md"
           >
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             AI Powered Map
@@ -53,7 +53,7 @@ export default function KnowledgeMapPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md"
           >
-            Vũ Trụ Tri Thức <span className="text-primary font-black">Của Bạn</span>
+            Vũ Trụ Tri Thức <span className="text-white/90 font-black">Của Bạn</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 15 }}
