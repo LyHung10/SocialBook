@@ -7,7 +7,7 @@ import {
   PaginatedResult,
 } from '@/domain/posts/repositories/post.repository.interface';
 import { PostMapper } from '@/infrastructure/database/repositories/posts/post.mapper';
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
@@ -509,7 +509,6 @@ export class PostRepository implements IPostRepository {
     );
 
     return docs.map((doc) => {
-      const docObj = typeof doc.toObject === 'function' ? doc.toObject() : doc;
       return {
         ...doc,
         likesCount: likeCountMap.get(doc._id.toString()) ?? 0,

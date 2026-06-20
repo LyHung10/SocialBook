@@ -52,17 +52,27 @@ export class AskChatbotUseCase {
     const sources: ChatbotSource[] = results.map((r) => {
       const metadata = r.document.metadata;
       return {
-        title: typeof metadata?.['title'] === 'string' ? metadata['title'] : 'Không rõ tiêu đề',
+        title:
+          typeof metadata?.['title'] === 'string'
+            ? metadata['title']
+            : 'Không rõ tiêu đề',
         bookId: metadata?.['bookId'] as string | undefined,
         chapterTitle: metadata?.['chapterTitle'] as string | undefined,
-        type: r.document.contentType?.toString() === 'chapter' ? 'chapter' : 'book',
+        type:
+          r.document.contentType?.toString() === 'chapter' ? 'chapter' : 'book',
       };
     });
 
     const contextText = results
       .map((r, i) => {
-        const title = typeof r.document.metadata?.['title'] === 'string' ? r.document.metadata['title'] : '';
-        const chapterTitle = typeof r.document.metadata?.['chapterTitle'] === 'string' ? r.document.metadata['chapterTitle'] : '';
+        const title =
+          typeof r.document.metadata?.['title'] === 'string'
+            ? r.document.metadata['title']
+            : '';
+        const chapterTitle =
+          typeof r.document.metadata?.['chapterTitle'] === 'string'
+            ? r.document.metadata['chapterTitle']
+            : '';
         const label = chapterTitle ? `${title} - ${chapterTitle}` : title;
         return `[${i + 1}] ${label}:\n${r.document.content}`;
       })

@@ -269,7 +269,7 @@ export class GetKnowledgeGraphUseCase {
                 slug = book.slug;
                 img = book.coverUrl;
               }
-            } catch (e) {
+            } catch {
               // ignore
             }
 
