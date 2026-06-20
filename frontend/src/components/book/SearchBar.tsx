@@ -37,6 +37,7 @@ export const SearchBar = ({
       userCleared.current = false;
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInput(initialValue);
     lastSearchedValue.current = initialValue;
   }, [initialValue]);
