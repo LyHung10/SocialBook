@@ -82,6 +82,7 @@ export interface GraphNode {
   isGap?: boolean;
   reason?: string;
   slug?: string;
+  url?: string;
 }
 
 
