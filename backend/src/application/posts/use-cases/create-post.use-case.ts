@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
+import { NotFoundDomainException, BadRequestDomainException } from '@/shared/domain/common-exceptions';
 import { IPostRepository } from '@/domain/posts/repositories/post.repository.interface';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
-import { PostModerationService } from '../services/post-moderation.service';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
 import { Post } from '@/domain/posts/entities/post.entity';
 import { ErrorMessages } from '@/common/constants/error-messages';
 import { CreatePostCommand } from './create-post.command';
+import { containsVietnameseToxicWords } from '@/domain/content-moderation/utils/vietnamese-profanity';
+import {
+  POST_MODERATION_QUEUE,
+  POST_MODERATION_JOB,
+  PostModerationJobData,
+} from '@/infrastructure/queues/post-moderation/post-moderation.processor';
 
 @Injectable()
 export class CreatePostUseCase {
@@ -17,8 +24,9 @@ export class CreatePostUseCase {
     private readonly mediaService: IMediaService,
     private readonly bookRepository: IBookRepository,
     private readonly idGenerator: IIdGenerator,
-    private readonly postModerationService: PostModerationService,
     private readonly eventEmitter: EventEmitter2,
+    @InjectQueue(POST_MODERATION_QUEUE)
+    private readonly moderationQueue: Queue<PostModerationJobData>,
   ) {}
 
   async execute(
@@ -30,13 +38,21 @@ export class CreatePostUseCase {
     if (!bookExists)
       throw new NotFoundDomainException(ErrorMessages.BOOK_NOT_FOUND);
 
+    // Lớp 1: Kiểm tra nhanh bằng Regex (từ ngữ thô tục hiển nhiên) — ĐỒNG BỘ, tức thì
+    const quickCheck = containsVietnameseToxicWords(command.content);
+    if (quickCheck) {
+      throw new BadRequestDomainException(
+        'Nội dung chứa từ ngữ thô tục không phù hợp với tiêu chuẩn cộng đồng.',
+      );
+    }
+
     // Upload Images
     let imageUrls: string[] = [];
     if (files && files.length > 0) {
       imageUrls = await this.mediaService.uploadMultipleImages(files);
     }
 
-    // Prepare Post Entity
+    // Tạo và lưu bài viết ngay lập tức (trạng thái PENDING — hiển thị với user)
     const post = Post.create({
       id: this.idGenerator.generate(),
       userId: command.userId,
@@ -45,13 +61,6 @@ export class CreatePostUseCase {
       imageUrls,
     });
 
-    // Apply Moderation Flags
-    const moderationMessage = await this.postModerationService.moderate(
-      post,
-      command.content,
-    );
-
-    // Save
     const createdPost = await this.postRepository.create(post);
 
     this.eventEmitter.emit('post.created', {
@@ -60,9 +69,22 @@ export class CreatePostUseCase {
       bookId: command.bookId,
     });
 
-    return {
-      post: createdPost,
-      moderationMessage,
-    };
+    // Lớp 2: Đẩy Job vào Queue để AI kiểm duyệt ngầm (BẤT ĐỒNG BỘ)
+    await this.moderationQueue.add(
+      POST_MODERATION_JOB,
+      {
+        postId: createdPost.id,
+        content: command.content,
+      },
+      {
+        attempts: 2,
+        backoff: { type: 'fixed', delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: 100,
+      },
+    );
+
+    return { post: createdPost };
   }
 }
+

@@ -11,6 +11,7 @@ export interface UserPersistence {
   password?: string;
   isVerified: boolean;
   isBanned: boolean;
+  violationCount: number;
   provider: string;
   providerId?: string;
   image?: string;
@@ -34,6 +35,7 @@ export class UserMapper {
       password: doc.password,
       isVerified: doc.isVerified,
       isBanned: doc.isBanned,
+      violationCount: doc.violationCount,
       provider: doc.provider,
       providerId: doc.providerId,
       image: doc.image,
@@ -59,6 +61,7 @@ export class UserMapper {
       password: entity.password,
       isVerified: entity.isVerified,
       isBanned: entity.isBanned,
+      violationCount: entity.violationCount,
       provider: entity.provider,
       providerId: entity.providerId,
       image: entity.image,

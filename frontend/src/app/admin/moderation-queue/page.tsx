@@ -5,6 +5,8 @@ import { Loader2, ChevronLeft, ChevronRight, AlertTriangle, User, BookOpen, Cloc
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { useModerationManagement } from '@/features/admin/hooks/moderation/useModerationManagement';
 import { formatDateTime } from '@/lib/utils';
@@ -14,23 +16,42 @@ const ModerationQueuePage = () => {
         page,
         setPage,
         limit,
+        reason,
+        setReason,
         posts,
         meta,
+        selectedPostIds,
+        toggleSelectPost,
+        toggleSelectAll,
         isLoading,
         isFetching,
         isApproving,
         isRejecting,
+        isBulkApproving,
+        isBulkRejecting,
         handleApprove,
         handleReject,
+        handleBulkApprove,
+        handleBulkReject,
         handleBanUser,
         openConfirm
     } = useModerationManagement();
 
     return (
         <div className="min-h-screen bg-gray-50 rounded-lg">
-            <div className="py-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm Duyệt Nội Dung</h1>
-                <p className="text-gray-600">Quản lý bài viết vi phạm cần phê duyệt</p>
+            <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm Duyệt Nội Dung</h1>
+                    <p className="text-gray-600">Quản lý bài viết vi phạm cần phê duyệt</p>
+                </div>
+                <div className="flex items-center gap-2 max-w-sm w-full">
+                    <Input
+                        placeholder="Lọc theo lý do (VD: Toxic, Spam, ...)"
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        className="bg-white"
+                    />
+                </div>
             </div>
 
             {/* Loading */}
@@ -51,6 +72,52 @@ const ModerationQueuePage = () => {
             {/* Posts List */}
             {!(isLoading || isFetching) && posts.length > 0 && (
                 <>
+                    <div className="mb-4 flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <Checkbox 
+                                id="select-all" 
+                                checked={selectedPostIds.length > 0 && selectedPostIds.length === posts.length}
+                                onCheckedChange={toggleSelectAll}
+                            />
+                            <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+                                Chọn tất cả trên trang này
+                            </label>
+                        </div>
+                        {selectedPostIds.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-indigo-600 mr-2">
+                                    Đã chọn {selectedPostIds.length} bài
+                                </span>
+                                <Button
+                                    size="sm"
+                                    onClick={() => openConfirm({
+                                        title: "Phê duyệt hàng loạt",
+                                        description: `Bạn có chắc chắn muốn phê duyệt ${selectedPostIds.length} bài viết đã chọn?`,
+                                        confirmText: "Phê duyệt",
+                                        onConfirm: handleBulkApprove
+                                    })}
+                                    disabled={isBulkApproving || isBulkRejecting}
+                                    className="bg-emerald-600 hover:bg-emerald-700"
+                                >
+                                    Phê duyệt
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => openConfirm({
+                                        title: "Từ chối hàng loạt",
+                                        description: `Bạn có chắc chắn muốn từ chối và xóa ${selectedPostIds.length} bài viết đã chọn?`,
+                                        confirmText: "Xóa",
+                                        variant: "destructive",
+                                        onConfirm: handleBulkReject
+                                    })}
+                                    disabled={isBulkApproving || isBulkRejecting}
+                                >
+                                    Từ chối
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                     <div className="grid gap-6">
                         {posts.map((post, index) => (
                             <Card
@@ -59,8 +126,13 @@ const ModerationQueuePage = () => {
                             >
                                 <CardHeader className="pb-4 bg-slate-50/50">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="space-y-3">
+                                        <div className="space-y-3 flex-1">
                                             <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                <Checkbox 
+                                                    checked={selectedPostIds.includes(post.id)}
+                                                    onCheckedChange={() => toggleSelectPost(post.id)}
+                                                    className="mt-0.5"
+                                                />
                                                 <div 
                                                     className={`flex items-center gap-1.5 text-slate-900 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm ${post.user ? 'cursor-pointer hover:bg-slate-50 transition-colors' : ''}`}
                                                     onClick={() => {
@@ -78,6 +150,11 @@ const ModerationQueuePage = () => {
                                                 >
                                                     <User className="h-3.5 w-3.5 text-indigo-500" />
                                                     {post.user?.username || 'Ẩn danh'}
+                                                    {(post.user?.violationCount && post.user.violationCount > 0) ? (
+                                                        <span className="ml-1 px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded-full text-[10px] font-bold">
+                                                            {post.user.violationCount} vi phạm
+                                                        </span>
+                                                    ) : null}
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-slate-900 bg-white px-2 py-1 rounded border border-slate-200 shadow-sm">
                                                     <BookOpen className="h-3.5 w-3.5 text-emerald-500" />

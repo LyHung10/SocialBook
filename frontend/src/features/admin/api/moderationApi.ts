@@ -8,6 +8,7 @@ export interface FlaggedPost {
         id: string;
         username: string;
         image?: string;
+        violationCount?: number;
     };
     book: {
         id: string;
@@ -29,11 +30,11 @@ export const moderationApi = createApi({
     baseQuery: axiosBaseQuery(),
     tagTypes: ['FlaggedPosts'],
     endpoints: (builder) => ({
-        getFlaggedPosts: builder.query<FlaggedPostsResponse, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => ({
+        getFlaggedPosts: builder.query<FlaggedPostsResponse, { page?: number; limit?: number; reason?: string }>({
+            query: ({ page = 1, limit = 10, reason }) => ({
                 url: '/posts/admin/flagged',
                 method: 'GET',
-                params: { page, limit },
+                params: { page, limit, reason },
             }),
             transformResponse: normalizeArrayResponse<FlaggedPost>,
             providesTags: ['FlaggedPosts'],
@@ -54,6 +55,24 @@ export const moderationApi = createApi({
             }),
             invalidatesTags: ['FlaggedPosts'],
         }),
+
+        bulkApprovePosts: builder.mutation<void, string[]>({
+            query: (postIds) => ({
+                url: '/posts/admin/bulk-approve',
+                method: 'POST',
+                body: { postIds },
+            }),
+            invalidatesTags: ['FlaggedPosts'],
+        }),
+
+        bulkRejectPosts: builder.mutation<void, string[]>({
+            query: (postIds) => ({
+                url: '/posts/admin/bulk-reject',
+                method: 'POST',
+                body: { postIds },
+            }),
+            invalidatesTags: ['FlaggedPosts'],
+        }),
     }),
 });
 
@@ -61,4 +80,6 @@ export const {
     useGetFlaggedPostsQuery,
     useApprovePostMutation,
     useRejectPostMutation,
+    useBulkApprovePostsMutation,
+    useBulkRejectPostsMutation,
 } = moderationApi;

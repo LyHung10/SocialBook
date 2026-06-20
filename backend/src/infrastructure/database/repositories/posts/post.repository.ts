@@ -14,7 +14,7 @@ import { CommentDocument } from '../../schemas/comment.schema';
 import { LikeDocument } from '../../schemas/like.schema';
 import { Post, PostDocument } from '../../schemas/post.schema';
 
-const POPULATE_USER = { path: 'userId', select: 'username email image' };
+const POPULATE_USER = { path: 'userId', select: 'username email image violationCount' };
 const POPULATE_BOOK = {
   path: 'bookId',
   select: 'title slug coverUrl',
@@ -132,7 +132,10 @@ export class PostRepository implements IPostRepository {
   async findFlagged(
     options: FindFlaggedOptions,
   ): Promise<PaginatedResult<PostEntity>> {
-    const filter = { isFlagged: true, isDeleted: false };
+    const filter: any = { isFlagged: true, isDeleted: false };
+    if (options.reason) {
+      filter.moderationReason = { $regex: options.reason, $options: 'i' };
+    }
     const skip = (options.page - 1) * options.limit;
 
     const facetResult = await this.model

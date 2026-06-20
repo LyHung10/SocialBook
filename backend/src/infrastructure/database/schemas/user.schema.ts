@@ -23,6 +23,9 @@ export class User extends BaseSchema {
   @Prop({ default: false })
   isBanned: boolean;
 
+  @Prop({ default: 0 })
+  violationCount: number;
+
   @Prop({
     type: String,
     enum: ['local', 'google', 'facebook'],
