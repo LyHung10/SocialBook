@@ -15,7 +15,10 @@ import { CommentDocument } from '../../schemas/comment.schema';
 import { LikeDocument } from '../../schemas/like.schema';
 import { Post, PostDocument } from '../../schemas/post.schema';
 
-const POPULATE_USER = { path: 'userId', select: 'username email image violationCount' };
+const POPULATE_USER = {
+  path: 'userId',
+  select: 'username email image violationCount',
+};
 const POPULATE_BOOK = {
   path: 'bookId',
   select: 'title slug coverUrl',
@@ -352,7 +355,10 @@ export class PostRepository implements IPostRepository {
   async findFlagged(
     options: FindFlaggedOptions,
   ): Promise<PaginatedResult<PostEntity>> {
-    const filter: any = { isFlagged: true, isDeleted: false };
+    const filter: FilterQuery<PostDocument> = {
+      isFlagged: true,
+      isDeleted: false,
+    };
     if (options.reason) {
       filter.moderationReason = { $regex: options.reason, $options: 'i' };
     }

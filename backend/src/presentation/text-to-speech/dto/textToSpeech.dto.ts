@@ -7,7 +7,7 @@ import {
   Max,
   IsBoolean,
 } from 'class-validator';
-
+import { TextToSpeech } from '@/domain/text-to-speech/entities/text-to-speech.entity';
 
 export class GenerateChapterAudioDto {
   @IsOptional()
@@ -64,7 +64,7 @@ export class GenerateBookAudioDto {
 }
 
 export class TextToSpeechResponseDto {
-  static fromEntity(entity: any) {
+  static fromEntity(entity: TextToSpeech) {
     if (!entity) return null;
     return {
       id: entity.id,
@@ -78,10 +78,10 @@ export class TextToSpeechResponseDto {
       audioUrl: entity.audioUrl,
       audioFormat: entity.audioFormat,
       audioDuration: entity.audioDuration,
-      characterCount: entity._props?.characterCount,
-      paragraphCount: entity._props?.paragraphCount,
+      characterCount: entity.characterCount,
+      paragraphCount: entity.paragraphCount,
       errorMessage: entity.errorMessage,
-      provider: entity._props?.provider,
+      provider: entity.provider,
       playCount: entity.playCount,
       lastPlayedAt: entity.lastPlayedAt,
       processedAt: entity.processedAt,

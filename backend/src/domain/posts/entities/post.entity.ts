@@ -13,7 +13,13 @@ export interface PostProps {
   likesCount?: number;
   commentsCount?: number;
   likedByCurrentUser?: boolean;
-  author?: { id: string; username: string; email: string; image: string; violationCount?: number };
+  author?: {
+    id: string;
+    username: string;
+    email: string;
+    image: string;
+    violationCount?: number;
+  };
   book?: {
     id: string;
     title: string;
@@ -42,7 +48,13 @@ export class Post extends Entity<string> {
     bookId?: string;
     content: string;
     imageUrls?: string[];
-    author?: { id: string; username: string; email: string; image: string; violationCount?: number };
+    author?: {
+      id: string;
+      username: string;
+      email: string;
+      image: string;
+      violationCount?: number;
+    };
     book?: { id: string; title: string; slug?: string; coverUrl: string };
   }): Post {
     return new Post(props.id, {
@@ -77,7 +89,13 @@ export class Post extends Entity<string> {
     likedByCurrentUser?: boolean;
     createdAt: Date;
     updatedAt: Date;
-    author?: { id: string; username: string; email: string; image: string; violationCount?: number };
+    author?: {
+      id: string;
+      username: string;
+      email: string;
+      image: string;
+      violationCount?: number;
+    };
     book?: {
       id: string;
       title: string;
@@ -142,7 +160,13 @@ export class Post extends Entity<string> {
     return this._props.likedByCurrentUser;
   }
   get author():
-    | { id: string; username: string; email: string; image: string }
+    | {
+        id: string;
+        username: string;
+        email: string;
+        image: string;
+        violationCount?: number;
+      }
     | undefined {
     return this._props.author;
   }

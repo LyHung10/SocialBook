@@ -12,7 +12,12 @@ export class PostResponseDto {
   moderationStatus?: string;
   moderationReason?: string;
 
-  user?: { id: string; username: string; image?: string; violationCount?: number };
+  user?: {
+    id: string;
+    username: string;
+    image?: string;
+    violationCount?: number;
+  };
 
   book?: {
     id: string;
@@ -48,7 +53,7 @@ export class PostResponseDto {
         id: post.author.id,
         username: post.author.username,
         image: post.author.image,
-        violationCount: (post.author as any).violationCount, // Handle dynamically populated property
+        violationCount: post.author.violationCount,
       };
     }
 
