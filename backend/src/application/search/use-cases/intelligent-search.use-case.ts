@@ -33,7 +33,7 @@ export class IntelligentSearchUseCase {
   private static readonly SEMANTIC_WEIGHT = 1.0;
   private static readonly KEYWORD_WEIGHT = 0.4;
   private static readonly EXACT_MATCH_BONUS = 50;
-  private static readonly MIN_FINAL_SCORE = 65;
+  private static readonly MIN_FINAL_SCORE = 40;
 
   constructor(
     private readonly bookRepository: IBookRepository,
