@@ -78,6 +78,7 @@ export function useModerationManagement() {
         }
     };
 
+
     const handleBanUser = async (userId: string) => {
         try {
             await banUser(userId).unwrap();
@@ -108,6 +109,7 @@ export function useModerationManagement() {
         setPage(1);
         setSelectedPostIds([]);
     };
+
 
     return {
         page,
