@@ -18,8 +18,10 @@ export class RejectPostUseCase {
     if (!post) throw new NotFoundDomainException(ErrorMessages.POST_NOT_FOUND);
 
     await this.postRepository.delete(command.postId);
-// vi phạm 10 lần là tự động khóa acc
-    const user = await this.userRepository.findById(UserId.create(post.userId.toString()));
+    // vi phạm 10 lần là tự động khóa acc
+    const user = await this.userRepository.findById(
+      UserId.create(post.userId.toString()),
+    );
     if (user) {
       user.incrementViolationCount();
       if (user.violationCount >= 10 && !user.isBanned) {

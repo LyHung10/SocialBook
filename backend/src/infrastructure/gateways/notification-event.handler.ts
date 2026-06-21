@@ -239,7 +239,7 @@ export class NotificationEventHandler {
       const ownerId = payload.userId;
       const title = 'Bài viết bị gắn cờ vi phạm';
       let message = `Bài viết của bạn đã bị ẩn do: ${payload.reason}`;
-      
+
       if (payload.action === 'BLOCK') {
         message = `Bài viết của bạn đã bị xóa do vi phạm tiêu chuẩn cộng đồng: ${payload.reason}`;
       }
@@ -256,11 +256,14 @@ export class NotificationEventHandler {
         },
         actionUrl,
       );
-      
+
       await this.notificationsService.create(notificationDto);
       this.logger.log(`Created moderation notification for user ${ownerId}`);
     } catch (error) {
-      this.logger.error('Error handling post.moderated notification event', error);
+      this.logger.error(
+        'Error handling post.moderated notification event',
+        error,
+      );
     }
   }
 }

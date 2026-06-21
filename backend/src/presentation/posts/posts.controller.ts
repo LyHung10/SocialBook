@@ -235,11 +235,13 @@ export class PostsController {
   @Get('admin/flagged')
   @UseGuards(RolesGuard)
   @Roles('admin')
-  async getFlaggedPosts(
-    @Query() query: FlaggedPostsQueryDto,
-  ) {
+  async getFlaggedPosts(@Query() query: FlaggedPostsQueryDto) {
     const limit = query.actualLimit > 100 ? 100 : query.actualLimit;
-    const flaggedQuery = new GetFlaggedPostsQuery(query.actualPage, limit, query.reason);
+    const flaggedQuery = new GetFlaggedPostsQuery(
+      query.actualPage,
+      limit,
+      query.reason,
+    );
     const result = await this.getFlaggedPostsUseCase.execute(flaggedQuery);
     return {
       message: 'Get flagged posts successfully',
@@ -279,12 +281,15 @@ export class PostsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   async bulkApprovePosts(@Body('postIds') postIds: string[]) {
-    if (!postIds || !Array.isArray(postIds)) throw new BadRequestException('postIds array is required');
-    
+    if (!postIds || !Array.isArray(postIds))
+      throw new BadRequestException('postIds array is required');
+
     const results = await Promise.allSettled(
-      postIds.map((id) => this.approvePostUseCase.execute(new ApprovePostCommand(id)))
+      postIds.map((id) =>
+        this.approvePostUseCase.execute(new ApprovePostCommand(id)),
+      ),
     );
-    
+
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     return {
       message: `Approved ${successCount}/${postIds.length} posts`,
@@ -295,12 +300,17 @@ export class PostsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   async bulkRejectPosts(@Body('postIds') postIds: string[]) {
-    if (!postIds || !Array.isArray(postIds)) throw new BadRequestException('postIds array is required');
-    
+    if (!postIds || !Array.isArray(postIds))
+      throw new BadRequestException('postIds array is required');
+
     const results = await Promise.allSettled(
-      postIds.map((id) => this.rejectPostUseCase.execute(new RejectPostCommand(id, 'Rejected by admin')))
+      postIds.map((id) =>
+        this.rejectPostUseCase.execute(
+          new RejectPostCommand(id, 'Rejected by admin'),
+        ),
+      ),
     );
-    
+
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
     return {
       message: `Rejected ${successCount}/${postIds.length} posts`,

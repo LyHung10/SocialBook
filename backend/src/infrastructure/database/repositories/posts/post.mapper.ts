@@ -63,7 +63,13 @@ export class PostMapper {
     // Handle userId: could be ObjectId or populated User object
     let userId: string;
     let author:
-      | { id: string; username: string; email: string; image: string; violationCount?: number }
+      | {
+          id: string;
+          username: string;
+          email: string;
+          image: string;
+          violationCount?: number;
+        }
       | undefined;
 
     const userIdField = postDoc.userId;

@@ -16,10 +16,7 @@ import { CheckContentUseCase } from '@/application/content-moderation/use-cases/
     ModerationInfrastructureModule,
     PostsRepositoryModule,
   ],
-  providers: [
-    CheckContentUseCase,
-    PostModerationProcessor,
-  ],
+  providers: [CheckContentUseCase, PostModerationProcessor],
   exports: [
     BullModule, // Re-export để PostsApplicationModule inject Queue
   ],

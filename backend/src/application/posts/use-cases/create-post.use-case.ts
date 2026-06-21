@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotFoundDomainException, BadRequestDomainException } from '@/shared/domain/common-exceptions';
+import {
+  NotFoundDomainException,
+  BadRequestDomainException,
+} from '@/shared/domain/common-exceptions';
 import { IPostRepository } from '@/domain/posts/repositories/post.repository.interface';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
@@ -87,4 +90,3 @@ export class CreatePostUseCase {
     return { post: createdPost };
   }
 }
-
