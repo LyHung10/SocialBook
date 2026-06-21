@@ -19,7 +19,7 @@ export class SearchController {
   constructor(
     private readonly intelligentSearchUseCase: IntelligentSearchUseCase,
     @InjectRedis() private readonly redis: Redis,
-  ) {}
+  ) { }
 
   @Public()
   @Get()
