@@ -51,7 +51,6 @@ export class GetKnowledgeGraphUseCase {
   async execute(query: GetKnowledgeGraphQuery): Promise<KnowledgeGraphResult> {
     const userId = UserId.create(query.userId);
     const user = await this.userRepository.findById(userId);
-
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -89,6 +88,7 @@ export class GetKnowledgeGraphUseCase {
     nodes.push({
       id: user.id.getValue(),
       label: user.username,
+      img: user.image,
       type: 'user',
       val: 25,
       color: '#3b82f6', // blue-500
