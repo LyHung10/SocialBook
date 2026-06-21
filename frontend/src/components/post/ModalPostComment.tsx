@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { ShieldAlert, Info } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useModalStore } from '@/store/useModalStore';
@@ -15,6 +15,7 @@ import { usePostActions } from '@/features/posts/hooks/usePostActions';
 import { UserAvatarWithInfo } from "@/components/common/UserAvatar";
 import { PostActions } from '@/components/post/PostActions';
 import { PostBookSection } from '@/components/post/PostBookSection';
+import { PostImageGallery } from '@/components/post/PostImageGallery';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -89,7 +90,7 @@ export default function ModalPostComment() {
     return (
         <Dialog open={isPostCommentOpen} onOpenChange={(open) => !open && closePostComment()}>
             <DialogContent className={cn(
-                "h-[90vh] md:h-[85vh] p-0 gap-0 overflow-hidden border-border bg-card/95 flex flex-col md:flex-row",
+                "w-[95vw] md:w-full h-[90vh] md:h-[85vh] p-0 gap-0 overflow-hidden border-border bg-card/95 flex flex-col md:flex-row rounded-2xl",
                 post?.imageUrls && post.imageUrls.length > 0 ? "max-w-5xl" : "max-w-2xl mx-auto"
             )}>
                 <DialogHeader className="sr-only">
@@ -176,6 +177,13 @@ export default function ModalPostComment() {
                     {/* Post Content & Comments Area */}
                     <div className="flex-1 flex flex-col min-h-0">
                         <ScrollArea className="flex-1">
+                            {/* Mobile Only Image Gallery */}
+                            {post.imageUrls && post.imageUrls.length > 0 && (
+                                <div className="md:hidden">
+                                    <PostImageGallery images={post.imageUrls} />
+                                </div>
+                            )}
+
                             <div className="p-4 pb-0">
                                 {/* Post Content */}
                                 <div className="mb-6">

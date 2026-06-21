@@ -4,13 +4,15 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useCallback, useRef, useEffect } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
-import { PenSquare } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { useModalStore } from '@/store/useModalStore';
 import PostList from '@/components/post/PostList';
 import TrendingBooksWidget from '@/components/post/TrendingBooksWidget';
 import TopActiveReadersWidget from '@/components/post/TopActiveReadersWidget';
 import LoginWall from '@/components/auth/LoginWall';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Compass } from 'lucide-react';
 
 import { AppLoading } from '@/components/common/AppLoading';
 
@@ -125,6 +127,27 @@ export default function Post() {
                                     {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
                                 </button>
                             </div>
+                        </div>
+
+                        {/* MOBILE WIDGETS TRIGGER */}
+                        <div className="lg:hidden">
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="secondary" className="w-full justify-center gap-2 rounded-2xl h-12 shadow-sm font-semibold border border-border">
+                                        <Compass className="w-5 h-5 text-amber-500" />
+                                        Khám phá sách & Độc giả nổi bật
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl border-t border-border bg-background flex flex-col p-0 z-50">
+                                    <SheetTitle className="sr-only">Khám phá và gợi ý</SheetTitle>
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                        <UserSearchSidebar />
+                                        <TrendingBooksWidget />
+                                        <TopActiveReadersWidget />
+                                        <RecommendedBooks />
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
                         </div>
 
                         <PostList scrollRef={feedRef} />

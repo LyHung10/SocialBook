@@ -1,18 +1,24 @@
 'use client';
 
-import { Bot, Send, X, Sparkles } from 'lucide-react';
+import { Bot, Send, X } from 'lucide-react';
 import { useAskChatbotMutation } from '@/features/chatbot/api/chatBotApi';
 import { useChatWidget } from '@/features/chatbot/hooks/useChatWidget';
 import { useAppAuth } from '@/features/auth/hooks/useAppAuth';
+import { usePathname } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { useEffect } from 'react';
+
 export const ChatWidget = () => {
+  const pathname = usePathname();
   const [askChatbot] = useAskChatbotMutation();
   const { isAuthenticated } = useAppAuth();
+
+  const isReadingPage = pathname?.includes('/chapters/') || pathname?.includes('/reading-rooms/');
 
   const {
     messages,
@@ -30,19 +36,25 @@ export const ChatWidget = () => {
     isAuthenticated,
   });
 
+  useEffect(() => {
+    const handleToggle = () => setIsOpen(!isOpen);
+    window.addEventListener('toggle-global-chat', handleToggle);
+    return () => window.removeEventListener('toggle-global-chat', handleToggle);
+  }, [setIsOpen, isOpen]);
+
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={`fixed z-50 transition-all duration-300 bottom-6 right-6 ${isReadingPage ? 'max-sm:pointer-events-none' : ''}`}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             size="icon"
-            className="w-12 h-12 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 bg-primary text-primary-foreground hover:bg-primary/90"
+            className={`w-12 h-12 rounded-full shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-105 bg-primary text-primary-foreground hover:bg-primary/90 pointer-events-auto opacity-100 scale-100 ${isReadingPage ? 'max-sm:opacity-0 max-sm:scale-0' : ''}`}
           >
             {isOpen ? <X size={20} /> : <Bot size={24} />}
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[360px] h-[520px] p-0 mr-2 mb-2 rounded-3xl shadow-2xl border border-border/60 overflow-hidden flex flex-col bg-background/95 backdrop-blur-xl"
+          className="w-[360px] h-[520px] p-0 mr-2 mb-2 rounded-3xl shadow-2xl border border-border/60 overflow-hidden flex flex-col bg-background/95 backdrop-blur-xl pointer-events-auto"
           side="top"
           align="end"
         >

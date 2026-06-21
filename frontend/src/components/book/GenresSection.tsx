@@ -65,12 +65,12 @@ export const GenresSection = ({ books }: GenresSectionProps) => {
 
       <CardContent>
         {/* Genres Grid */}
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-nowrap xl:flex-wrap gap-2 pt-1 pb-2 xl:pb-0 overflow-x-auto xl:overflow-visible scrollbar-hide">
           {genresWithCount.map((genre) => (
             <button
               key={genre.slug}
               onClick={() => handleGenreClick(genre.slug)}
-              className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-brand/[0.03] dark:hover:bg-brand/[0.02] hover:text-brand hover:border-brand/30 border border-border/70 text-xs font-semibold text-foreground/80 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer shadow-sm"
+              className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-brand/[0.03] dark:hover:bg-brand/[0.02] hover:text-brand hover:border-brand/30 border border-border/70 text-xs font-semibold text-foreground/80 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer shadow-sm flex-shrink-0 whitespace-nowrap"
             >
               {genre.name}
               <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground group-hover:bg-brand/10 group-hover:text-brand font-bold transition-all">

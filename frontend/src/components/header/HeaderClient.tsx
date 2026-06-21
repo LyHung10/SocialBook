@@ -5,8 +5,8 @@ import { useAppAuth, useLogout } from '@/features/auth/hooks';
 import { useHeaderNavigation } from './hooks/useHeaderNavigation';
 import { useHeaderTheme } from './hooks/useHeaderTheme';
 import { useColorTheme } from './hooks/useColorTheme';
-import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Settings, Sun, User, Users, Palette } from 'lucide-react';
-import { memo } from 'react';
+import { BookOpen, Globe, Library, LogOut, Menu, Moon, Network, Search, Sun, User, Users, Palette } from 'lucide-react';
+import { memo, useState } from 'react';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { SearchTrigger } from '@/components/search/SearchTrigger';
 
 const LazyNotificationBell = dynamic(
@@ -32,7 +32,7 @@ const LazyNotificationBell = dynamic(
 export const HeaderClient = memo(function HeaderClient() {
     const { user, isAuthenticated } = useAppAuth();
     const { handleLogout } = useLogout();
-    const { navigateToHome, navigateToBooks, navigateToPosts, navigateToLibrary, navigateToReadingRooms, navigateToProfile, navigateToSettings, navigateToKnowledgeMap, navigateToLogin } = useHeaderNavigation();
+    const { navigateToHome, navigateToBooks, navigateToPosts, navigateToLibrary, navigateToReadingRooms, navigateToProfile, navigateToKnowledgeMap, navigateToLogin } = useHeaderNavigation();
 
     const { theme, toggleTheme, mounted } = useHeaderTheme();
     const { colorTheme, toggleColorTheme, mounted: colorMounted } = useColorTheme();
@@ -55,33 +55,37 @@ export const HeaderClient = memo(function HeaderClient() {
                         {isAuthenticated && user ? (
                             <>
                                 <LazyNotificationBell />
-                                <UserDropdown
-                                    user={user}
-                                    avatarUrl={avatarUrl}
-                                    onProfile={() => userId && navigateToProfile(userId)}
-                                    onLibrary={navigateToLibrary}
-                                    onSettings={navigateToSettings}
-                                    onKnowledgeMap={navigateToKnowledgeMap}
-                                    onLogout={handleLogout}
-                                />
-                                <MobileMenu
-                                    user={user}
-                                    avatarUrl={avatarUrl}
-                                    onProfile={() => userId && navigateToProfile(userId)}
-                                    onBooks={navigateToBooks}
-                                    onPosts={navigateToPosts}
-                                    onLibrary={navigateToLibrary}
-                                    onReadingRooms={navigateToReadingRooms}
-                                    onSettings={navigateToSettings}
-                                    onKnowledgeMap={navigateToKnowledgeMap}
-                                    onLogout={handleLogout}
-                                />
+                                <div className="hidden md:block">
+                                    <UserDropdown
+                                        user={user}
+                                        avatarUrl={avatarUrl}
+                                        onProfile={() => userId && navigateToProfile(userId)}
+                                        onLibrary={navigateToLibrary}
+                                        onKnowledgeMap={navigateToKnowledgeMap}
+                                        onLogout={handleLogout}
+                                    />
+                                </div>
                             </>
                         ) : (
-                            <Button onClick={navigateToLogin} variant="outline" className="gap-2 border-primary/20 hover:border-primary text-primary hover:text-primary hover:bg-primary/5 rounded-full">
-                                Đăng nhập
-                            </Button>
+                            <div className="hidden md:block">
+                                <Button onClick={navigateToLogin} variant="outline" className="gap-2 border-primary/20 hover:border-primary text-primary hover:text-primary hover:bg-primary/5 rounded-full">
+                                    Đăng nhập
+                                </Button>
+                            </div>
                         )}
+                        <MobileMenu
+                            isAuthenticated={isAuthenticated}
+                            user={user}
+                            avatarUrl={avatarUrl}
+                            onLogin={navigateToLogin}
+                            onProfile={() => userId && navigateToProfile(userId)}
+                            onBooks={navigateToBooks}
+                            onPosts={navigateToPosts}
+                            onLibrary={navigateToLibrary}
+                            onReadingRooms={navigateToReadingRooms}
+                            onKnowledgeMap={navigateToKnowledgeMap}
+                            onLogout={handleLogout}
+                        />
                     </div>
                 </div>
             </div>
@@ -95,7 +99,7 @@ function Logo({ onClick }: { onClick: () => void }) {
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-all duration-300">
                 <BookOpen className="w-5 h-5 text-primary stroke-[2px]" />
             </div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
+            <h1 className="hidden sm:block text-xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
                 SocialBook
             </h1>
         </div>
@@ -163,13 +167,12 @@ interface UserDropdownProps {
     avatarUrl?: string;
     onProfile: () => void;
     onLibrary: () => void;
-    onSettings: () => void;
     onKnowledgeMap: () => void;
     onLogout: () => void;
 }
 
 
-function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onSettings, onKnowledgeMap, onLogout }: UserDropdownProps) {
+function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onKnowledgeMap, onLogout }: UserDropdownProps) {
     const userName = user.email?.split('@')[0] || 'User';
 
     return (
@@ -184,7 +187,7 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onSettings, onKno
                     />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-2 rounded-2xl shadow-xl border-border bg-background/95 backdrop-blur-xl" align="end" forceMount>
+            <DropdownMenuContent className="w-64" align="end" forceMount>
                 <DropdownMenuLabel className="p-3 font-normal">
                     <div className="flex flex-col space-y-1.5">
                         <p className="text-sm font-bold leading-none text-foreground">{userName}</p>
@@ -193,26 +196,22 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onSettings, onKno
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="mx-1" />
                 <div className="space-y-1 py-1">
-                    <DropdownMenuItem onClick={onProfile} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onProfile} className="cursor-pointer gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Hồ sơ của tôi</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onLibrary} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onLibrary} className="cursor-pointer gap-2">
                         <Library className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Thư viện</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onSettings} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
-                        <Settings className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-sm">Cài đặt</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onKnowledgeMap} className="rounded-xl gap-2.5 py-2.5 cursor-pointer">
+                    <DropdownMenuItem onClick={onKnowledgeMap} className="cursor-pointer gap-2">
                         <Network className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-sm">Bản đồ tri thức</span>
                     </DropdownMenuItem>
                 </div>
 
                 <DropdownMenuSeparator className="mx-1" />
-                <DropdownMenuItem onClick={onLogout} className="rounded-xl gap-2.5 py-2.5 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/5">
+                <DropdownMenuItem onClick={onLogout} className="cursor-pointer gap-2 text-destructive focus:text-destructive focus:bg-destructive/5">
                     <LogOut className="h-4 w-4" />
                     <span className="font-bold text-sm">Đăng xuất</span>
                 </DropdownMenuItem>
@@ -222,65 +221,90 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onSettings, onKno
 }
 
 interface MobileMenuProps {
-    user: { id: string; email?: string | null; image?: string | null; role?: string };
+    isAuthenticated: boolean;
+    user?: { id: string; email?: string | null; image?: string | null; role?: string } | null;
     avatarUrl?: string;
+    onLogin: () => void;
     onProfile: () => void;
     onBooks: () => void;
     onPosts: () => void;
     onLibrary: () => void;
     onReadingRooms: () => void;
-    onSettings: () => void;
     onKnowledgeMap: () => void;
     onLogout: () => void;
 }
 
 
-function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, onReadingRooms, onSettings, onKnowledgeMap, onLogout }: MobileMenuProps) {
-    const userName = user.email?.split('@')[0] || 'User';
+function MobileMenu({ isAuthenticated, user, avatarUrl, onLogin, onProfile, onBooks, onPosts, onLibrary, onReadingRooms, onKnowledgeMap, onLogout }: MobileMenuProps) {
+    const userName = user?.email?.split('@')[0] || 'User';
+    const [open, setOpen] = useState(false);
+
+    const handleAction = (action: () => void) => {
+        setOpen(false);
+        action();
+    };
 
     return (
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden rounded-full hover:bg-accent/50">
                     <Menu className="w-5 h-5" />
                 </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:w-[350px] p-0 border-l border-border bg-background/95 backdrop-blur-xl">
+                <SheetTitle className="sr-only">Menu ứng dụng</SheetTitle>
                 <div className="flex flex-col h-full p-6">
-                    <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
-                        <UserAvatar
-                            src={avatarUrl}
-                            name={userName}
-                            className="h-14 w-14 border-2 border-background shadow-md text-lg"
-                            fallbackClassName="bg-primary text-primary-foreground font-black"
-                        />
-                        <div className="flex flex-col overflow-hidden">
-                            <span className="font-bold text-lg truncate text-foreground">{userName}</span>
-                            <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                    {isAuthenticated && user ? (
+                        <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
+                            <UserAvatar
+                                src={avatarUrl}
+                                name={userName}
+                                className="h-14 w-14 border-2 border-background shadow-md text-lg"
+                                fallbackClassName="bg-primary text-primary-foreground font-black"
+                            />
+                            <div className="flex flex-col overflow-hidden">
+                                <span className="font-bold text-lg truncate text-foreground">{userName}</span>
+                                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
+                            <div className="flex flex-col">
+                                <span className="font-bold text-lg text-foreground">Xin chào!</span>
+                                <span className="text-xs text-muted-foreground">Đăng nhập để trải nghiệm</span>
+                            </div>
+                            <Button onClick={() => handleAction(onLogin)} size="sm" className="rounded-full shadow-sm">
+                                Đăng nhập
+                            </Button>
+                        </div>
+                    )}
 
-                    <div className="flex-1 space-y-1.5">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Cá nhân</p>
-                        <MobileNavItem onClick={onProfile} icon={<User className="w-5 h-5" />}>Hồ sơ cá nhân</MobileNavItem>
-                        <MobileNavItem onClick={onSettings} icon={<Settings className="w-5 h-5" />}>Cài đặt tài khoản</MobileNavItem>
-                        <MobileNavItem onClick={onLibrary} icon={<Library className="w-5 h-5" />}>Thư viện của tôi</MobileNavItem>
-
-                        <div className="h-4" />
+                    <div className="flex-1 space-y-1.5 overflow-y-auto min-h-0 pb-4">
+                        {isAuthenticated && (
+                            <>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Cá nhân</p>
+                                <MobileNavItem onClick={() => handleAction(onProfile)} icon={<User className="w-5 h-5" />}>Hồ sơ cá nhân</MobileNavItem>
+                                <MobileNavItem onClick={() => handleAction(onLibrary)} icon={<Library className="w-5 h-5" />}>Thư viện của tôi</MobileNavItem>
+                                <div className="h-4" />
+                            </>
+                        )}
+                        
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Khám phá</p>
-                        <MobileNavItem onClick={onBooks} icon={<Search className="w-5 h-5" />}>Tìm kiếm</MobileNavItem>
-                        <MobileNavItem onClick={onPosts} icon={<Globe className="w-5 h-5" />}>Bảng tin cộng đồng</MobileNavItem>
-                        <MobileNavItem onClick={onReadingRooms} icon={<Users className="w-5 h-5" />}>Phòng đọc chung</MobileNavItem>
-                        <MobileNavItem onClick={onKnowledgeMap} icon={<Network className="w-5 h-5" />}>Bản đồ tri thức</MobileNavItem>
+                        <MobileNavItem onClick={() => handleAction(onBooks)} icon={<Search className="w-5 h-5" />}>Tìm kiếm</MobileNavItem>
+                        <MobileNavItem onClick={() => handleAction(onPosts)} icon={<Globe className="w-5 h-5" />}>Bảng tin cộng đồng</MobileNavItem>
+                        <MobileNavItem onClick={() => handleAction(onReadingRooms)} icon={<Users className="w-5 h-5" />}>Phòng đọc chung</MobileNavItem>
+                        <MobileNavItem onClick={() => handleAction(onKnowledgeMap)} icon={<Network className="w-5 h-5" />}>Bản đồ tri thức</MobileNavItem>
                     </div>
 
 
-                    <div className="mt-auto pt-6 border-t border-border">
-                        <Button variant="ghost" className="w-full justify-start gap-4 h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/5 font-bold transition-all" onClick={onLogout}>
-                            <LogOut className="w-5 h-5" />
-                            Đăng xuất
-                        </Button>
-                    </div>
+                    {isAuthenticated && (
+                        <div className="mt-auto pt-6 border-t border-border">
+                            <Button variant="ghost" className="w-full justify-start gap-4 h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/5 font-bold transition-all" onClick={() => handleAction(onLogout)}>
+                                <LogOut className="w-5 h-5" />
+                                Đăng xuất
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </SheetContent>
         </Sheet>

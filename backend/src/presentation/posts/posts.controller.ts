@@ -23,8 +23,8 @@ import { UpdatePostDto } from '@/presentation/posts/dto/update-post.dto';
 
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 // Use Cases
@@ -73,7 +73,6 @@ export class PostsController {
   ) {}
 
   @Public()
-  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @CurrentUser('id') userId: string,
@@ -94,7 +93,6 @@ export class PostsController {
   }
 
   @Public()
-  @UseGuards(JwtAuthGuard)
   @Get('user')
   async findAllByUser(
     @CurrentUser('id') currentUserId: string,
@@ -120,7 +118,6 @@ export class PostsController {
   }
 
   @Public()
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(
     @Query('userId') userId: string | undefined,
@@ -135,7 +132,6 @@ export class PostsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('images', 10))
   async create(
     @CurrentUser('id') userId: string,
@@ -165,7 +161,6 @@ export class PostsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('images', 10))
   async update(
     @Param('id') id: string,
@@ -200,7 +195,6 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
     const command = new DeletePostCommand(userId, id, false, false);
     await this.deletePostUseCase.execute(command);
@@ -210,7 +204,7 @@ export class PostsController {
   }
 
   @Delete(':id/permanent')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async removeHard(@Param('id') id: string, @CurrentUser('id') userId: string) {
     const command = new DeletePostCommand(userId, id, true, true);
@@ -221,7 +215,6 @@ export class PostsController {
   }
 
   @Delete(':id/images')
-  @UseGuards(JwtAuthGuard)
   async removeImage(
     @Param('id') id: string,
     @Body('imageUrl') imageUrl: string,
@@ -240,7 +233,7 @@ export class PostsController {
   // ===== ADMIN ENDPOINTS =====
 
   @Get('admin/flagged')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async getFlaggedPosts(
     @Query() query: FlaggedPostsQueryDto,
@@ -261,7 +254,7 @@ export class PostsController {
   }
 
   @Patch('admin/:id/approve')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async approvePost(@Param('id') id: string) {
     const command = new ApprovePostCommand(id);
@@ -272,7 +265,7 @@ export class PostsController {
   }
 
   @Delete('admin/:id/reject')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async rejectPost(@Param('id') id: string) {
     const command = new RejectPostCommand(id, 'Rejected by admin');

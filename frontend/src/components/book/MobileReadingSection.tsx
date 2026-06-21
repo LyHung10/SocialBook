@@ -120,7 +120,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
 
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {displayBooks.filter(item => item.bookId).map((item, index) => (
-            <div key={item.bookId.slug} className="flex-none w-32">
+            <div key={item.bookId.slug} className="flex-none w-32 flex flex-col">
               {/* Book Cover */}
               <Link
                 href={`/books/${item.bookId.slug}`}
@@ -148,14 +148,14 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
               {item.lastReadChapterId ? (
                 <Link
                   href={`/books/${item.bookId.slug}/chapters/${item.lastReadChapterId.slug}`}
-                  className="w-full flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 shadow-none text-xs font-semibold py-2 rounded-lg transition-all active:scale-[0.98]"
+                  className="w-full mt-auto flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 shadow-none text-xs font-semibold py-2 rounded-lg transition-all active:scale-[0.98]"
                 >
                   Chương {item.lastReadChapterId.orderIndex}
                 </Link>
               ) : (
                 <Link
                   href={`/books/${item.bookId.slug}`}
-                  className="w-full flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 text-xs font-semibold py-2 rounded-lg transition-all"
+                  className="w-full mt-auto flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 text-xs font-semibold py-2 rounded-lg transition-all"
                 >
                   Bắt đầu đọc
                 </Link>

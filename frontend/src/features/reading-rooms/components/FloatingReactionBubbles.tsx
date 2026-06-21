@@ -51,7 +51,7 @@ export const FloatingReactionBubbles = memo(function FloatingReactionBubbles({
   // Cleanup bubbles after they finish animating (3 seconds)
   useEffect(() => {
     if (bubbles.length === 0) return;
-    
+
     const interval = setInterval(() => {
       const now = Date.now();
       setBubbles((prev) => prev.filter((b) => now - b.timestamp < 3500));

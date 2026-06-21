@@ -134,6 +134,6 @@ export function useModerationManagement() {
         handleBulkApprove,
         handleBulkReject,
         handleBanUser,
-        openConfirm 
+        openConfirm
     };
 }
