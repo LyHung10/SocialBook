@@ -15,6 +15,7 @@ import {
   Settings,
   Share2,
   Bot,
+  MessageCircleQuestion,
 } from "lucide-react";
 
 import {
@@ -36,6 +37,8 @@ import AudiobookView from "@/components/chapter/AudiobookView";
 import ChapterListDrawer from "@/components/book/ChapterListDrawer";
 import ReadingSettingsPanel from "@/components/chapter/ReadingSettingsPanel";
 import { KnowledgeSidebar } from "@/features/reading-rooms/components/KnowledgeSidebar";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface ChapterPageProps {
   params: Promise<{
@@ -52,7 +55,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const openCreatePost = useModalStore(s => s.openCreatePost);
   const openAddToLibrary = useModalStore(s => s.openAddToLibrary);
-  const openChapterSummary = useModalStore(s => s.openChapterSummary);
+
   const {
     data: chapterData,
     isLoading,
@@ -89,6 +92,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const [showAISidebar, setShowAISidebar] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const { savedProgress, restoreScroll } = useReadingProgress(
     book?.id || "",
@@ -113,17 +117,19 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   }, [savedProgress, restoreScroll]);
 
   const goToPreviousChapter = useCallback(() => {
-    navigation?.previous &&
+    if (navigation?.previous) {
       router.push(
         `/books/${bookSlug}/chapters/${navigation.previous.slug}`,
       );
+    }
   }, [navigation, bookSlug, router]);
 
   const goToNextChapter = useCallback(() => {
-    navigation?.next &&
+    if (navigation?.next) {
       router.push(
         `/books/${bookSlug}/chapters/${navigation.next.slug}`,
       );
+    }
   }, [navigation, bookSlug, router]);
 
   const defaultShareContent = useMemo(() => {
@@ -310,12 +316,20 @@ ${book.description?.slice(0, 100)}...
             </div>
           </div>
 
-          {/* AI Sidebar */}
-          {showAISidebar && (
+          {/* Desktop AI Sidebar */}
+          {showAISidebar && !isMobile && (
             <aside className="w-full lg:w-80 sticky top-24 shrink-0 animate-in slide-in-from-right-4 duration-300">
               <KnowledgeSidebar bookSlug={bookSlug} chapterId={chapter.id} />
             </aside>
           )}
+
+          {/* Mobile AI Sidebar (Sheet) */}
+          <Sheet open={showAISidebar && isMobile} onOpenChange={setShowAISidebar}>
+            <SheetContent side="bottom" className="h-[85vh] p-0 rounded-t-3xl border-t border-border overflow-hidden flex flex-col z-50">
+              <SheetTitle className="sr-only">Trợ lý AI phân tích nội dung</SheetTitle>
+              <KnowledgeSidebar bookSlug={bookSlug} chapterId={chapter.id} />
+            </SheetContent>
+          </Sheet>
         </div>
       </main>
 
@@ -326,7 +340,7 @@ ${book.description?.slice(0, 100)}...
             : "translate-y-24 opacity-0"
         }`}
       >
-        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl">
+        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl max-w-[95vw] overflow-x-auto scrollbar-hide">
           <DockButton
             icon={<ChevronLeft size={20} />}
             label="Chương trước"
@@ -340,7 +354,7 @@ ${book.description?.slice(0, 100)}...
             onClick={goToNextChapter}
           />
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
             icon={<List size={20} />}
@@ -348,9 +362,9 @@ ${book.description?.slice(0, 100)}...
             onClick={() => setShowTOC(true)}
           />
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
-          <div className="flex bg-muted rounded-xl p-1">
+          <div className="flex bg-muted rounded-xl p-1 shrink-0">
             <button
               onClick={() => setViewMode("read")}
               className="p-2 rounded-lg bg-background text-foreground shadow-sm transition-all"
@@ -365,7 +379,7 @@ ${book.description?.slice(0, 100)}...
             </button>
           </div>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
             icon={<Bookmark size={20} />}
@@ -386,8 +400,26 @@ ${book.description?.slice(0, 100)}...
                 className={showAISidebar ? "text-primary" : ""}
               />
             }
-            label="Trợ lý AI"
-            onClick={() => setShowAISidebar(!showAISidebar)}
+            label="Phân tích nội dung"
+            onClick={() => {
+              if (!isLoggedIn) {
+                toast.info('Vui lòng đăng nhập để sử dụng tính năng này', {
+                  action: {
+                    label: 'Đăng nhập',
+                    onClick: () => router.push('/login'),
+                  },
+                });
+                return;
+              }
+              setShowAISidebar(!showAISidebar);
+            }}
+          />
+
+          <DockButton
+            icon={<MessageCircleQuestion size={20} />}
+            label="Trợ lý sách"
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-global-chat'))}
+            className="sm:hidden"
           />
 
           <DockButton
@@ -420,17 +452,19 @@ function DockButton({
   label,
   onClick,
   disabled = false,
+  className,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all group"
+      className={`relative flex flex-col shrink-0 items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all group ${className || ''}`}
     >
       {icon}
       {!disabled && (

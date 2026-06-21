@@ -55,7 +55,7 @@ export function NotificationBell() {
           )}
         </div>
 
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="max-h-[400px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
               <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center mb-3">

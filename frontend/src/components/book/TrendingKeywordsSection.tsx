@@ -18,7 +18,7 @@ export const TrendingKeywordsSection = () => {
   };
 
   return (
-    <section className="mb-8">
+    <section className="mb-0 xl:mb-8">
       <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -29,12 +29,12 @@ export const TrendingKeywordsSection = () => {
           <Flame size={16} className="text-brand" />
         </CardHeader>
         <CardContent className="pt-2">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-nowrap xl:flex-wrap gap-2 pb-2 xl:pb-0 overflow-x-auto xl:overflow-visible scrollbar-hide">
             {trendingSearches.map((keyword, index) => (
               <button
                 key={keyword}
                 onClick={() => handleKeywordClick(keyword)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border flex-shrink-0 whitespace-nowrap ${
                   index < 3
                     ? 'bg-brand/10 text-brand border-brand/20 hover:bg-brand hover:text-white'
                     : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:text-foreground'

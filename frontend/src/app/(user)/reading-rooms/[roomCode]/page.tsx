@@ -11,7 +11,7 @@ import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
 import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2 } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion } from 'lucide-react';
 import { useReadingView } from '@/features/books/hooks';
 import { useGetChapterProgressQuery } from '@/features/library/api/libraryApi';
 import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
@@ -38,19 +38,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useModalStore } from '@/store/useModalStore';
 import { EmotionStream } from '@/features/reading-rooms/components/EmotionStream';
 import { ProgressRadar } from '@/features/reading-rooms/components/ProgressRadar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 
 
-const ROOM_BTN_BASE = "font-bold px-4 h-9 rounded-full transition-all shadow-sm gap-2";
 
-function DockButton({ icon, label, onClick, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; }) {
+
+function DockButton({ icon, label, onClick, disabled, className }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; className?: string; }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group disabled:opacity-30 disabled:cursor-not-allowed"
+      className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group disabled:opacity-30 disabled:cursor-not-allowed shrink-0 ${className || ''}`}
     >
       {icon}
-      <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border">
+      <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border z-50">
         {label}
       </span>
     </button>
@@ -142,6 +151,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   }, []);
 
   const [transferHostOpen, setTransferHostOpen] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const { isControlsVisible, showSettings, setShowSettings } = useReadingView();
   const [createPost] = useCreatePostMutation();
 
@@ -175,7 +185,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const savedProgress = progressData?.progress || 0;
 
   useEffect(() => {
-    if (!chapter || savedProgress <= 0 || savedProgress >= 100) return;
+    if (!chapter?.id || savedProgress <= 0 || savedProgress >= 100) return;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const targetScrollY = (savedProgress / 100) * docHeight;
     window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
@@ -217,7 +227,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground relative transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground relative transition-colors duration-300 overflow-x-clip">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/main-background.jpg"
@@ -235,8 +245,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
         
         {/* Mobile Horizontal Header */}
         <header className="sticky top-16 z-50 w-full border-b border-border bg-background transition-all sm:hidden">
-          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-4">
+          <div className="container mx-auto px-2 min-[400px]:px-4 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 min-[400px]:gap-2 min-w-0 flex-1 pr-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -246,67 +256,62 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
               >
                 <ChevronLeft size={18} />
               </Button>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold tracking-tight">Phòng: {roomCode}</h1>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-base font-bold tracking-tight truncate">Phòng: {roomCode}</h1>
                   <button 
                     onClick={handleCopyCode}
-                    className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary"
+                    className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary shrink-0"
                     title="Sao chép mã phòng"
                   >
                     {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                   </button>
-                  <Badge variant="outline" className="text-[10px] uppercase font-black px-2 py-0.5 bg-primary/5 text-primary border-primary/20">
+                  <Badge variant="outline" className="text-[9px] uppercase font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20 shrink-0 hidden min-[350px]:inline-flex">
                     {room?.mode === 'sync' ? 'Đồng bộ' : 'Tự do'}
                   </Badge>
                   {isEnded && (
-                    <Badge variant="outline" className="text-[10px] uppercase font-black px-2 py-0.5 bg-muted text-muted-foreground border-muted-foreground/30">
-                      Đã kết thúc
+                    <Badge variant="outline" className="text-[9px] uppercase font-black px-1.5 py-0 bg-muted text-muted-foreground border-muted-foreground/30 shrink-0">
+                      Kết thúc
                     </Badge>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate max-w-[200px] font-medium">
+                <p className="text-[10px] text-muted-foreground truncate font-medium">
                   {bookData?.title || 'Đang tải sách...'}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 shrink-0">
               {!isEnded && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="flex items-center gap-1">
-                        <div className="flex -space-x-2 mr-1">
-                          {Object.values(presences).slice(0, 4).map(p =>
+                        <div className="flex -space-x-2 mr-1 hidden min-[400px]:flex">
+                          {Object.values(presences).slice(0, 3).map(p =>
                             p.avatarUrl ? (
                               <img
                                 key={p.userId}
                                 src={p.avatarUrl}
                                 alt="Avatar"
                                 loading="lazy"
-                                width={24}
-                                height={24}
-                                className="w-6 h-6 rounded-full border-2 border-background"
+                                width={20}
+                                height={20}
+                                className="w-5 h-5 rounded-full border-2 border-background"
                               />
                             ) : (
                               <div
                                 key={p.userId}
-                                className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[9px] font-bold"
+                                className="w-5 h-5 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold"
                               >
                                 {p.displayName.charAt(0).toUpperCase()}
                               </div>
                             )
                           )}
-                          {Object.keys(presences).length > 4 && (
-                            <div className="w-6 h-6 rounded-full border-2 border-background bg-muted text-[9px] font-bold flex items-center justify-center">
-                              +{Object.keys(presences).length - 4}
-                            </div>
-                          )}
                         </div>
-                        <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
-                          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                          <span>{Object.keys(presences).length} online</span>
+                        <div className="flex items-center gap-1.5 bg-background/50 border border-border px-2 py-1 min-[400px]:px-3 min-[400px]:py-1.5 rounded-full text-[10px] min-[400px]:text-[11px] font-bold shadow-sm">
+                          <div className="w-1.5 h-1.5 min-[400px]:w-2 min-[400px]:h-2 rounded-full bg-success animate-pulse shrink-0" />
+                          <span>{Object.keys(presences).length}</span>
                         </div>
                       </div>
                     </TooltipTrigger>
@@ -315,35 +320,33 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 </TooltipProvider>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 min-[400px]:gap-2">
                 {isHost && !isEnded && (
-                  <>
-                    <Button 
-                      variant="outline"
-                      size="sm" 
-                      className={`${ROOM_BTN_BASE} border-primary/20 hover:bg-primary/5`}
-                      onClick={() => {
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full shrink-0">
+                        <MoreVertical size={18} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 z-[60]">
+                      <DropdownMenuLabel className="text-xs">Quản lý phòng</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => {
                         const newMode = room?.mode === 'sync' ? 'free' : 'sync';
                         changeMode(newMode);
-                      }}
-                    >
-                      {room?.mode === 'sync' ? (
-                        <>
-                          <Lock className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-xs">Đồng bộ</span>
-                        </>
-                      ) : (
-                        <>
-                          <LockOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">Tự do</span>
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      size="sm" 
-                      onClick={() => openConfirm({
+                      }}>
+                        {room?.mode === 'sync' ? (
+                          <><Lock className="w-4 h-4 mr-2 text-primary" /> <span className="text-xs font-medium">Chế độ đồng bộ</span></>
+                        ) : (
+                          <><LockOpen className="w-4 h-4 mr-2 text-muted-foreground" /> <span className="text-xs font-medium">Chế độ tự do</span></>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTransferHostOpen(true)}>
+                        <DoorOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+                        <span className="text-xs font-medium">Chuyển quyền</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => openConfirm({
                         title: "Kết thúc phòng đọc?",
                         description: "Hành động này sẽ đóng phòng đọc đối với tất cả mọi người. Bạn không thể hoàn tác thao tác này.",
                         confirmText: "Xác nhận kết thúc",
@@ -355,19 +358,13 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                             router.refresh();
                           }, 300);
                         }
-                      })}
-                      className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
-                    >
-                      <LogOut size={15} />
-                      <span className="text-xs">Kết thúc</span>
-                    </Button>
-
-                    <Button 
-                      variant="outline"
-                      size="sm" 
-                      onClick={() => openConfirm({
+                      })}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-medium">Kết thúc phòng</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => openConfirm({
                         title: "Xoá phòng đọc?",
-                        description: "Hành động này sẽ xoá vĩnh viễn phòng đọc và tất cả dữ liệu liên quan (bình luận, phản hồi, trích dẫn, sự kiện). Không thể hoàn tác!",
+                        description: "Hành động này sẽ xoá vĩnh viễn phòng đọc và tất cả dữ liệu liên quan. Không thể hoàn tác!",
                         confirmText: "Xác nhận xoá",
                         variant: "destructive",
                         onConfirm: () => {
@@ -375,50 +372,18 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                           store.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms']));
                           router.push('/reading-rooms');
                         }
-                      })}
-                      className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
-                    >
-                      <Trash2 size={15} />
-                      <span className="text-xs">Xoá</span>
-                    </Button>
-                  </>
+                      })}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-medium">Xoá phòng</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
-
-                {!isHost && !isEnded && (
-                  <>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background/50 text-xs font-medium">
-                      {room?.mode === 'sync' ? (
-                        <><Lock className="w-3 h-3 text-primary" /><span className="text-primary">Đồng bộ</span></>
-                      ) : (
-                        <><LockOpen className="w-3 h-3 text-muted-foreground" /><span className="text-muted-foreground">Tự do</span></>
-                      )}
-                    </div>
-                    <button
-                      onClick={handleCopyCode}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background/50 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
-                      <span className="hidden sm:inline">{roomCode}</span>
-                    </button>
-                  </>
-                )}
-
-                {!isEnded && isHost ? (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`${ROOM_BTN_BASE} hover:bg-destructive/10 hover:text-destructive`}
-                    title="Chuyển quyền trưởng phòng"
-                    onClick={() => setTransferHostOpen(true)}
-                  >
-                    <DoorOpen size={15} className="text-muted-foreground" />
-                    <span className="text-xs hidden sm:inline">Chuyển quyền</span>
-                  </Button>
-                ) : isEnded && isHost ? (
+                {isEnded && isHost && (
                   <Button
                     variant="outline"
-                    size="sm"
-                    className={`${ROOM_BTN_BASE} border-border/60 text-foreground hover:bg-accent/60`}
+                    size="icon"
+                    className="w-7 h-7 min-[400px]:w-8 min-[400px]:h-8 rounded-full border-border/60 text-foreground hover:bg-accent/60 shrink-0"
                     disabled={isReactivating}
                     onClick={async () => {
                       try {
@@ -431,10 +396,9 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       }
                     }}
                   >
-                    {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LockOpen size={15} />}
-                    <span className="text-xs">{isReactivating ? 'Đang mở...' : 'Mở lại phòng'}</span>
+                    {isReactivating ? <Loader2 className="w-3 h-3 animate-spin" /> : <LockOpen size={13} />}
                   </Button>
-                ) : null}
+                )}
               </div>
             </div>
           </div>
@@ -888,7 +852,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             : 'translate-y-24 opacity-0'
         }`}
       >
-        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl">
+        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-background/90 backdrop-blur-xl border border-border shadow-2xl max-w-[95vw] overflow-x-auto scrollbar-hide">
           <DockButton
             icon={<ChevronLeftIcon size={20} />}
             label="Chương trước"
@@ -913,13 +877,13 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
               }
             }}
           />
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
           <DockButton
             icon={<Settings size={20} />}
             label="Cài đặt đọc"
             onClick={() => setShowSettings(true)}
           />
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
           <DockButton
             icon={<Bookmark size={20} />}
             label="Lưu vào thư viện"
@@ -932,6 +896,18 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             disabled={!chapter}
             onClick={handleShareRoom}
           />
+          <DockButton
+            icon={<MessageCircleQuestion size={20} />}
+            label="Trợ lý sách"
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-global-chat'))}
+            className="sm:hidden"
+          />
+          <DockButton
+            icon={<Users size={20} />}
+            label="Hoạt động phòng"
+            onClick={() => setShowMobileSidebar(true)}
+            className="sm:hidden"
+          />
         </div>
       </div>
 
@@ -942,6 +918,179 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
         onOpenChange={setTransferHostOpen}
         onConfirm={handleTransferHost}
       />
+
+      <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
+        <SheetContent side="bottom" className="h-[85vh] p-4 pt-6 rounded-t-3xl border-t border-border overflow-hidden flex flex-col z-50">
+          <SheetTitle className="sr-only">Hoạt động phòng</SheetTitle>
+          <Tabs defaultValue="activity" className="w-full flex flex-col h-full overflow-hidden">
+            <TabsList variant="glass" className="grid grid-cols-4 mb-4 shrink-0">
+              <TabsTrigger value="activity" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
+                <Info className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">HĐ</span>
+              </TabsTrigger>
+              <TabsTrigger value="members" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
+                <Users className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">TV</span>
+              </TabsTrigger>
+              <TabsTrigger value="quotes" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
+                <span className="text-sm leading-none">&ldquo;</span>
+                <span className="hidden lg:inline">TD</span>
+              </TabsTrigger>
+              <TabsTrigger value="knowledge" className="rounded-xl flex justify-center lg:justify-start items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary data-[state=active]:text-primary bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors">
+                <BrainCircuit className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">KT</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="activity" className="mt-0 outline-none flex-1 overflow-hidden flex flex-col">
+              <RoomChat sendChatMessage={sendChatMessage} disabled={isEnded} />
+            </TabsContent>
+
+            <TabsContent value="members" className="mt-0 outline-none flex-1 overflow-hidden">
+              <GlassCard 
+                header={
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold tracking-tight uppercase">Thành viên</h3>
+                    {!isEnded && (
+                      <Badge variant="secondary" className="text-[10px] font-bold">
+                        {Object.keys(presences).length}
+                      </Badge>
+                    )}
+                  </div>
+                }
+                className="h-full flex flex-col"
+              >
+                
+                <div className="p-2 flex-1 overflow-y-auto custom-scrollbar">
+                  {isEnded ? (
+                    <div className="py-8 text-center text-xs text-muted-foreground italic">
+                      Phòng đã kết thúc
+                    </div>
+                  ) : Object.values(presences).length === 0 ? (
+                    <div className="py-8 text-center text-xs text-muted-foreground italic">
+                      Đang đợi mọi người...
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {Object.values(presences).map(p => (
+                        <div 
+                          key={p.userId} 
+                          className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors group relative"
+                        >
+                           <ReadingProgress
+                             userId={p.userId}
+                             displayName={p.displayName}
+                             avatarUrl={p.avatarUrl}
+                           />
+                          
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-xs font-bold truncate group-hover:text-primary transition-colors">
+                              {p.displayName}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground truncate opacity-70">
+                              Chương: {p.currentChapterSlug}
+                            </p>
+                          </div>
+
+                          <TooltipProvider>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary"
+                                    onClick={() => router.push(`/reading-rooms/${roomCode}?chapter=${p.currentChapterSlug}`)}
+                                  >
+                                    <BookOpen size={14} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs font-medium">Đến chương này</TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary"
+                                    onClick={() => router.push(`/users/${p.userId}`)}
+                                  >
+                                    <User size={14} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs font-medium">Xem hồ sơ</TooltipContent>
+                              </Tooltip>
+
+                              {isHost && p.userId !== user?.id && !isEnded && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="w-7 h-7 rounded-full hover:bg-warning/10 text-warning hover:text-warning/80"
+                                      onClick={() => {
+                                        openConfirm({
+                                          title: "Chuyển quyền trưởng phòng?",
+                                          description: `Bạn sắp chuyển quyền trưởng phòng cho ${p.displayName}. LƯU Ý: Chuyển quyền xong bạn sẽ tự động rời khỏi phòng. Bạn có chắc chắn?`,
+                                          confirmText: "Xác nhận chuyển & Rời phòng",
+                                          onConfirm: () => {
+                                            leaveRoom(p.userId);
+                                            router.push('/reading-rooms');
+                                          }
+                                        });
+                                      }}
+                                    >
+                                      <Crown size={14} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="text-xs font-medium text-warning">Chuyển quyền Host</TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </TooltipProvider>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            </TabsContent>
+
+            <TabsContent value="quotes" className="mt-0 outline-none flex-1 overflow-hidden">
+              <GlassCard 
+                header={
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm leading-none text-primary">&ldquo;</span>
+                    <h3 className="text-sm font-bold tracking-tight uppercase">Trích dẫn</h3>
+                  </div>
+                }
+                className="h-full flex flex-col"
+              >
+                <div className="p-3 flex-1 overflow-y-auto custom-scrollbar">
+                  <QuoteBoard currentChapterSlug={currentChapterSlug} roomCode={roomCode} />
+                </div>
+              </GlassCard>
+            </TabsContent>
+
+            <TabsContent value="knowledge" className="mt-0 outline-none flex-1 overflow-hidden">
+              {chapter?.id ? (
+                <KnowledgeSidebar 
+                  bookSlug={bookData?.slug || ''} 
+                  chapterId={chapter.id} 
+                  roomId={roomCode}
+                />
+
+              ) : (
+
+                <GlassCard className="p-12 text-center h-full flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground italic">Đang tải kiến thức...</p>
+                </GlassCard>
+              )}
+            </TabsContent>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

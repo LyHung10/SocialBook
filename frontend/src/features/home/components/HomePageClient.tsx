@@ -82,6 +82,14 @@ export default function HomePage() {
             </aside>
 
             <div className="flex-1 min-w-0">
+              {/* Mobile sections */}
+              <div className="xl:hidden flex flex-col gap-6 mb-8 mt-2">
+                <TrendingKeywordsSection />
+                <RecommendedForYouSection />
+                <TopReadSection />
+                <GenresSection books={currentState.books} />
+              </div>
+
               <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
               <BookGrid

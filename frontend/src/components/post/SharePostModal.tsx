@@ -48,7 +48,7 @@ export default function SharePostModal() {
 
   return (
     <Dialog open={isSharePostOpen} onOpenChange={(open) => !open && closeSharePost()}>
-      <DialogContent className="flex flex-col">
+      <DialogContent className="w-[95vw] sm:max-w-md flex flex-col rounded-2xl p-0 overflow-hidden">
         <DialogHeader className="px-6 py-5 border-b border-border">
           <DialogTitle className="text-xl font-bold text-foreground">
             Chia sẻ bài viết

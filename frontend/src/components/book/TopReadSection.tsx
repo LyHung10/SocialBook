@@ -22,7 +22,7 @@ export const TopReadSection = () => {
 
   if (isLoading) {
     return (
-      <section className="mb-12">
+      <section className="mb-0 xl:mb-12">
         <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -55,7 +55,7 @@ export const TopReadSection = () => {
   }
 
   return (
-    <section className="mb-12">
+    <section className="mb-0 xl:mb-12">
       <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -116,18 +116,18 @@ export const TopReadSection = () => {
               </h3>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex xl:flex-col gap-3 overflow-x-auto xl:overflow-x-visible pb-2 xl:pb-0 scrollbar-hide">
               {displayedBooks.map((book, index) => (
                 <div
                   key={book.id}
-                  className="relative"
+                  className="relative w-[260px] flex-none xl:w-auto h-full"
                   onMouseEnter={() => setHoveredId(book.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   <Button
                     variant="ghost"
                     onClick={() => router.push(`/books/${book.slug}`)}
-                    className="flex gap-3 w-full h-auto text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
+                    className="flex gap-3 w-full h-full text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
                   >
                     {/* Rank Badge */}
                     <div className="absolute -left-2 -top-2 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center text-[10px] font-bold shadow-sm z-10 text-muted-foreground group-hover:text-brand group-hover:border-brand transition-colors">

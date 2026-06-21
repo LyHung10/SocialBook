@@ -660,7 +660,7 @@ const ChapterTextRenderer = ({
                                         AI đang suy nghĩ...
                                     </div>
                                 ) : (
-                                    <button 
+                                    <button
                                         className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors text-[11px] font-medium"
                                         onClick={(e) => {
                                             e.stopPropagation();

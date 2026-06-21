@@ -25,7 +25,7 @@ export const RecommendedForYouSection = () => {
   // Chưa đăng nhập
   if (isGuest) {
     return (
-      <section className="mb-12">
+      <section className="mb-0 xl:mb-12">
         <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -60,7 +60,7 @@ export const RecommendedForYouSection = () => {
 
   if (isLoading) {
     return (
-      <section className="mb-12">
+      <section className="mb-0 xl:mb-12">
         <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -89,7 +89,7 @@ export const RecommendedForYouSection = () => {
 
   if (error) {
     return (
-      <section className="mb-12">
+      <section className="mb-0 xl:mb-12">
         <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -118,7 +118,7 @@ export const RecommendedForYouSection = () => {
   const displayedBooks = data?.recommendations || [];
 
   return (
-    <section className="mb-12">
+    <section className="mb-0 xl:mb-12">
       <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
@@ -141,18 +141,18 @@ export const RecommendedForYouSection = () => {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex xl:flex-col gap-3 overflow-x-auto xl:overflow-x-visible pb-2 xl:pb-0 scrollbar-hide">
               {displayedBooks.map((rec, index) => (
                 <div
                   key={rec.bookId}
-                  className="relative"
+                  className="relative w-[260px] flex-none xl:w-auto h-full"
                   onMouseEnter={() => setHoveredId(rec.bookId)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   <Button
                     variant="ghost"
                     onClick={() => router.push(`/books/${rec.book.slug}`)}
-                    className="flex gap-3 w-full h-auto text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
+                    className="flex gap-3 w-full h-full text-left hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200 group justify-start items-start"
                   >
                     {/* Book Cover */}
                     <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">

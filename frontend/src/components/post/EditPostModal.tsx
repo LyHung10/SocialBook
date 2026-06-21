@@ -204,7 +204,7 @@ export default function EditPostModal() {
 
     return (
         <Dialog open={isEditPostOpen} onOpenChange={(open) => !open && closeEditPost()}>
-            <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden bg-card">
+            <DialogContent className="w-[95vw] sm:max-w-2xl p-0 gap-0 overflow-hidden bg-card rounded-2xl">
                 <DialogHeader className="px-6 py-4 border-b border-white/5 dark:border-gray-800">
                     <DialogTitle className="text-xl font-bold">Chỉnh sửa bài viết</DialogTitle>
                     <DialogDescription className="sr-only">
@@ -280,7 +280,7 @@ export default function EditPostModal() {
                                                             type="button"
                                                             size="icon"
                                                             onClick={() => removeExistingImage(index)}
-                                                            className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/50 hover:bg-black/75 text-white border-none p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                                            className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/50 hover:bg-black/75 text-white border-none p-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200"
                                                             disabled={isLoading}
                                                             aria-label="Xóa ảnh hiện tại"
                                                         >
@@ -315,7 +315,7 @@ export default function EditPostModal() {
                                                             type="button"
                                                             size="icon"
                                                             onClick={() => removeNewImage(index)}
-                                                            className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/50 hover:bg-black/75 text-white border-none p-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                                            className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/50 hover:bg-black/75 text-white border-none p-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200"
                                                             disabled={isLoading}
                                                             aria-label="Xóa ảnh mới"
                                                         >
