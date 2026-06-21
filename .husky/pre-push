@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "Running lint checks before push..."
 
 echo "[Backend] Running ESLint..."
