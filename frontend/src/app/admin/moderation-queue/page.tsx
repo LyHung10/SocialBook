@@ -232,7 +232,7 @@ const ModerationQueuePage = () => {
                     </div>
 
                     {/* Pagination */}
-                    {meta && meta.totalPages > 1 && (
+                    {meta && meta.totalPages > 1 &&s sd (
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5 mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="text-sm text-gray-500 font-medium">
                                 Hiển thị <span className="text-gray-900 font-bold">{(page - 1) * limit + 1} – {Math.min(page * limit, meta.total)}</span> trong <span className="text-gray-900 font-bold">{meta.total}</span> bài viết
