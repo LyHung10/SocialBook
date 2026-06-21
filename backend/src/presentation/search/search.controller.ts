@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Post, Body, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Post,
+  Body,
+  HttpCode,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { IntelligentSearchUseCase } from '@/application/search/use-cases/intelligent-search.use-case';
 import { IntelligentSearchQuery } from '@/application/search/use-cases/intelligent-search.query';
 import { Public } from '@/common/decorators/custom.decorator';
@@ -20,7 +28,23 @@ export class SearchController {
       query: searchQuery.query,
       limit: searchQuery.limit,
     });
-    const result = await this.intelligentSearchUseCase.execute(query);
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(
+        () =>
+          reject(
+            new RequestTimeoutException(
+              'Tìm kiếm quá thời gian (vượt quá 8 giây), vui lòng thử lại sau.',
+            ),
+          ),
+        8000,
+      );
+    });
+
+    const result = await Promise.race([
+      this.intelligentSearchUseCase.execute(query),
+      timeoutPromise,
+    ]);
 
     return {
       message: 'Search completed successfully',
