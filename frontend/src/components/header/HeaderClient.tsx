@@ -65,23 +65,27 @@ export const HeaderClient = memo(function HeaderClient() {
                                         onLogout={handleLogout}
                                     />
                                 </div>
-                                <MobileMenu
-                                    user={user}
-                                    avatarUrl={avatarUrl}
-                                    onProfile={() => userId && navigateToProfile(userId)}
-                                    onBooks={navigateToBooks}
-                                    onPosts={navigateToPosts}
-                                    onLibrary={navigateToLibrary}
-                                    onReadingRooms={navigateToReadingRooms}
-                                    onKnowledgeMap={navigateToKnowledgeMap}
-                                    onLogout={handleLogout}
-                                />
                             </>
                         ) : (
-                            <Button onClick={navigateToLogin} variant="outline" className="gap-2 border-primary/20 hover:border-primary text-primary hover:text-primary hover:bg-primary/5 rounded-full">
-                                Đăng nhập
-                            </Button>
+                            <div className="hidden md:block">
+                                <Button onClick={navigateToLogin} variant="outline" className="gap-2 border-primary/20 hover:border-primary text-primary hover:text-primary hover:bg-primary/5 rounded-full">
+                                    Đăng nhập
+                                </Button>
+                            </div>
                         )}
+                        <MobileMenu
+                            isAuthenticated={isAuthenticated}
+                            user={user}
+                            avatarUrl={avatarUrl}
+                            onLogin={navigateToLogin}
+                            onProfile={() => userId && navigateToProfile(userId)}
+                            onBooks={navigateToBooks}
+                            onPosts={navigateToPosts}
+                            onLibrary={navigateToLibrary}
+                            onReadingRooms={navigateToReadingRooms}
+                            onKnowledgeMap={navigateToKnowledgeMap}
+                            onLogout={handleLogout}
+                        />
                     </div>
                 </div>
             </div>
@@ -217,8 +221,10 @@ function UserDropdown({ user, avatarUrl, onProfile, onLibrary, onKnowledgeMap, o
 }
 
 interface MobileMenuProps {
-    user: { id: string; email?: string | null; image?: string | null; role?: string };
+    isAuthenticated: boolean;
+    user?: { id: string; email?: string | null; image?: string | null; role?: string } | null;
     avatarUrl?: string;
+    onLogin: () => void;
     onProfile: () => void;
     onBooks: () => void;
     onPosts: () => void;
@@ -229,8 +235,8 @@ interface MobileMenuProps {
 }
 
 
-function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, onReadingRooms, onKnowledgeMap, onLogout }: MobileMenuProps) {
-    const userName = user.email?.split('@')[0] || 'User';
+function MobileMenu({ isAuthenticated, user, avatarUrl, onLogin, onProfile, onBooks, onPosts, onLibrary, onReadingRooms, onKnowledgeMap, onLogout }: MobileMenuProps) {
+    const userName = user?.email?.split('@')[0] || 'User';
     const [open, setOpen] = useState(false);
 
     const handleAction = (action: () => void) => {
@@ -248,25 +254,41 @@ function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, o
             <SheetContent side="right" className="w-full sm:w-[350px] p-0 border-l border-border bg-background/95 backdrop-blur-xl">
                 <SheetTitle className="sr-only">Menu ứng dụng</SheetTitle>
                 <div className="flex flex-col h-full p-6">
-                    <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
-                        <UserAvatar
-                            src={avatarUrl}
-                            name={userName}
-                            className="h-14 w-14 border-2 border-background shadow-md text-lg"
-                            fallbackClassName="bg-primary text-primary-foreground font-black"
-                        />
-                        <div className="flex flex-col overflow-hidden">
-                            <span className="font-bold text-lg truncate text-foreground">{userName}</span>
-                            <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                    {isAuthenticated && user ? (
+                        <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
+                            <UserAvatar
+                                src={avatarUrl}
+                                name={userName}
+                                className="h-14 w-14 border-2 border-background shadow-md text-lg"
+                                fallbackClassName="bg-primary text-primary-foreground font-black"
+                            />
+                            <div className="flex flex-col overflow-hidden">
+                                <span className="font-bold text-lg truncate text-foreground">{userName}</span>
+                                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-accent/30 border border-border">
+                            <div className="flex flex-col">
+                                <span className="font-bold text-lg text-foreground">Xin chào!</span>
+                                <span className="text-xs text-muted-foreground">Đăng nhập để trải nghiệm</span>
+                            </div>
+                            <Button onClick={() => handleAction(onLogin)} size="sm" className="rounded-full shadow-sm">
+                                Đăng nhập
+                            </Button>
+                        </div>
+                    )}
 
                     <div className="flex-1 space-y-1.5 overflow-y-auto min-h-0 pb-4">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Cá nhân</p>
-                        <MobileNavItem onClick={() => handleAction(onProfile)} icon={<User className="w-5 h-5" />}>Hồ sơ cá nhân</MobileNavItem>
-                        <MobileNavItem onClick={() => handleAction(onLibrary)} icon={<Library className="w-5 h-5" />}>Thư viện của tôi</MobileNavItem>
-
-                        <div className="h-4" />
+                        {isAuthenticated && (
+                            <>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Cá nhân</p>
+                                <MobileNavItem onClick={() => handleAction(onProfile)} icon={<User className="w-5 h-5" />}>Hồ sơ cá nhân</MobileNavItem>
+                                <MobileNavItem onClick={() => handleAction(onLibrary)} icon={<Library className="w-5 h-5" />}>Thư viện của tôi</MobileNavItem>
+                                <div className="h-4" />
+                            </>
+                        )}
+                        
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-4 mb-2">Khám phá</p>
                         <MobileNavItem onClick={() => handleAction(onBooks)} icon={<Search className="w-5 h-5" />}>Tìm kiếm</MobileNavItem>
                         <MobileNavItem onClick={() => handleAction(onPosts)} icon={<Globe className="w-5 h-5" />}>Bảng tin cộng đồng</MobileNavItem>
@@ -275,12 +297,14 @@ function MobileMenu({ user, avatarUrl, onProfile, onBooks, onPosts, onLibrary, o
                     </div>
 
 
-                    <div className="mt-auto pt-6 border-t border-border">
-                        <Button variant="ghost" className="w-full justify-start gap-4 h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/5 font-bold transition-all" onClick={() => handleAction(onLogout)}>
-                            <LogOut className="w-5 h-5" />
-                            Đăng xuất
-                        </Button>
-                    </div>
+                    {isAuthenticated && (
+                        <div className="mt-auto pt-6 border-t border-border">
+                            <Button variant="ghost" className="w-full justify-start gap-4 h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/5 font-bold transition-all" onClick={() => handleAction(onLogout)}>
+                                <LogOut className="w-5 h-5" />
+                                Đăng xuất
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </SheetContent>
         </Sheet>
