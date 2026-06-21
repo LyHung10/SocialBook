@@ -13,6 +13,7 @@ export interface UserProps {
   password?: string;
   isVerified: boolean;
   isBanned: boolean;
+  violationCount: number;
   provider: string;
   providerId?: string;
   image?: string;
@@ -56,6 +57,7 @@ export class User extends Entity<UserId> {
       password: props.password,
       isVerified: false,
       isBanned: false,
+      violationCount: 0,
       provider: props.provider || 'local',
       providerId: props.providerId,
       image: props.image,
@@ -76,6 +78,7 @@ export class User extends Entity<UserId> {
     password?: string;
     isVerified: boolean;
     isBanned: boolean;
+    violationCount?: number;
     provider: string;
     providerId?: string;
     image?: string;
@@ -97,6 +100,7 @@ export class User extends Entity<UserId> {
         password: props.password,
         isVerified: props.isVerified,
         isBanned: props.isBanned,
+        violationCount: props.violationCount || 0,
         provider: props.provider,
         providerId: props.providerId,
         image: props.image,
@@ -131,6 +135,9 @@ export class User extends Entity<UserId> {
   }
   get isBanned(): boolean {
     return this._props.isBanned;
+  }
+  get violationCount(): number {
+    return this._props.violationCount;
   }
   get provider(): string {
     return this._props.provider;
@@ -220,6 +227,11 @@ export class User extends Entity<UserId> {
 
   updatePassword(password: string): void {
     this._props.password = password;
+    this.markAsUpdated();
+  }
+
+  incrementViolationCount(): void {
+    this._props.violationCount = (this._props.violationCount || 0) + 1;
     this.markAsUpdated();
   }
 }

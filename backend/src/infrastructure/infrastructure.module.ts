@@ -29,6 +29,7 @@ import { GatewaysModule } from './gateways/gateways.module';
 import { RecommendationsInfrastructureModule } from './recommendations/recommendations-infrastructure.module';
 import { ScraperInfrastructureModule } from './scraper/scraper-infrastructure.module';
 import { ChaptersImportModule } from './queues/chapters-import/chapters-import.module';
+import { PostModerationQueueModule } from './queues/post-moderation/post-moderation.module';
 import { ReadingRoomsRepositoryModule } from './database/repositories/reading-rooms/reading-rooms-repository.module';
 import { AnalyticsRepositoryModule } from './database/repositories/analytics/analytics-repository.module';
 
@@ -66,6 +67,7 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     IdGeneratorModule,
     GatewaysModule,
     ChaptersImportModule,
+    PostModerationQueueModule,
   ],
   exports: [
     CacheInfrastructureModule,
@@ -100,6 +102,7 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     IdGeneratorModule,
     GatewaysModule,
     ChaptersImportModule,
+    PostModerationQueueModule,
   ],
 })
 export class InfrastructureModule {}
