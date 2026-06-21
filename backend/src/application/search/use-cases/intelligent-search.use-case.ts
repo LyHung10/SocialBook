@@ -33,7 +33,7 @@ export class IntelligentSearchUseCase {
   private static readonly SEMANTIC_WEIGHT = 1.0;
   private static readonly KEYWORD_WEIGHT = 0.4;
   private static readonly EXACT_MATCH_BONUS = 50;
-  private static readonly MIN_FINAL_SCORE = 65;
+  private static readonly MIN_FINAL_SCORE = 20;
 
   constructor(
     private readonly bookRepository: IBookRepository,
@@ -331,7 +331,7 @@ export class IntelligentSearchUseCase {
       }
     }
 
-    // Bộ lọc sàn: Lập tức loại bỏ những sách có tổng điểm dưới 25 (điểm liệt)
+    // Bộ lọc sàn: Lập tức loại bỏ những sách có tổng điểm dưới 20 (điểm liệt)
     for (const [id, score] of hybridMap.entries()) {
       if (score.finalScore < IntelligentSearchUseCase.MIN_FINAL_SCORE) {
         hybridMap.delete(id);
