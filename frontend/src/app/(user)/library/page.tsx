@@ -35,7 +35,7 @@ export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryStatus>(
     LibraryStatus.READING
   );
-  const { user, isAuthenticated } = useAppAuth();
+  const { user, isAuthenticated, isLoading } = useAppAuth();
   const { openCreateCollection } = useModalStore();
 
   const {
@@ -55,6 +55,14 @@ export default function LibraryPage() {
     });
 
   const books = libraryData || [];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-brand border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

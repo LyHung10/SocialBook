@@ -9,9 +9,15 @@ import LoginWall from '@/components/auth/LoginWall';
 import { BrainCircuit, Sparkles } from 'lucide-react';
 
 export default function KnowledgeMapPage() {
-  const { isAuthenticated } = useAppAuth();
-  const { data, isLoading, error } = useGetKnowledgeGraphQuery(undefined, { skip: !isAuthenticated });
-
+  const { isAuthenticated, isLoading } = useAppAuth();
+  const { data, error } = useGetKnowledgeGraphQuery(undefined, { skip: !isAuthenticated });
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-brand border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
   if (!isAuthenticated) {
     return (
       <LoginWall
