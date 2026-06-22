@@ -1,6 +1,5 @@
 import { ApiFileUpload, Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import {
   Body,
@@ -47,7 +46,7 @@ export class AuthorsController {
 
   @Post()
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @ApiFileUpload('photoUrl')
   async create(
     @Body() createAuthorDto: CreateAuthorDto,
@@ -68,7 +67,7 @@ export class AuthorsController {
 
   @Get('admin')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async findAll(@Query() filter: FilterAuthorDto) {
     const query = new GetAuthorsQuery(
       filter.actualPage,
@@ -99,7 +98,7 @@ export class AuthorsController {
 
   @Put(':id')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @ApiFileUpload('photoUrl')
   async update(
     @Param('id') id: string,
@@ -122,7 +121,7 @@ export class AuthorsController {
 
   @Delete(':id')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async remove(@Param('id') id: string) {
     const command = new DeleteAuthorCommand(id);
     await this.deleteAuthorUseCase.execute(command);

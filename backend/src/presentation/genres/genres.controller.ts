@@ -26,7 +26,6 @@ import {
 import { GetGenreByIdQuery } from '@/application/genres/use-cases/get-genre-by-id/get-genre-by-id.query';
 import { GetGenreByIdUseCase } from '@/application/genres/use-cases/get-genre-by-id/get-genre-by-id.use-case';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 @Controller('genres')
@@ -41,7 +40,7 @@ export class GenresController {
 
   @Post()
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async create(@Body() createGenreDto: CreateGenreDto) {
     const command = new CreateGenreCommand(
       createGenreDto.name,
@@ -73,7 +72,7 @@ export class GenresController {
 
   @Get('admin')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async findAllAdmin(@Query() filter: FilterGenreDto) {
     const query = new GetGenresQuery(
       filter.actualPage,
@@ -102,7 +101,7 @@ export class GenresController {
 
   @Patch(':id')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async update(
     @Param('id') id: string,
     @Body() updateGenreDto: UpdateGenreDto,
@@ -121,7 +120,7 @@ export class GenresController {
 
   @Delete(':id')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async remove(@Param('id') id: string) {
     const command = new DeleteGenreCommand(id);
     await this.deleteGenreUseCase.execute(command);

@@ -12,7 +12,6 @@ import {
 
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
@@ -54,7 +53,6 @@ export class CommentsController {
   ) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async create(
     @CurrentUser('id') userId: string,
     @Body() dto: CreateCommentDto,
@@ -76,7 +74,6 @@ export class CommentsController {
   }
 
   @Public()
-  @UseGuards(JwtAuthGuard)
   @Get('target')
   async getByTarget(
     @CurrentUser('id') userId: string | undefined,
@@ -129,7 +126,6 @@ export class CommentsController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
@@ -146,7 +142,6 @@ export class CommentsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; email: string; role: string },
@@ -162,7 +157,6 @@ export class CommentsController {
   }
 
   @Post(':id/flag')
-  @UseGuards(JwtAuthGuard)
   flag() {
     return {
       message: 'Flag comment not yet implemented',
@@ -172,7 +166,7 @@ export class CommentsController {
 
   @Post(':id/moderate')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async moderate(@Param('id') id: string, @Body() dto: ModerateCommentDto) {
     const command = new ModerateCommentCommand(id, dto.status, dto.reason);
 
@@ -185,7 +179,7 @@ export class CommentsController {
 
   @Get('stats')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   getStats() {
     return {
       message: 'Get comment stats not yet implemented',
@@ -195,7 +189,7 @@ export class CommentsController {
 
   @Get('moderation/pending')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   getPendingModeration() {
     return {
       message: 'Get pending moderation not yet implemented',
@@ -208,7 +202,7 @@ export class CommentsController {
 
   @Get('moderation/flagged')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   getFlagged() {
     return {
       message: 'Get flagged comments not yet implemented',

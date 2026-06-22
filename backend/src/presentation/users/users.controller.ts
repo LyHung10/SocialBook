@@ -18,7 +18,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
@@ -91,7 +90,7 @@ export class UsersController {
 
   @Get('admin')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async findAllAdmin(@Query() filter: FilterUserDto) {
     const getUsersQuery = new GetUsersQuery(
       filter.actualPage,
@@ -131,7 +130,7 @@ export class UsersController {
   }
 
   @Patch(':id/ban')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async toggleBan(@Param('id') id: string) {
     const command = new ToggleBanCommand(id);
@@ -165,7 +164,6 @@ export class UsersController {
   }
 
   @Patch('me/overview')
-  @UseGuards(JwtAuthGuard)
   async updateMyProfileOverview(
     @CurrentUser('id') userId: string,
     @Body() dto: UpdateUserOverviewDto,
@@ -185,7 +183,6 @@ export class UsersController {
   }
 
   @Patch('me/avatar')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 5 * 1024 * 1024 },
@@ -214,7 +211,6 @@ export class UsersController {
   }
 
   @Get('me/reading-preferences')
-  @UseGuards(JwtAuthGuard)
   async getMyReadingPreferences(@CurrentUser('id') userId: string) {
     const query = new GetReadingPreferencesQuery(userId);
     const data = await this.getReadingPreferencesUseCase.execute(query);
@@ -225,7 +221,6 @@ export class UsersController {
   }
 
   @Put('me/reading-preferences')
-  @UseGuards(JwtAuthGuard)
   async updateMyReadingPreferences(
     @CurrentUser('id') userId: string,
     @Body() dto: UpdateReadingPreferencesDto,

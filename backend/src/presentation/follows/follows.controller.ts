@@ -6,11 +6,9 @@ import {
   Param,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 
 import { Public } from '@/common/decorators/custom.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 import {
@@ -62,7 +60,6 @@ export class FollowsController {
   }
 
   @Get('followers')
-  @UseGuards(JwtAuthGuard)
   async getFollowersList(@Query('targetUserId') targetUserId: string) {
     const query = new GetFollowersQuery(targetUserId);
     const result = await this.getFollowersUseCase.execute(query);
@@ -75,7 +72,6 @@ export class FollowsController {
   }
 
   @Get('status')
-  @UseGuards(JwtAuthGuard)
   async getStatus(
     @CurrentUser('id') userId: string,
     @Query('targetId') targetId: string,
@@ -96,7 +92,6 @@ export class FollowsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async create(
     @CurrentUser('id') userId: string,
     @Body() dto: CreateFollowDto,
@@ -111,7 +106,6 @@ export class FollowsController {
   }
 
   @Delete(':targetId')
-  @UseGuards(JwtAuthGuard)
   async unfollow(
     @CurrentUser('id') userId: string,
     @Param('targetId') targetId: string,

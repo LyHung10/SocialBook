@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
@@ -26,7 +25,6 @@ import { FilterNotificationDto } from '@/presentation/notification/dto/filter-no
 import { NotificationResponseDto } from '@/presentation/notification/dto/notification.response.dto';
 
 @Controller('notifications')
-@UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(
     private readonly createNotificationUseCase: CreateNotificationUseCase,

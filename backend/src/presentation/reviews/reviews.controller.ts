@@ -6,12 +6,10 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { CreateReviewDto } from '@/presentation/reviews/dto/create-review.dto';
 import { UpdateReviewDto } from '@/presentation/reviews/dto/update-review.dto';
 import { Public } from '@/common/decorators/custom.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { CreateReviewUseCase } from '@/application/reviews/use-cases/create-review.use-case';
 import { GetBookReviewsUseCase } from '@/application/reviews/use-cases/get-book-reviews.use-case';
@@ -32,7 +30,6 @@ export class ReviewsController {
   ) {}
 
   @Public()
-  @UseGuards(JwtAuthGuard)
   @Get('book/:bookId')
   async findAllByBook(
     @CurrentUser('id') userId: string | undefined,
@@ -55,7 +52,6 @@ export class ReviewsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async create(
     @CurrentUser('id') userId: string,
     @Body() dto: CreateReviewDto,
@@ -68,7 +64,6 @@ export class ReviewsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   async update(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
@@ -82,7 +77,6 @@ export class ReviewsController {
   }
 
   @Patch(':id/like')
-  @UseGuards(JwtAuthGuard)
   async toggleLike(@CurrentUser('id') userId: string, @Param('id') id: string) {
     const review = await this.toggleReviewLikeUseCase.execute(id, userId);
     const isLiked = review.likedBy.includes(userId);
@@ -96,7 +90,6 @@ export class ReviewsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   async remove(@CurrentUser('id') userId: string, @Param('id') id: string) {
     await this.deleteReviewUseCase.execute(id, userId);
     return {

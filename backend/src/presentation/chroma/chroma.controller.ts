@@ -2,7 +2,6 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { BatchIndexDto } from '@/presentation/chroma/dto/batch-index.dto';
@@ -56,7 +55,7 @@ export class ChromaController {
   }
 
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Post('index')
   async indexDocument(@Body() indexDocumentDto: IndexDocumentDto) {
     const command = new IndexDocumentCommand(
@@ -78,7 +77,7 @@ export class ChromaController {
   }
 
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Post('batch-index')
   async batchIndex(@Body() batchIndexDto: BatchIndexDto) {
     const command = new BatchIndexCommand(
