@@ -74,7 +74,7 @@ export class ReadingRoom {
   @Prop({ type: String, required: true })
   hostId: string;
 
-  @Prop({ type: String, enum: ['sync', 'free', 'discussion'], required: true })
+  @Prop({ type: String, enum: ['sync', 'free'], required: true })
   mode: string;
 
   @Prop({

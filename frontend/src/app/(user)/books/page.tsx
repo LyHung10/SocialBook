@@ -14,6 +14,7 @@ import { useTracking, UserEventType } from '@/hooks/use-tracking';
 import { useEffect } from 'react';
 import { HorizontalFilters } from '@/components/book/HorizontalFilters';
 import { ActiveFilters } from '@/components/book/ActiveFilters';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function BooksPage() {
   const {
@@ -22,9 +23,11 @@ export default function BooksPage() {
     searchQuery,
     sortBy,
     order,
+    status,
     toggleFilter,
     setSort,
     setSearch,
+    setStatus,
     clearSearch,
     clearFilters,
     clearGenres,
@@ -47,6 +50,7 @@ export default function BooksPage() {
     tags,
     sortBy,
     order,
+    status,
   });
 
   const { trackEvent } = useTracking();
@@ -121,11 +125,22 @@ export default function BooksPage() {
                     {metaData?.total ? `Hiển thị ${metaData.total} kết quả` : 'Đang tải...'}
                   </p>
                 </div>
-                <SortDropdown
-                  currentSort={sortBy}
-                  currentOrder={order}
-                  onSortChange={setSort}
-                />
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Tabs value={status} onValueChange={setStatus} className="w-full sm:w-auto">
+                    <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-flex">
+                      <TabsTrigger value="all">Tất cả</TabsTrigger>
+                      <TabsTrigger value="published">Đang ra</TabsTrigger>
+                      <TabsTrigger value="completed">Hoàn thành</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <SortDropdown
+                    currentSort={sortBy}
+                    currentOrder={order}
+                    onSortChange={setSort}
+                  />
+                </div>
               </div>
 
               {/* Active Filters Row */}
