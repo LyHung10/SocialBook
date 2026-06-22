@@ -22,7 +22,7 @@ export class CollectionRepository implements ICollectionRepository {
 
     await this.collectionModel
       .findOneAndUpdate(
-        { _id: persistenceData._id },
+        { _id },
         { $set: updateData },
         { upsert: true, new: true },
       )

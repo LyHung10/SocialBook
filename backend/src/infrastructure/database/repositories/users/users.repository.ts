@@ -107,7 +107,7 @@ export class UsersRepository implements IUserRepository {
 
     await this.userModel
       .findOneAndUpdate(
-        { _id: persistenceData._id },
+        { _id },
         { $set: updateData },
         { upsert: true, new: true },
       )

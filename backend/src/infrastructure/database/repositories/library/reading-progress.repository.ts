@@ -82,7 +82,7 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
 
     await this.progressModel
       .findOneAndUpdate(
-        { _id: persistenceData._id },
+        { _id },
         { $set: updateData },
         { upsert: true, new: true },
       )
