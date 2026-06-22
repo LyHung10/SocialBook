@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export type ViewMode = 'read' | 'listen';
 
@@ -12,11 +12,27 @@ export interface UseReadingViewResult {
     setShowSettings: (show: boolean) => void;
 }
 
+import { create } from 'zustand';
+
+interface ReadingViewState extends UseReadingViewResult {
+    setIsControlsVisible: (visible: boolean) => void;
+}
+
+const useReadingViewStore = create<ReadingViewState>((set) => ({
+    viewMode: 'read',
+    isControlsVisible: true,
+    showTOC: false,
+    showSettings: false,
+    setViewMode: (mode) => set({ viewMode: mode }),
+    setShowTOC: (show) => set({ showTOC: show }),
+    setShowSettings: (show) => set({ showSettings: show }),
+    setIsControlsVisible: (visible) => set({ isControlsVisible: visible }),
+}));
+
 export function useReadingView(): UseReadingViewResult {
-    const [viewMode, setViewMode] = useState<ViewMode>('read');
-    const [showTOC, setShowTOC] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-    const [isControlsVisible, setIsControlsVisible] = useState(true);
+    const store = useReadingViewStore();
+    const setIsControlsVisible = useReadingViewStore((state) => state.setIsControlsVisible);
+    
     const lastScrollYRef = useRef(0);
     const rafRef = useRef<number | null>(null);
 
@@ -46,15 +62,15 @@ export function useReadingView(): UseReadingViewResult {
                 cancelAnimationFrame(rafRef.current);
             }
         };
-    }, []);
+    }, [setIsControlsVisible]);
 
     return {
-        viewMode,
-        isControlsVisible,
-        showTOC,
-        showSettings,
-        setViewMode,
-        setShowTOC,
-        setShowSettings,
+        viewMode: store.viewMode,
+        isControlsVisible: store.isControlsVisible,
+        showTOC: store.showTOC,
+        showSettings: store.showSettings,
+        setViewMode: store.setViewMode,
+        setShowTOC: store.setShowTOC,
+        setShowSettings: store.setShowSettings,
     };
 }

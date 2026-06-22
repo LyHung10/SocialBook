@@ -24,6 +24,7 @@ import { UpdatePostDto } from '@/presentation/posts/dto/update-post.dto';
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 // Use Cases
@@ -48,6 +49,13 @@ import { RemovePostImageUseCase } from '@/application/posts/use-cases/remove-pos
 import { UpdatePostCommand } from '@/application/posts/use-cases/update-post.command';
 import { UpdatePostUseCase } from '@/application/posts/use-cases/update-post.use-case';
 import { PostResponseDto } from '@/presentation/posts/dto/post.response.dto';
+import { IsOptional, IsString } from 'class-validator';
+
+export class FlaggedPostsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
 
 @Controller('posts')
 export class PostsController {
@@ -227,9 +235,13 @@ export class PostsController {
   @Get('admin/flagged')
   @UseGuards(RolesGuard)
   @Roles('admin')
-  async getFlaggedPosts(@Query() query: PaginationQueryDto) {
+  async getFlaggedPosts(@Query() query: FlaggedPostsQueryDto) {
     const limit = query.actualLimit > 100 ? 100 : query.actualLimit;
-    const flaggedQuery = new GetFlaggedPostsQuery(query.actualPage, limit);
+    const flaggedQuery = new GetFlaggedPostsQuery(
+      query.actualPage,
+      limit,
+      query.reason,
+    );
     const result = await this.getFlaggedPostsUseCase.execute(flaggedQuery);
     return {
       message: 'Get flagged posts successfully',
@@ -262,6 +274,46 @@ export class PostsController {
     const result = await this.rejectPostUseCase.execute(command);
     return {
       message: result.message,
+    };
+  }
+
+  @Post('admin/bulk-approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async bulkApprovePosts(@Body('postIds') postIds: string[]) {
+    if (!postIds || !Array.isArray(postIds))
+      throw new BadRequestException('postIds array is required');
+
+    const results = await Promise.allSettled(
+      postIds.map((id) =>
+        this.approvePostUseCase.execute(new ApprovePostCommand(id)),
+      ),
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    return {
+      message: `Approved ${successCount}/${postIds.length} posts`,
+    };
+  }
+
+  @Post('admin/bulk-reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async bulkRejectPosts(@Body('postIds') postIds: string[]) {
+    if (!postIds || !Array.isArray(postIds))
+      throw new BadRequestException('postIds array is required');
+
+    const results = await Promise.allSettled(
+      postIds.map((id) =>
+        this.rejectPostUseCase.execute(
+          new RejectPostCommand(id, 'Rejected by admin'),
+        ),
+      ),
+    );
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length;
+    return {
+      message: `Rejected ${successCount}/${postIds.length} posts`,
     };
   }
 }

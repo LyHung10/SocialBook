@@ -5,10 +5,12 @@ import { toast } from "sonner";
 
 interface ContentProtectionProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 export default function ContentProtection({
   children,
+  className = "",
 }: ContentProtectionProps) {
   const isProtectionEnabled =
     process.env.NEXT_PUBLIC_ENABLE_CONTENT_PROTECTION === "true" ||
@@ -33,7 +35,7 @@ export default function ContentProtection({
   }, [isProtectionEnabled]);
 
   if (!isProtectionEnabled) {
-    return <>{children}</>;
+    return <div className={className}>{children}</div>;
   }
 
   const isInsideProtectedArea = (nativeTarget: EventTarget | null): boolean => {
@@ -61,7 +63,7 @@ export default function ContentProtection({
   return (
     <div
       ref={protectedRef}
-      className="relative"
+      className={`relative ${className}`}
       onContextMenu={handleContextMenu}
       onCopy={preventCopyEvent}
       onCut={preventCopyEvent}

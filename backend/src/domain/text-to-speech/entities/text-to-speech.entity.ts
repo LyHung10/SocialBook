@@ -173,6 +173,15 @@ export class TextToSpeech extends Entity<string> {
   get errorMessage(): string | undefined {
     return this._props.errorMessage;
   }
+  get characterCount(): number | undefined {
+    return this._props.characterCount;
+  }
+  get paragraphCount(): number | undefined {
+    return this._props.paragraphCount;
+  }
+  get provider(): string | undefined {
+    return this._props.provider;
+  }
 
   public complete(audioUrl: string, format: string, duration?: number): void {
     this._props.status = TTSStatus.COMPLETED;

@@ -227,4 +227,43 @@ export class NotificationEventHandler {
       this.logger.error('Error handling follow notification event', error);
     }
   }
+
+  @OnEvent('post.moderated')
+  async handlePostModeratedEvent(payload: {
+    userId: string;
+    postId: string;
+    reason: string;
+    action: string;
+  }) {
+    try {
+      const ownerId = payload.userId;
+      const title = 'Bài viết bị gắn cờ vi phạm';
+      let message = `Bài viết của bạn đã bị ẩn do: ${payload.reason}`;
+
+      if (payload.action === 'BLOCK') {
+        message = `Bài viết của bạn đã bị xóa do vi phạm tiêu chuẩn cộng đồng: ${payload.reason}`;
+      }
+
+      const actionUrl = `/posts/${payload.postId}`;
+
+      const notificationDto = new CreateNotificationDto(
+        ownerId,
+        title,
+        message,
+        'system',
+        {
+          targetId: payload.postId,
+        },
+        actionUrl,
+      );
+
+      await this.notificationsService.create(notificationDto);
+      this.logger.log(`Created moderation notification for user ${ownerId}`);
+    } catch (error) {
+      this.logger.error(
+        'Error handling post.moderated notification event',
+        error,
+      );
+    }
+  }
 }
