@@ -78,11 +78,12 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
 
   async save(readingProgress: ReadingProgress): Promise<void> {
     const persistenceData = this.toPersistence(readingProgress);
+    const { _id, ...updateData } = persistenceData;
 
     await this.progressModel
       .findOneAndUpdate(
         { _id: persistenceData._id },
-        { $set: persistenceData },
+        { $set: updateData },
         { upsert: true, new: true },
       )
       .exec();

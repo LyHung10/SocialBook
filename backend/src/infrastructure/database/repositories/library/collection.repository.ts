@@ -18,11 +18,12 @@ export class CollectionRepository implements ICollectionRepository {
 
   async save(collection: Collection): Promise<void> {
     const persistenceData = CollectionMapper.toPersistence(collection);
+    const { _id, ...updateData } = persistenceData;
 
     await this.collectionModel
       .findOneAndUpdate(
         { _id: persistenceData._id },
-        { $set: persistenceData },
+        { $set: updateData },
         { upsert: true, new: true },
       )
       .exec();

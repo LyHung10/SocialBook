@@ -103,11 +103,12 @@ export class UsersRepository implements IUserRepository {
 
   async save(user: UserEntity): Promise<void> {
     const persistenceData = this.toPersistence(user);
+    const { _id, ...updateData } = persistenceData;
 
     await this.userModel
       .findOneAndUpdate(
         { _id: persistenceData._id },
-        { $set: persistenceData },
+        { $set: updateData },
         { upsert: true, new: true },
       )
       .exec();

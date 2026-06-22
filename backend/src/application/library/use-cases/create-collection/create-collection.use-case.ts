@@ -1,7 +1,7 @@
 import { Collection } from '@/domain/library/entities/collection.entity';
 import { ICollectionRepository } from '@/domain/library/repositories/collection.repository.interface';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateCollectionCommand } from './create-collection.command';
 
 export interface CollectionResult {
@@ -22,6 +22,15 @@ export class CreateCollectionUseCase {
   ) {}
 
   async execute(command: CreateCollectionCommand): Promise<Collection> {
+    const existing = await this.collectionRepository.findByUserIdAndName(
+      command.userId,
+      command.name,
+    );
+
+    if (existing) {
+      throw new ConflictException('Tên bộ sưu tập này đã tồn tại');
+    }
+
     const collection = Collection.create({
       id: this.idGenerator.generate(),
       userId: command.userId,
