@@ -9,31 +9,33 @@ interface PatternGroup {
   raw?: RegExp[];
 }
 
+let EXTREME_PROFANITY: PatternGroup[] = [];
+
 /**
- * Danh sách các từ ngữ cực kỳ thô tục hoặc xúc phạm nặng cần chặn ngay lập tức.
+ * Cập nhật lại bộ nhớ đệm Regex từ danh sách ToxicWord trên DB
+ * Được gọi lúc khởi động và khi có thay đổi (Add/Delete) qua Event Emitter
  */
-const EXTREME_PROFANITY: PatternGroup[] = [
-  {
-    group: 'thô tục mạnh',
-    raw: [
-      /đ[ịi]t\s*m/i,
-      /đ[éè]\s*m/i,
-      /l[ồổõọ]n/i,
-      /c[ặắầấ]c/i,
-      /đ[ịi]t\s*c[ụu]/i,
-      /v[ôô]n\s*l[àà]i/i,
-    ],
-  },
-  {
-    group: 'xúc phạm',
-    raw: [
-      /[óó]c\s*ch[óó]/i,
-      /b[ệệ]nh\s*ho[ạạ]n/i,
-      /ngu\s*v[cc]l/i,
-      /đ[ôồ]ng\s*b[àà]i/i,
-    ],
-  },
-];
+export function updateToxicWordsCache(
+  words: { pattern: string; group: string }[],
+) {
+  // Nhóm các từ lại theo group
+  const grouped = words.reduce(
+    (acc, word) => {
+      if (!acc[word.group]) {
+        acc[word.group] = [];
+      }
+      acc[word.group].push(word.pattern);
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
+
+  // Parse thành mảng PatternGroup với RegExp
+  EXTREME_PROFANITY = Object.entries(grouped).map(([group, patterns]) => ({
+    group,
+    raw: patterns.map((pattern) => new RegExp(pattern, 'i')),
+  }));
+}
 
 export function containsVietnameseToxicWords(text: string): ToxicMatch | null {
   if (!text?.trim()) return null;

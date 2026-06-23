@@ -19,6 +19,7 @@ import { ReviewsRepositoryModule } from './database/repositories/reviews/reviews
 import { RolesRepositoryModule } from './database/repositories/roles/roles-repository.module';
 import { TextToSpeechRepositoryModule } from './database/repositories/text-to-speech/text-to-speech-repository.module';
 import { UsersRepositoryModule } from './database/repositories/users/users-repository.module';
+import { ContentModerationRepositoryModule } from './database/repositories/content-moderation/content-moderation-repository.module';
 import { AIInfrastructureModule } from './ai/ai-infrastructure.module';
 import { FilesInfrastructureModule } from './files/files-infrastructure.module';
 import { MediaInfrastructureModule } from './media/media-infrastructure.module';
@@ -54,6 +55,7 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     ProgressRepositoryModule,
     GeminiRepositoryModule,
     TextToSpeechRepositoryModule,
+    ContentModerationRepositoryModule,
     AIInfrastructureModule,
     FilesInfrastructureModule,
     MediaInfrastructureModule,
@@ -89,6 +91,7 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     ProgressRepositoryModule,
     GeminiRepositoryModule,
     TextToSpeechRepositoryModule,
+    ContentModerationRepositoryModule,
     AIInfrastructureModule,
     FilesInfrastructureModule,
     MediaInfrastructureModule,

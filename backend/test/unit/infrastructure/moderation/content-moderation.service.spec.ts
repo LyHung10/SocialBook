@@ -1,6 +1,7 @@
 import { ContentModerationService } from '@/infrastructure/moderation/content-moderation.service';
 import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import { ConfigService } from '@nestjs/config';
+import { updateToxicWordsCache } from '@/domain/content-moderation/utils/vietnamese-profanity';
 import axios from 'axios';
 
 jest.mock('axios');
@@ -32,6 +33,12 @@ describe('ContentModerationService (Unit)', () => {
       mockGeminiService,
       mockConfigService,
     );
+
+    // Populate memory cache for regex check
+    updateToxicWordsCache([
+      { pattern: 'đ[ịi]t\\s*m', group: 'thô tục mạnh' },
+      { pattern: 'l[ồổõọ]n', group: 'thô tục mạnh' },
+    ]);
   });
 
   describe('Regex check (Vietnamese Profanity)', () => {
