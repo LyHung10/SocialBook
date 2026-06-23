@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Loader2, ChevronLeft, ChevronRight, AlertTriangle, User, BookOpen, Clock } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, AlertTriangle, User, BookOpen, Clock, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { useModerationManagement } from '@/features/admin/hooks/moderation/useModerationManagement';
+import { useToxicWordsManagement } from '@/features/admin/hooks/moderation/useToxicWordsManagement';
+import { ToxicWordModal } from '@/components/admin/moderation/ToxicWordModal';
 import { formatDateTime } from '@/lib/utils';
 
 const ModerationQueuePage = () => {
@@ -37,8 +40,64 @@ const ModerationQueuePage = () => {
         openConfirm
     } = useModerationManagement();
 
+    const { handleAdd: handleAddToxic, isAdding: isAddingToxic } = useToxicWordsManagement();
+    const [isToxicModalOpen, setIsToxicModalOpen] = useState(false);
+    const [selectedText, setSelectedText] = useState('');
+    const [popoverPos, setPopoverPos] = useState<{ x: number, y: number } | null>(null);
+
+    useEffect(() => {
+        const handleMouseUp = () => {
+            const selection = window.getSelection();
+            const text = selection?.toString().trim();
+            if (text && text.length > 0 && text.length <= 100) {
+                const range = selection?.getRangeAt(0);
+                const rect = range?.getBoundingClientRect();
+                if (rect) {
+                    setPopoverPos({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top - 10
+                    });
+                    setSelectedText(text);
+                }
+            } else {
+                setPopoverPos(null);
+                setSelectedText('');
+            }
+        };
+
+        const handleMouseDown = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('#toxic-popover')) {
+                setPopoverPos(null);
+            }
+        };
+
+        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mousedown', handleMouseDown);
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('mousedown', handleMouseDown);
+        };
+    }, []);
+
     return (
-        <div className="min-h-screen bg-gray-50 rounded-lg">
+        <div className="min-h-screen bg-gray-50 rounded-lg relative">
+            {popoverPos && selectedText && (
+                <div 
+                    id="toxic-popover"
+                    className="fixed z-50 bg-slate-900 text-white px-3 py-2 rounded-md shadow-lg text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-slate-800 transition-colors transform -translate-x-1/2 -translate-y-full"
+                    style={{ left: popoverPos.x, top: popoverPos.y }}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsToxicModalOpen(true);
+                        setPopoverPos(null);
+                    }}
+                >
+                    <PlusCircle className="w-4 h-4 text-emerald-400" />
+                    Thêm &quot;{selectedText.length > 20 ? selectedText.substring(0, 20) + '...' : selectedText}&quot; vào danh sách thô tục
+                </div>
+            )}
             <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm Duyệt Nội Dung</h1>
@@ -264,6 +323,13 @@ const ModerationQueuePage = () => {
                     )}
                 </>
             )}
+            <ToxicWordModal
+                isOpen={isToxicModalOpen}
+                onClose={() => setIsToxicModalOpen(false)}
+                onSubmit={handleAddToxic}
+                isSubmitting={isAddingToxic}
+                initialWord={selectedText}
+            />
         </div>
     );
 };

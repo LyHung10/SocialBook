@@ -21,8 +21,7 @@ import { chatBotApi } from '../features/chatbot/api/chatBotApi';
 import { moderationApi } from '../features/admin/api/moderationApi';
 import { readingRoomsApi } from '../features/reading-rooms/api/readingRoomsApi';
 import { roomInteractionsApi } from '../features/reading-room-interactions/api/roomInteractionsApi';
-
-
+import { toxicWordsApi } from '../features/admin/api/toxicWordsApi';
 
 export const store = configureStore({
   reducer: {
@@ -47,6 +46,7 @@ export const store = configureStore({
     [moderationApi.reducerPath]: moderationApi.reducer,
     [readingRoomsApi.reducerPath]: readingRoomsApi.reducer,
     [roomInteractionsApi.reducerPath]: roomInteractionsApi.reducer,
+    [toxicWordsApi.reducerPath]: toxicWordsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -71,6 +71,7 @@ export const store = configureStore({
       .concat(moderationApi.middleware)
       .concat(readingRoomsApi.middleware)
       .concat(roomInteractionsApi.middleware)
+      .concat(toxicWordsApi.middleware)
 });
 
 setupListeners(store.dispatch);
