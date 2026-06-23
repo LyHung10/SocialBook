@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 
 import { CreateRoomCommand } from '@/application/reading-rooms/use-cases/create-room/create-room.command';
@@ -22,13 +21,11 @@ import { GetRoomByCodeQuery } from '@/application/reading-rooms/use-cases/get-ro
 import { ReactivateRoomUseCase } from '@/application/reading-rooms/use-cases/reactivate-room/reactivate-room.use-case';
 import { ReactivateRoomCommand } from '@/application/reading-rooms/use-cases/reactivate-room/reactivate-room.command';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 import { CreateRoomDto } from './dto/create-room.dto';
 import { ReadingRoomResponseDto } from './dto/reading-room.response.dto';
 
 @Controller('reading-rooms')
-@UseGuards(JwtAuthGuard)
 export class ReadingRoomsController {
   constructor(
     private readonly createRoomUseCase: CreateRoomUseCase,

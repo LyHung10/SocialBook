@@ -1,7 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { GetBookStatsUseCase } from '@/application/statistics/use-cases/get-book-stats.use-case';
@@ -12,7 +11,7 @@ import { GetUserStatsUseCase } from '@/application/statistics/use-cases/get-user
 import { CheckUserLocationsUseCase } from '@/application/statistics/use-cases/check-user-locations/check-user-locations.use-case';
 
 @Controller('statistics')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'editor')
 export class StatisticsController {
   constructor(

@@ -18,7 +18,6 @@ import { UpdateStatusUseCase } from '@/application/library/use-cases/update-stat
 import { GetKnowledgeGraphQuery } from '@/application/library/use-cases/get-knowledge-graph/get-knowledge-graph.query';
 import { GetKnowledgeGraphUseCase } from '@/application/library/use-cases/get-knowledge-graph/get-knowledge-graph.use-case';
 
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import {
   AddToCollectionsDto,
   UpdateLibraryStatusDto,
@@ -40,12 +39,10 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @Controller('library')
-@UseGuards(JwtAuthGuard)
 export class LibraryController {
   constructor(
     private readonly getLibraryUseCase: GetLibraryUseCase,

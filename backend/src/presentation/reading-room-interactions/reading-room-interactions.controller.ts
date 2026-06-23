@@ -6,9 +6,7 @@ import {
   Param,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { AddCommentUseCase } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.use-case';
 import { AddCommentCommand } from '@/application/reading-room-interactions/use-cases/add-comment/add-comment.command';
@@ -34,7 +32,6 @@ import { AddQuoteDto } from './dto/add-quote.dto';
 import { VoteQuoteDto } from './dto/vote-quote.dto';
 
 @Controller('reading-rooms/:code')
-@UseGuards(JwtAuthGuard)
 export class ReadingRoomInteractionsController {
   constructor(
     private readonly addCommentUseCase: AddCommentUseCase,

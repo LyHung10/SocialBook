@@ -1,11 +1,9 @@
 import { GetPersonalizedRecommendationsUseCase } from '@/application/recommendations/use-cases/get-personalized-recommendations.use-case';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { GetRecommendationsDto } from './dto/get-recommendations.dto';
 
 @Controller('recommendations')
-@UseGuards(JwtAuthGuard)
 export class RecommendationsController {
   constructor(
     private readonly getPersonalizedRecommendationsUseCase: GetPersonalizedRecommendationsUseCase,

@@ -24,7 +24,6 @@ import { UpdatePostDto } from '@/presentation/posts/dto/update-post.dto';
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 // Use Cases
@@ -278,7 +277,7 @@ export class PostsController {
   }
 
   @Post('admin/bulk-approve')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async bulkApprovePosts(@Body('postIds') postIds: string[]) {
     if (!postIds || !Array.isArray(postIds))
@@ -297,7 +296,7 @@ export class PostsController {
   }
 
   @Post('admin/bulk-reject')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async bulkRejectPosts(@Body('postIds') postIds: string[]) {
     if (!postIds || !Array.isArray(postIds))

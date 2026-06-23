@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TrackUserEventUseCase } from '@/application/analytics/use-cases/track-user-event/track-user-event.use-case';
 import { GetTrendingBooksUseCase } from '@/application/analytics/use-cases/get-trending-books/get-trending-books.use-case';
 import { GetTopActiveReadersUseCase } from '@/application/analytics/use-cases/get-top-active-readers/get-top-active-readers.use-case';
@@ -8,7 +7,6 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { Public } from '@/common/decorators/custom.decorator';
 
 @Controller('analytics')
-@UseGuards(JwtAuthGuard)
 export class AnalyticsController {
   constructor(
     private readonly trackUserEventUseCase: TrackUserEventUseCase,

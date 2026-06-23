@@ -6,7 +6,6 @@ import { DeleteCollectionUseCase } from '@/application/library/use-cases/delete-
 import { UpdateCollectionCommand } from '@/application/library/use-cases/update-collection/update-collection.command';
 import { Public } from '@/common/decorators/custom.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import {
   CreateCollectionDto,
   UpdateCollectionDto,
@@ -27,12 +26,10 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 
 @Controller('collections')
-@UseGuards(JwtAuthGuard)
 export class CollectionsController {
   constructor(
     private readonly createCollectionUseCase: CreateCollectionUseCase,

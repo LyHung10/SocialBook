@@ -5,7 +5,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -13,6 +13,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { envConfig } from './config';
+import { MongoExceptionFilter } from './common/filters/mongo-exception.filter';
 
 // Clean Architecture Modules
 import { ApplicationModule } from './application/application.module';
@@ -122,6 +123,10 @@ import { PresentationModule } from './presentation/presentation.module';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_FILTER,
+      useClass: MongoExceptionFilter,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

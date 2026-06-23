@@ -105,6 +105,7 @@ export interface GetBooksParams {
   tags?: string;
   sortBy?: BookOrderField;
   order?: 'asc' | 'desc';
+  status?: BookStatus | 'all';
 }
 
 export interface GetAdminBooksParams {
