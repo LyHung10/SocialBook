@@ -12,7 +12,6 @@ type TimeRange = 'weekly' | 'monthly' | 'all';
 
 export const TopReadSection = () => {
   const router = useRouter();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
 
   const { data: displayedBooks = [], isLoading, error } = useGetTopReadBooksQuery({
@@ -121,8 +120,6 @@ export const TopReadSection = () => {
                 <div
                   key={book.id}
                   className="relative w-[260px] flex-none xl:w-auto h-full"
-                  onMouseEnter={() => setHoveredId(book.id)}
-                  onMouseLeave={() => setHoveredId(null)}
                 >
                   <Button
                     variant="ghost"

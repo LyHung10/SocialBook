@@ -397,7 +397,7 @@ export const ChapterContent = memo(function ChapterContent({
                                 data-para-id={para.id}
                                 ref={(el) => registerParaRef(para.id, el)}
                                 className="group relative flex items-start"
-                                onMouseUp={(_e) => {
+                                onMouseUp={() => {
                                     handleMouseUp(para.id);
                                     if (room) {
                                         const container = paraRefsMap.current.get(para.id);

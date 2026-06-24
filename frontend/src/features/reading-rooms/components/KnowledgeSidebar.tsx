@@ -24,7 +24,7 @@ interface KnowledgeSidebarProps {
 }
 
 export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSidebarProps) => {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAppAuth();
+  const { isAuthenticated } = useAppAuth();
 
   const { data, isLoading: isQueryLoading, error, refetch } = useGetChapterKnowledgeQuery(
     { bookSlug, chapterId },
@@ -39,7 +39,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
     try {
       await triggerForceGet({ bookSlug, chapterId, force: true }).unwrap();
       refetch();
-    } catch (e) {
+    } catch {
       toast.error('Không thể tải lại kiến thức. Vui lòng thử lại sau.');
     }
   };

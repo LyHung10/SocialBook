@@ -45,6 +45,10 @@ import {
   Notification,
   NotificationSchema,
 } from '@/infrastructure/database/schemas/notification.schema';
+import {
+  ToxicWordDocument,
+  ToxicWordSchema,
+} from '@/infrastructure/database/schemas/toxic-word.schema';
 
 import { SeederService } from './seeder.service';
 import { RolesSeed } from './roles.seed';
@@ -56,6 +60,7 @@ import { LikesSeed } from './likes.seeder';
 import { ProgressSeed } from './progress.seeder';
 import { PostsSeed } from './posts.seeder';
 import { NotificationSeed } from './notifications.seeder';
+import { ToxicWordsSeed } from './toxic-words.seeder';
 
 @Module({
   imports: [
@@ -85,6 +90,7 @@ import { NotificationSeed } from './notifications.seeder';
       { name: Progress.name, schema: ProgressSchema },
       { name: Post.name, schema: PostSchema },
       { name: Notification.name, schema: NotificationSchema },
+      { name: ToxicWordDocument.name, schema: ToxicWordSchema },
     ]),
   ],
   providers: [
@@ -98,6 +104,7 @@ import { NotificationSeed } from './notifications.seeder';
     ProgressSeed,
     PostsSeed,
     NotificationSeed,
+    ToxicWordsSeed,
   ],
   exports: [SeederService],
 })
