@@ -33,22 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={`${inter.variable} ${merriweather.variable} ${notoSans.variable} mdl-js`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `
-          try {
-            const theme = localStorage.getItem('color-theme');
-            if (theme === 'red') {
-              document.documentElement.classList.add('theme-red');
-              document.documentElement.classList.remove('theme-blue');
-            } else if (theme === 'blue') {
-              document.documentElement.classList.add('theme-blue');
-              document.documentElement.classList.remove('theme-red');
-            } else {
-              document.documentElement.classList.remove('theme-red', 'theme-blue');
-            }
-          } catch (_) {}
-        ` }} />
-      </head>
+      <head />
       <body>
         <ThemeProvider
           attribute="class"

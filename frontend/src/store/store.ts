@@ -8,6 +8,8 @@ import { bookRelationApi } from '../features/admin/api/bookRelationApi';
 import { followApi } from '@/features/follows/api/followApi';
 import { reviewApi } from '../features/reviews/api/reviewApi';
 import { libraryApi } from '../features/library/api/libraryApi';
+import { userHighlightsApi } from '../features/user-highlights/api/userHighlightsApi';
+import { bookmarkApi } from '../features/bookmarks/api/bookmarkApi';
 import { usersApi } from '../features/users/api/usersApi';
 import { ttsApi } from '../features/tts/api/ttsApi';
 import { authorApi } from '../features/authors/api/authorApi';
@@ -47,6 +49,8 @@ export const store = configureStore({
     [moderationApi.reducerPath]: moderationApi.reducer,
     [readingRoomsApi.reducerPath]: readingRoomsApi.reducer,
     [roomInteractionsApi.reducerPath]: roomInteractionsApi.reducer,
+    [userHighlightsApi.reducerPath]: userHighlightsApi.reducer,
+    [bookmarkApi.reducerPath]: bookmarkApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -71,6 +75,8 @@ export const store = configureStore({
       .concat(moderationApi.middleware)
       .concat(readingRoomsApi.middleware)
       .concat(roomInteractionsApi.middleware)
+      .concat(userHighlightsApi.middleware)
+      .concat(bookmarkApi.middleware),
 });
 
 setupListeners(store.dispatch);

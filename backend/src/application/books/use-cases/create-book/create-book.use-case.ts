@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { ConflictDomainException } from '@/shared/domain/common-exceptions';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
@@ -39,11 +39,11 @@ export class CreateBookUseCase {
 
     // Validate that genres array is not empty and has max 5 items
     if (!command.genres || command.genres.length === 0) {
-      throw new Error('Book must have at least one genre');
+      throw new BadRequestException('Book must have at least one genre');
     }
 
     if (command.genres.length > 5) {
-      throw new Error('Book cannot have more than 5 genres');
+      throw new BadRequestException('Book cannot have more than 5 genres');
     }
 
     let finalAuthorId = command.authorId;

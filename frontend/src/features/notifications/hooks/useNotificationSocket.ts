@@ -61,7 +61,7 @@ export function useNotificationSocket(
             onReadNotification(data as { id: string });
         },
         'connect_error': () => {
-            console.log('Kết nối thông báo thất bại');
+            // Connection failure - socket will auto-retry
         }
     });
 

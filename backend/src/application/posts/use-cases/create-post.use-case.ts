@@ -41,7 +41,7 @@ export class CreatePostUseCase {
     if (!bookExists)
       throw new NotFoundDomainException(ErrorMessages.BOOK_NOT_FOUND);
 
-    // Lớp 1: Kiểm tra nhanh bằng Regex (từ ngữ thô tục hiển nhiên) — ĐỒNG BỘ, tức thì
+    // Layer 1: Quick regex check (obvious profanity) — SYNCHRONOUS, immediate
     const quickCheck = containsVietnameseToxicWords(command.content);
     if (quickCheck) {
       throw new BadRequestDomainException(
@@ -55,7 +55,7 @@ export class CreatePostUseCase {
       imageUrls = await this.mediaService.uploadMultipleImages(files);
     }
 
-    // Tạo và lưu bài viết ngay lập tức (trạng thái PENDING — hiển thị với user)
+    // Create and save the post immediately (PENDING status — visible to user)
     const post = Post.create({
       id: this.idGenerator.generate(),
       userId: command.userId,
@@ -72,7 +72,7 @@ export class CreatePostUseCase {
       bookId: command.bookId,
     });
 
-    // Lớp 2: Đẩy Job vào Queue để AI kiểm duyệt ngầm (BẤT ĐỒNG BỘ)
+    // Layer 2: Push Job to Queue for background AI moderation (ASYNCHRONOUS)
     await this.moderationQueue.add(
       POST_MODERATION_JOB,
       {

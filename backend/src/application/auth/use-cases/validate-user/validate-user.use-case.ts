@@ -1,20 +1,27 @@
 import { UserBannedDomainException } from '@/domain/auth/exceptions/auth-exceptions';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import type { IPasswordHasher } from '@/shared/domain/password-hasher.interface';
-import { Inject } from '@nestjs/common';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
 import { UserEmail } from '@/domain/users/value-objects/user-email.vo';
 import { User } from '@/domain/users/entities/user.entity';
+
+export const PASSWORD_HASHER_TOKEN = 'IPasswordHasher';
+
+export interface ValidateUserCommand {
+  email: string;
+  password: string;
+}
 
 @Injectable()
 export class ValidateUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
-    @Inject('IPasswordHasher') private readonly passwordHasher: IPasswordHasher,
+    @Inject(PASSWORD_HASHER_TOKEN)
+    private readonly passwordHasher: IPasswordHasher,
   ) {}
 
-  async execute(email: string, pass: string): Promise<User | null> {
-    const emailVO = UserEmail.create(email);
+  async execute(command: ValidateUserCommand): Promise<User | null> {
+    const emailVO = UserEmail.create(command.email);
     const user = await this.userRepository.findByEmail(emailVO);
 
     if (!user) {
@@ -22,7 +29,7 @@ export class ValidateUserUseCase {
     }
 
     const isMatch = await this.passwordHasher.compare(
-      pass,
+      command.password,
       user.password || '',
     );
     if (!isMatch) {

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { CreateNotificationDto } from '@/application/notifications/dto/create-notification.dto';
-import { NotificationResponseDto } from '@/application/notifications/dto/notification-response.dto';
+import { CreateNotificationCommand } from '@/application/notifications/use-cases/create-notification/create-notification.command';
+import { CreateNotificationInput } from '@/infrastructure/notifications/dto/create-notification-input.interface';
+import { NotificationResponseDto } from '@/presentation/notification/dto/notification.response.dto';
 import { CreateNotificationUseCase } from '@/application/notifications/use-cases/create-notification/create-notification.use-case';
 import { GetUserNotificationsUseCase } from '@/application/notifications/use-cases/get-user-notification/get-user-notifications.use-case';
 import { GetUserNotificationsQuery } from '@/application/notifications/use-cases/get-user-notification/get-user-notifications.query';
 import { MarkNotificationReadUseCase } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.use-case';
 import { MarkNotificationReadCommand } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.command';
-import { CreateNotificationCommand } from '@/application/notifications/use-cases/create-notification/create-notification.command';
 
 @Injectable()
 export class NotificationsService {
@@ -26,14 +26,14 @@ export class NotificationsService {
     return `user:${userId}`;
   }
 
-  async create(dto: CreateNotificationDto) {
+  async create(data: CreateNotificationInput) {
     const command = new CreateNotificationCommand(
-      dto.userId,
-      dto.title,
-      dto.message,
-      dto.type,
-      dto.meta,
-      dto.actionUrl,
+      data.userId,
+      data.title,
+      data.message,
+      data.type,
+      data.meta,
+      data.actionUrl,
     );
     const notification = await this.createNotificationUseCase.execute(command);
 
@@ -41,7 +41,7 @@ export class NotificationsService {
 
     if (this.server) {
       this.server
-        .to(this.userRoom(dto.userId))
+        .to(this.userRoom(data.userId))
         .emit('notification:new', responseDto);
     }
     return responseDto;

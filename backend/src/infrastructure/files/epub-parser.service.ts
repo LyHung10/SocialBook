@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -37,7 +41,9 @@ export class EpubParserService implements IEpubParser {
 
       const { EPub: EPubConstructor } = await import('epub2');
       if (typeof EPubConstructor !== 'function') {
-        throw new Error('epub2 module loaded but EPub is not a constructor');
+        throw new InternalServerErrorException(
+          'epub2 module loaded but EPub is not a constructor',
+        );
       }
 
       const epub: EpubInstance = new EPubConstructor(tmpFile);

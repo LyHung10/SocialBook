@@ -46,7 +46,13 @@ export class UserMapper {
       favoriteGenres: (doc.favoriteGenres || []).map((g: Types.ObjectId) =>
         g.toString(),
       ),
-      readingPreferences: doc.readingPreferences,
+      readingPreferences: doc.readingPreferences
+        ? {
+            ...doc.readingPreferences,
+            warmth: doc.readingPreferences.warmth ?? 0,
+            brightness: doc.readingPreferences.brightness ?? 100,
+          }
+        : undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

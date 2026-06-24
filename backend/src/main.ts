@@ -26,9 +26,8 @@ function validateEnv(configService: ConfigService): void {
     }
   }
   if (missing.length > 0) {
-    console.warn(
-      `[WARN] Missing or placeholder env vars: ${missing.join(', ')}`,
-    );
+    const logger = new Logger('Bootstrap');
+    logger.warn(`Missing or placeholder env vars: ${missing.join(', ')}`);
   }
 }
 
@@ -43,22 +42,22 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
-  // Lấy ConfigService từ application context
+  // Get ConfigService from the application context
   const configService = app.get(ConfigService);
 
   validateEnv(configService);
 
-  // Sử dụng ConfigService để lấy các biến môi trường
+  // Use ConfigService to read environment variables
   const frontendUrl = configService.get<string>(
     'FRONTEND_URL',
     'http://localhost:3000',
   );
   const port = configService.get<number>('env.PORT', 5000);
 
-  // Đặt tiền tố toàn cục 'api' cho tất cả các route trong ứng dụng
+  // Set global prefix 'api' for all routes
   app.setGlobalPrefix('api');
 
-  // Cấu hình ValidationPipe
+  // Configure ValidationPipe
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -67,12 +66,12 @@ async function bootstrap() {
     }),
   );
 
-  // Cấu hình cookie-parser
+  // Configure cookie-parser
   app.use(cookieParser());
   const expressApp = app.getHttpAdapter().getInstance() as ExpressApplication;
   expressApp.set('trust proxy', 1);
 
-  // Cấu hình CORS
+  // Configure CORS
   const origin = frontendUrl.includes(',')
     ? frontendUrl.split(',').map((url) => url.trim())
     : frontendUrl;
@@ -99,7 +98,7 @@ async function bootstrap() {
 
   configSwagger(app);
 
-  // Khởi động server
+  // Start the server
   await app.listen(port, '0.0.0.0');
   const logger = app.get(Logger);
   logger.log(`Backend running on ${await app.getUrl()}`);

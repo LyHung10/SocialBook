@@ -44,6 +44,8 @@ import { NotificationsApplicationModule } from '@/application/notifications/noti
 import { InfrastructureModule } from '@/infrastructure/infrastructure.module';
 import { AnalyticsPresentationModule } from './analytics/analytics-presentation.module';
 import { ReadingRoomInteractionsPresentationModule } from './reading-room-interactions/reading-room-interactions-presentation.module';
+import { UserHighlightsModule } from './user-highlights/user-highlights.module';
+import { BookmarkModule } from './bookmarks/bookmark.module';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { ReadingRoomInteractionsPresentationModule } from './reading-room-intera
     ReadingRoomsPresentationModule,
     AnalyticsPresentationModule,
     ReadingRoomInteractionsPresentationModule,
+    UserHighlightsModule,
+    BookmarkModule,
     InfrastructureModule,
   ],
   controllers: [

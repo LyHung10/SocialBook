@@ -1,31 +1,37 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useReadingSettings } from '@/store/useReadingSettings';
-import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
-import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
-import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
-import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
-import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Share2 } from 'lucide-react';
-import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
-import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
-import { useAppAuth } from '@/features/auth/hooks';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Badge } from '../ui/badge';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
-import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
+import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Share2, Bookmark as BookmarkIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useShallow } from 'zustand/react/shallow';
 
+import { useAppAuth } from '@/features/auth/hooks';
+import { useGetBookmarksByBookQuery, useCreateBookmarkMutation, useDeleteBookmarkMutation } from '@/features/bookmarks/api/bookmarkApi';
+import { useGetChapterKnowledgeQuery, useAskChapterAIMutation } from '@/features/chapters/api/chaptersApi';
+import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
 import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
+import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
+import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
+import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
+import { FloatingReactionBubbles } from '@/features/reading-rooms/components/FloatingReactionBubbles';
+import { ParagraphReactions } from '@/features/reading-room-interactions/components/ParagraphReactions';
+import { useGetHighlightsByChapterQuery, useCreateHighlightMutation, useDeleteHighlightMutation, useUpdateHighlightMutation } from '@/features/user-highlights/api/userHighlightsApi';
+import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
+import { useReadingSettings } from '@/store/useReadingSettings';
+import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
+import { useCollaborativeSelection } from '@/hooks/useCollaborativeSelection';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { ReaderAvatars } from './ReaderAvatars';
 import { RemoteSelectionOverlay } from './RemoteSelectionOverlay';
-import { FloatingReactionBubbles } from '@/features/reading-rooms/components/FloatingReactionBubbles';
-import { useShallow } from 'zustand/react/shallow';
-import { useCollaborativeSelection } from '@/hooks/useCollaborativeSelection';
 
 interface Paragraph {
     id: string;
@@ -35,6 +41,7 @@ interface Paragraph {
 interface ChapterContentProps {
     paragraphs: Paragraph[];
     chapterId: string;
+    chapterSlug: string;
     bookId: string;
     bookSlug: string;
     bookCoverImage?: string;
@@ -46,6 +53,7 @@ interface ChapterContentProps {
 export const ChapterContent = memo(function ChapterContent({
     paragraphs,
     chapterId,
+    chapterSlug,
     bookId,
     bookSlug,
     bookTitle,
@@ -60,19 +68,34 @@ export const ChapterContent = memo(function ChapterContent({
         handleCloseDrawer,
         handleOpenPostModal,
     } = useChapterComments({ bookId, bookTitle });
-
-    const { data } = useGetChapterKnowledgeQuery(
-        { bookSlug, chapterId },
-        { skip: !bookSlug || !chapterId }
-    );
-
+    
+    const { user } = useAppAuth();
 
     const room = useReadingRoomStore((state) => state.room);
     const isEnded = room?.status === 'ended';
     const highlights = useReadingRoomStore((state) => state.highlights);
     const presences = useReadingRoomStore(useShallow((state) => state.presences));
     const { addHighlight, removeHighlight, addQuote, generateHighlightInsight } = useReadingRoomSocket();
-    const { user } = useAppAuth();
+
+    const { data } = useGetChapterKnowledgeQuery(
+        { bookSlug, chapterId },
+        { skip: !bookSlug || !chapterId }
+    );
+
+    const { data: userHighlightsData } = useGetHighlightsByChapterQuery(chapterId, {
+        skip: !user || !!room,
+    });
+    const userHighlights = userHighlightsData || [];
+
+    const { data: bookmarksData } = useGetBookmarksByBookQuery(bookId, {
+        skip: !bookId || !user,
+    });
+    const bookmarks = bookmarksData || [];
+    const [createBookmark] = useCreateBookmarkMutation();
+    const [deleteBookmark] = useDeleteBookmarkMutation();
+
+    const [createPersonalHighlight] = useCreateHighlightMutation();
+    const [deletePersonalHighlight] = useDeleteHighlightMutation();
 
     // Track which paragraph is most visible in the viewport
     const paraRefsMap = useRef<Map<string, HTMLElement>>(new Map());
@@ -136,6 +159,24 @@ export const ChapterContent = memo(function ChapterContent({
 
     const [askAI] = useAskChapterAIMutation();
     const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (paragraphs.length > 0 && typeof window !== 'undefined' && window.location.hash) {
+            const id = window.location.hash.substring(1);
+            if (id.startsWith('paragraph-')) {
+                const element = document.getElementById(id);
+                if (element) {
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        element.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
+                        setTimeout(() => {
+                            element.classList.remove('bg-primary/20');
+                        }, 2000);
+                    }, 500);
+                }
+            }
+        }
+    }, [paragraphs.length]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -204,7 +245,7 @@ export const ChapterContent = memo(function ChapterContent({
                 }
                 useReadingRoomStore.setState({ reactions });
             } catch {
-                // Hydration errors are non-critical; real-time socket will still work
+                // Non-critical hydration errors; real-time socket will still work
             }
         };
 
@@ -282,6 +323,52 @@ export const ChapterContent = memo(function ChapterContent({
         window.getSelection()?.removeAllRanges();
     };
 
+    const handleToggleBookmark = useCallback(async (paraId: string, content: string) => {
+        if (!user) {
+            toast.error('Vui lòng đăng nhập để lưu bookmark');
+            return;
+        }
+
+        const isBookmarked = bookmarks.some(b => b.paragraphId === paraId);
+        
+        try {
+            if (isBookmarked) {
+                await deleteBookmark({ paragraphId: paraId, bookId }).unwrap();
+                toast.success('Đã bỏ bookmark');
+            } else {
+                await createBookmark({
+                    bookId,
+                    chapterId,
+                    chapterSlug,
+                    paragraphId: paraId,
+                    textPreview: content.substring(0, 100) + (content.length > 100 ? '...' : '')
+                }).unwrap();
+                toast.success('Đã lưu bookmark');
+            }
+        } catch {
+            toast.error('Có lỗi xảy ra, vui lòng thử lại');
+        }
+    }, [user, bookmarks, bookId, chapterId, chapterSlug, createBookmark, deleteBookmark]);
+
+    const handleAddPersonalHighlight = async () => {
+        if (!selection) return;
+
+        try {
+            await createPersonalHighlight({
+                bookId,
+                chapterId,
+                paragraphId: selection.paraId,
+                content: selection.text,
+            }).unwrap();
+            toast.success('Đã lưu highlight cá nhân');
+        } catch {
+            toast.error('Không thể lưu highlight cá nhân');
+        }
+
+        setSelection(null);
+        window.getSelection()?.removeAllRanges();
+    };
+
 
     return (
         <TooltipProvider>
@@ -292,15 +379,21 @@ export const ChapterContent = memo(function ChapterContent({
                     color: settings.textColor,
                     paddingLeft: `${settings.marginWidth}px`,
                     paddingRight: `${settings.marginWidth}px`,
+                    filter: [
+                        settings.brightness !== 100 ? `brightness(${settings.brightness / 100})` : '',
+                        settings.warmth > 0 ? `sepia(${settings.warmth * 0.6}%) hue-rotate(-${settings.warmth * 0.3}deg)` : '',
+                    ].filter(Boolean).join(' ') || undefined,
                 }}
             >
                 <article className="space-y-4">
                     {paragraphs.map((para) => {
                         const paraHighlights = highlights.filter(h => h.paragraphId === para.id);
+                        const paraUserHighlights = userHighlights.filter(h => h.paragraphId === para.id);
 
                         return (
                             <div
                                 key={para.id}
+                                id={`paragraph-${para.id}`}
                                 data-para-id={para.id}
                                 ref={(el) => registerParaRef(para.id, el)}
                                 className="group relative flex items-start"
@@ -329,9 +422,11 @@ export const ChapterContent = memo(function ChapterContent({
                                         <ChapterTextRenderer
                                             content={para.content}
                                             highlights={paraHighlights}
+                                            userHighlights={paraUserHighlights}
                                             knowledge={data?.entities || []}
                                             currentUserId={user?.id}
                                             onRemoveHighlight={removeHighlight}
+                                            onRemoveUserHighlight={deletePersonalHighlight}
                                             generateHighlightInsight={generateHighlightInsight}
                                         />
                                     </p>
@@ -375,17 +470,40 @@ export const ChapterContent = memo(function ChapterContent({
                                     <FloatingReactionBubbles paragraphId={para.id} />
                                 )}
 
-                                <div className="absolute right-full top-0 mr-16 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-0.5 shrink-0 z-10">
+                                <div className="absolute right-full top-0 mr-14 flex flex-col gap-0.5 p-0.5 rounded-md bg-background backdrop-blur-xl border border-border shadow-sm shrink-0 z-10 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity duration-200">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleBookmark(para.id, para.content);
+                                                }}
+                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
+                                                aria-label="Bookmark đoạn này"
+                                            >
+                                                <BookmarkIcon 
+                                                    size={10} 
+                                                    className={bookmarks.some(b => b.paragraphId === para.id) ? "fill-primary text-primary" : ""} 
+                                                />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right">
+                                            <p>{bookmarks.some(b => b.paragraphId === para.id) ? 'Bỏ bookmark' : 'Bookmark'}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button
                                                 variant="secondary"
                                                 size="icon"
                                                 onClick={() => handleToggleComments(para)}
-                                                className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform"
-                                                aria-label="Bình luận đoạn này"
+                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
+                                                aria-label="Bình luận"
                                             >
-                                                <MessageSquarePlus size={16} />
+                                                <MessageSquarePlus size={10} />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="right">
@@ -399,10 +517,10 @@ export const ChapterContent = memo(function ChapterContent({
                                                 variant="secondary"
                                                 size="icon"
                                                 onClick={() => handleOpenPostModal(para)}
-                                                className="h-8 w-8 rounded-full shadow-sm hover:scale-110 transition-transform"
-                                                aria-label="Chia sẻ trích dẫn"
+                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
+                                                aria-label="Chia sẻ"
                                             >
-                                                <Share2 size={16} />
+                                                <Share2 size={10} />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="right">
@@ -445,6 +563,21 @@ export const ChapterContent = memo(function ChapterContent({
                                     </TooltipTrigger>
                                     <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
                                 </Tooltip>
+
+                                {user && !room && (
+                                    <>
+                                        <div className="w-[1px] h-4 bg-border mx-1" />
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-9 rounded-full gap-2 px-3 text-neutral-200 hover:bg-white/10 hover:text-white"
+                                            onClick={handleAddPersonalHighlight}
+                                        >
+                                            <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
+                                            <span className="text-[11px] font-bold">Highlight</span>
+                                        </Button>
+                                    </>
+                                )}
 
                                 {room && !isEnded && (
                                     <>
@@ -537,16 +670,20 @@ export const ChapterContent = memo(function ChapterContent({
 const ChapterTextRenderer = ({
     content,
     highlights,
+    userHighlights,
     knowledge,
     currentUserId,
     onRemoveHighlight,
+    onRemoveUserHighlight,
     generateHighlightInsight,
 }: {
     content: string,
     highlights: RoomHighlight[],
+    userHighlights?: UserHighlight[],
     knowledge: KnowledgeEntity[],
     currentUserId?: string,
     onRemoveHighlight?: (highlightId: string) => void,
+    onRemoveUserHighlight?: (highlightId: string) => void,
     generateHighlightInsight?: (highlightId: string) => void,
 }) => {
     // Track which highlight is currently being generated to show loading state
@@ -682,7 +819,128 @@ const ChapterTextRenderer = ({
         parts = newParts;
     });
 
+    // 3. Process Personal Highlights
+    if (userHighlights && userHighlights.length > 0) {
+        userHighlights.forEach(h => {
+            const newParts: (string | React.ReactNode)[] = [];
+            parts.forEach(part => {
+                if (typeof part !== 'string') {
+                    newParts.push(part);
+                    return;
+                }
+
+                const index = part.indexOf(h.content);
+                if (index === -1) {
+                    newParts.push(part);
+                } else {
+                    newParts.push(part.substring(0, index));
+                    newParts.push(
+                        <PersonalHighlightPopover 
+                            key={`uh-${h.id}-${index}`} 
+                            highlight={h} 
+                            onRemoveUserHighlight={onRemoveUserHighlight}
+                        />
+                    );
+                    newParts.push(part.substring(index + h.content.length));
+                }
+            });
+            parts = newParts;
+        });
+    }
+
     return <>{parts}</>;
 };
+
+const PersonalHighlightPopover = memo(function PersonalHighlightPopover({ 
+    highlight: h, 
+    onRemoveUserHighlight 
+}: { 
+    highlight: UserHighlight, 
+    onRemoveUserHighlight?: (id: string) => void 
+}) {
+    const [updateHighlight] = useUpdateHighlightMutation();
+    const [isEditingNote, setIsEditingNote] = useState(false);
+    const [noteContent, setNoteContent] = useState(h.note || '');
+
+    const handleSaveNote = async () => {
+        await updateHighlight({ id: h.id, note: noteContent });
+        setIsEditingNote(false);
+    };
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <span 
+                    className="cursor-pointer transition-all hover:opacity-80 rounded-sm px-0.5"
+                    style={{ backgroundColor: `${h.color}40`, borderBottom: `2px solid ${h.color}` }}
+                >
+                    {h.content}
+                </span>
+            </PopoverTrigger>
+            <PopoverContent className="p-0 border-none bg-transparent shadow-none" side="top" align="center" sideOffset={10}>
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-64 p-4 rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-2xl space-y-3"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${h.color}20` }}>
+                                <Highlighter className="w-3.5 h-3.5" style={{ color: h.color }} />
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-muted-foreground">
+                                Highlight cá nhân
+                            </span>
+                        </div>
+                        {onRemoveUserHighlight && (
+                            <button
+                                className="p-1 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                onClick={(e) => { e.stopPropagation(); onRemoveUserHighlight(h.id); }}
+                                title="Xóa highlight"
+                            >
+                                <Trash2 className="w-3 h-3" />
+                            </button>
+                        )}
+                    </div>
+                    
+                    {isEditingNote ? (
+                        <div className="space-y-2">
+                            <Textarea 
+                                value={noteContent}
+                                onChange={(e) => setNoteContent(e.target.value)}
+                                placeholder="Viết ghi chú..."
+                                className="text-xs min-h-[60px] resize-none"
+                                autoFocus
+                            />
+                            <div className="flex justify-end gap-1.5">
+                                <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2" onClick={() => setIsEditingNote(false)}>Hủy</Button>
+                                <Button size="sm" className="h-6 text-[10px] px-2" onClick={handleSaveNote}>Lưu</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        h.note ? (
+                            <div 
+                                className="space-y-1 bg-muted p-2.5 rounded-xl border border-border/50 cursor-text hover:border-primary/30 transition-colors"
+                                onClick={() => setIsEditingNote(true)}
+                            >
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Ghi chú</span>
+                                <p className="text-xs text-foreground leading-relaxed">{h.note}</p>
+                            </div>
+                        ) : (
+                            <div className="text-center py-2 space-y-2">
+                                <p className="text-[11px] text-muted-foreground italic">
+                                    Chưa có ghi chú nào.
+                                </p>
+                                <Button size="sm" variant="outline" className="h-7 text-[11px] w-full" onClick={() => setIsEditingNote(true)}>
+                                    Thêm ghi chú
+                                </Button>
+                            </div>
+                        )
+                    )}
+                </motion.div>
+            </PopoverContent>
+        </Popover>
+    );
+});
 
 

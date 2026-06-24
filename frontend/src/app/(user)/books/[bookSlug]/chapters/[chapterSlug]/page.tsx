@@ -5,6 +5,7 @@ import { use, useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/utils";
+import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
 import {
   Bookmark,
   ChevronLeft,
@@ -14,8 +15,9 @@ import {
   BookOpen,
   Settings,
   Share2,
-  Bot,
-  MessageCircleQuestion,
+  Highlighter,
+  Sparkles,
+  Library,
 } from "lucide-react";
 
 import {
@@ -29,8 +31,10 @@ import ChapterNavigation from "@/components/chapter/ChapterNavigation";
 import CommentSection from "@/components/chapter/CommentSection";
 import ChapterHeader from "@/components/chapter/ChapterHeader";
 import { ChapterContent } from "@/components/chapter/ChapterContent";
+import { PersonalHighlightsDrawer } from "@/components/chapter/PersonalHighlightsDrawer";
 import ContentProtection from "@/components/chapter/ContentProtection";
 import { useReadingProgress, useReadingView } from "@/features/books/hooks";
+import { useReadingSettings } from "@/store/useReadingSettings";
 import { useAppAuth } from "@/features/auth/hooks";
 import { ReadingTimeTracker } from "@/features/books/components/ReadingTimeTracker";
 import AudiobookView from "@/components/chapter/AudiobookView";
@@ -39,6 +43,7 @@ import ReadingSettingsPanel from "@/components/chapter/ReadingSettingsPanel";
 import { KnowledgeSidebar } from "@/features/reading-rooms/components/KnowledgeSidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useTheme } from "next-themes";
 
 interface ChapterPageProps {
   params: Promise<{
@@ -91,6 +96,30 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   } = useReadingView();
 
   const [showAISidebar, setShowAISidebar] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const { settings, updateSettings } = useReadingSettings();
+  const { resolvedTheme, setTheme: setAppTheme } = useTheme();
+
+  // Sync reading settings khi app theme thay đổi từ bên ngoài (ví dụ navbar toggle)
+  const prevAppThemeRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!resolvedTheme) return;
+    if (resolvedTheme === prevAppThemeRef.current) return; // không đổi thực sự
+    prevAppThemeRef.current = resolvedTheme;
+
+    // Chỉ sync khi reading theme chưa khớp với app theme
+    const readingIsDark = settings.theme === 'dark';
+    const appIsDark = resolvedTheme === 'dark';
+    if (readingIsDark === appIsDark) return; // đã khớp rồi, bỏ qua
+
+    updateSettings({
+      theme: appIsDark ? 'dark' : 'light',
+      backgroundColor: appIsDark ? '#1c1c1e' : '#f7f3ed',
+      textColor: appIsDark ? '#d8d3c8' : '#2c2925',
+      warmth: appIsDark ? 30 : 5,
+    });
+  }, [resolvedTheme]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -298,6 +327,7 @@ ${book.description?.slice(0, 100)}...
                 <ChapterContent
                   paragraphs={paragraphs}
                   chapterId={chapter.id}
+                  chapterSlug={chapterSlug}
                   bookId={book.id}
                   bookSlug={bookSlug}
                   bookCoverImage={book.coverUrl}
@@ -366,6 +396,12 @@ ${book.description?.slice(0, 100)}...
             onClick={() => setShowTOC(true)}
           />
 
+          <DockButton
+            icon={<Highlighter size={20} className="text-yellow-500" />}
+            label="Highlights"
+            onClick={() => setShowHighlights(true)}
+          />
+
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <div className="flex bg-muted rounded-xl p-1 shrink-0">
@@ -386,7 +422,7 @@ ${book.description?.slice(0, 100)}...
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
-            icon={<Bookmark size={20} />}
+            icon={<Library size={20} />}
             label="Lưu"
             onClick={() => openAddToLibrary({ bookId: book.id })}
           />
@@ -398,33 +434,50 @@ ${book.description?.slice(0, 100)}...
           />
 
           <DockButton
-            icon={
-              <Bot
-                size={20}
-                className={showAISidebar ? "text-primary" : ""}
-              />
-            }
-            label="Phân tích nội dung"
+            icon={<Sparkles size={20} />}
+            label="Trợ lý sách"
             onClick={() => {
-              if (!isLoggedIn) {
-                toast.info('Vui lòng đăng nhập để sử dụng tính năng này', {
-                  action: {
-                    label: 'Đăng nhập',
-                    onClick: () => router.push('/login'),
-                  },
-                });
-                return;
+              if (window.innerWidth < 1024) {
+                window.dispatchEvent(new CustomEvent('toggle-global-chat'));
               }
               setShowAISidebar(!showAISidebar);
             }}
           />
 
           <DockButton
-            icon={<MessageCircleQuestion size={20} />}
-            label="Trợ lý sách"
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-global-chat'))}
-            className="sm:hidden"
+            icon={<Bookmark size={20} />}
+            label="Bookmarks"
+            onClick={() => {
+              if (!isLoggedIn) {
+                toast.error("Vui lòng đăng nhập để xem bookmark");
+                return;
+              }
+              setShowBookmarks(true);
+            }}
           />
+
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
+
+          {/* Quick: Font size A-/A+ */}
+          <div className="flex items-center bg-muted rounded-xl p-1 shrink-0 gap-0.5">
+            <button
+              onClick={() => updateSettings({ fontSize: Math.max(13, settings.fontSize - 1) })}
+              className="w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/50 transition-all flex items-center justify-center text-sm font-bold"
+              title="Giảm cỡ chữ"
+            >
+              A-
+            </button>
+            <span className="text-[10px] text-muted-foreground px-1 tabular-nums">{settings.fontSize}</span>
+            <button
+              onClick={() => updateSettings({ fontSize: Math.min(26, settings.fontSize + 1) })}
+              className="w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/50 transition-all flex items-center justify-center text-sm font-bold"
+              title="Tăng cỡ chữ"
+            >
+              A+
+            </button>
+          </div>
+
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
             icon={<Settings size={20} />}
@@ -441,6 +494,18 @@ ${book.description?.slice(0, 100)}...
         bookSlug={bookSlug}
         currentChapterSlug={chapterSlug}
         totalChapters={totalChapters}
+      />
+
+      <PersonalHighlightsDrawer
+        open={showHighlights}
+        onOpenChange={setShowHighlights}
+        bookId={book.id}
+      />
+
+      <BookmarksDrawer
+        open={showBookmarks}
+        onOpenChange={setShowBookmarks}
+        bookId={book.id}
       />
 
       <ReadingSettingsPanel

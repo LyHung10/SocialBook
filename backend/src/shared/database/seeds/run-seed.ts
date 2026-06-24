@@ -1,6 +1,9 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DatabaseSeedModule } from './database.seed.module';
 import { SeederService } from './seeder.service';
+
+const logger = new Logger('Seed');
 
 async function bootstrap() {
   const args = process.argv.slice(2);
@@ -13,16 +16,16 @@ async function bootstrap() {
   try {
     if (isRevert) {
       await seeder.clear();
-      console.log('🎉 Seed data reverted successfully!');
+      logger.log('Seed data reverted successfully!');
     } else {
       await seeder.clear();
       await seeder.seed();
-      console.log('🎉 Database seeding completed!');
+      logger.log('Database seeding completed!');
     }
 
     process.exit(0);
   } catch (error) {
-    console.error('💥 Seeding failed:', error);
+    logger.error('Seeding failed:', error);
     process.exit(1);
   } finally {
     await app.close();

@@ -32,8 +32,9 @@ import {
 import { useAppAuth } from '@/features/auth/hooks';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { ReadingPreferences } from '@/types/reading-preferences.interface';
-import { AlertTriangle, Layout, Palette, RotateCcw, Type } from 'lucide-react';
+import { AlertTriangle, Layout, Palette, RotateCcw, Sun, Type } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 
 interface ReadingSettingsPanelProps {
     isOpen: boolean;
@@ -49,14 +50,16 @@ const FONT_FAMILIES = [
 ];
 
 const THEME_PRESETS = [
-    { theme: 'light', bgColor: '#ffffff', textColor: '#1a1a1a', label: 'Sáng' },
-    { theme: 'dark', bgColor: '#1a1a1a', textColor: '#e5e5e5', label: 'Tối' },
+    { theme: 'light', bgColor: '#f7f3ed', textColor: '#2c2925', label: 'Sáng' },
+    { theme: 'dark',  bgColor: '#1c1c1e', textColor: '#d8d3c8', label: 'Tối' },
     { theme: 'sepia', bgColor: '#f4ecd8', textColor: '#5c4a34', label: 'Sepia' },
+    { theme: 'paper', bgColor: '#d7e8d4', textColor: '#1a2e1a', label: 'Paper' },
 ];
 
 export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSettingsPanelProps) {
     const { settings, updateSettings, resetToDefaults, loadUserPreferences } = useReadingSettings();
     const { isAuthenticated } = useAppAuth();
+    const { setTheme: setAppTheme } = useTheme();
     const { data: userPrefs } = useGetReadingPreferencesQuery(undefined, { skip: !isAuthenticated });
     const [updatePrefs] = useUpdateReadingPreferencesMutation();
     const [isInitialized, setIsInitialized] = useState(false);
@@ -112,7 +115,7 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                     <div className="flex-1 overflow-y-auto p-5 space-y-8 bg-muted/20">
                         {/* Theme Selector */}
                         <Section icon={<Palette size={18} />} title="Chủ đề">
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 gap-3">
                                 {THEME_PRESETS.map((preset) => (
                                     <button
                                         key={preset.theme}
@@ -122,6 +125,8 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                                 backgroundColor: preset.bgColor,
                                                 textColor: preset.textColor,
                                             });
+                                            // Sync app theme: sepia/paper/light → light, dark → dark
+                                            setAppTheme(preset.theme === 'dark' ? 'dark' : 'light');
                                         }}
                                         className={cn(
                                             "relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2",
@@ -145,6 +150,51 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                             </div>
                         </Section>
 
+                        {/* Brightness */}
+                        <Section icon={<Sun size={18} />} title="Độ sáng">
+                            <div className="space-y-4 bg-card p-4 rounded-xl border border-border">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Mức sáng</span>
+                                    <span className="font-medium">{settings.brightness}%</span>
+                                </div>
+                                <Slider
+                                    min={10}
+                                    max={100}
+                                    step={1}
+                                    value={[settings.brightness]}
+                                    onValueChange={(vals) => updateSettings({ brightness: vals[0] })}
+                                />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>Tối</span>
+                                    <span>Sáng</span>
+                                </div>
+                            </div>
+                        </Section>
+
+                        {/* Warmth (Color Temperature) */}
+                        <Section icon={<Sun size={18} className="text-amber-400" />} title="Nhiệt độ màu (Warmth)">
+                            <div className="space-y-4 bg-card p-4 rounded-xl border border-border">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Mức ấm</span>
+                                    <span className="font-medium">{settings.warmth}%</span>
+                                </div>
+                                <Slider
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    value={[settings.warmth]}
+                                    onValueChange={(vals) => updateSettings({ warmth: vals[0] })}
+                                />
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>🔵 Xanh lạnh</span>
+                                    <span>🕯️ Vàng ấm</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                                    Giảm ánh sáng xanh, bảo vệ mắt khi đọc ban đêm.
+                                </p>
+                            </div>
+                        </Section>
+
                         {/* Font Size */}
                         <Section icon={<Type size={18} />} title="Cỡ chữ">
                             <div className="space-y-4 bg-card p-4 rounded-xl border border-border">
@@ -163,6 +213,9 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                     <span>12px</span>
                                     <span>32px</span>
                                 </div>
+                                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                                    <span className="font-semibold text-primary/80">Gợi ý chuẩn: 19px.</span> Giúp mắt không phải điều tiết nhiều.
+                                </p>
                             </div>
                         </Section>
 
@@ -203,6 +256,9 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                     value={[settings.lineHeight]}
                                     onValueChange={(vals) => updateSettings({ lineHeight: vals[0] })}
                                 />
+                                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                                    <span className="font-semibold text-primary/80">Gợi ý chuẩn: 1.7.</span> Dễ tìm lại dòng tiếp theo, hạn chế đọc nhầm dòng.
+                                </p>
                             </div>
                         </Section>
 
@@ -216,7 +272,7 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                 <Slider
                                     min={-2}
                                     max={5}
-                                    step={0.5}
+                                    step={0.1}
                                     value={[settings.letterSpacing]}
                                     onValueChange={(vals) => updateSettings({ letterSpacing: vals[0] })}
                                 />
@@ -257,6 +313,9 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                                     value={[settings.marginWidth]}
                                     onValueChange={(vals) => updateSettings({ marginWidth: vals[0] })}
                                 />
+                                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                                    <span className="font-semibold text-primary/80">Gợi ý chuẩn: 52px.</span> Giới hạn độ dài mỗi dòng để mắt đảo từ trái sang phải ít mỏi hơn.
+                                </p>
                             </div>
                         </Section>
                     </div>

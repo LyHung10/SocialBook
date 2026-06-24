@@ -178,7 +178,7 @@ export default function ReadingRoomsHub() {
           <TabsContent value="active" className="mt-0">
             {isMyRoomsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => <RoomCardSkeleton key={i} />)}
+                {[1, 2, 3].map(i => <RoomCardSkeleton key={`room-skeleton-${i}`} />)}
               </div>
             ) : myRooms && myRooms.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -260,7 +260,7 @@ export default function ReadingRoomsHub() {
             {isHistoryLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
-                  <Card key={i}>
+                  <Card key={`history-skeleton-${i}`}>
                     <CardContent className="p-0 flex">
                       <Skeleton className="w-16 h-20 rounded-l-xl rounded-r-none shrink-0" />
                       <div className="p-3 flex-1 space-y-2">

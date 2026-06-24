@@ -11,7 +11,7 @@ import {
   GenerateChapterAudioDto,
   GenerateBookAudioDto,
   TextToSpeechResponseDto,
-} from '@/presentation/text-to-speech/dto/textToSpeech.dto';
+} from '@/presentation/text-to-speech/dto/text-to-speech.dto';
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';

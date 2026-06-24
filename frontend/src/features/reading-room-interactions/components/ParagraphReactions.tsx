@@ -48,7 +48,7 @@ export const ParagraphReactions = memo(function ParagraphReactions({ roomId, cha
             title={meta.label}
           >
             <span className="text-xs leading-none">{meta.emoji}</span>
-            <span className="text-[10px] font-medium tabular-nums text-foreground dark:text-foreground">{count}</span>
+            <span className="text-[10px] font-medium tabular-nums text-foreground">{count}</span>
           </button>
         );
       })}
@@ -67,7 +67,7 @@ export const ParagraphReactions = memo(function ParagraphReactions({ roomId, cha
             initial={{ opacity: 0, scale: 0.9, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -4 }}
-            className="absolute bottom-full left-0 mb-1.5 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white dark:bg-black/80 border border-border/60 dark:border-border shadow-xl z-50"
+            className="absolute bottom-full left-0 mb-1.5 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-popover border border-border shadow-xl z-50"
           >
             {(Object.entries(REACTION_META) as [ReactionType, typeof REACTION_META[ReactionType]][]).map(([type]) => {
               const hasReacted = reactions?.[type]?.includes(user?.id || '') || false;
