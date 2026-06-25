@@ -88,7 +88,7 @@ export class ProgressSeed {
         seen.add(key);
 
         const progress = Math.floor(Math.random() * 100) + 1;
-        const isCompleted = progress >= 80;
+        const isCompleted = progress >= 100;
 
         progresses.push({
           userId: user._id,

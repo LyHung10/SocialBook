@@ -22,6 +22,8 @@ export interface LibraryItemReadModel {
   status: ReadingStatus;
   lastReadChapterId: LibraryChapterSummary | null;
   collectionIds: string[];
+  totalChapters?: number;
+  completedChapters?: number;
   createdAt: Date;
   updatedAt: Date;
 }

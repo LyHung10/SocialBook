@@ -25,6 +25,8 @@ export interface LibraryItem {
     orderIndex: number;
   } | null;
   collectionIds: string[];
+  totalChapters?: number;
+  completedChapters?: number;
   updatedAt: string;
 }
 
