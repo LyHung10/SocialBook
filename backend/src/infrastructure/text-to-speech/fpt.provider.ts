@@ -20,10 +20,9 @@ export class FptProvider implements ITextToSpeechProvider {
   ): Promise<{ audioUrl: string; format: string; duration?: number }> {
     const { format = 'mp3' } = options;
     const apiKey = this.configService.get<string>('env.FPT_API_KEY');
-    
+
     const defaultVoice =
-      this.configService.get<string>('env.FPT_VOICE') ||
-      'thuminh'; // thuminh, banmai, minhquang...
+      this.configService.get<string>('env.FPT_VOICE') || 'thuminh'; // thuminh, banmai, minhquang...
 
     if (!apiKey) {
       throw new InternalServerErrorException('FPT.AI API key not found');
@@ -48,10 +47,10 @@ export class FptProvider implements ITextToSpeechProvider {
         throw new Error(`FPT.AI error: ${err}`);
       }
 
-      const jsonResponse = await response.json();
+      const jsonResponse = (await response.json()) as { async?: string };
       const asyncUrl = jsonResponse.async;
 
-      if (!asyncUrl) {
+      if (typeof asyncUrl !== 'string') {
         throw new Error('FPT.AI did not return an async URL');
       }
 
@@ -59,7 +58,7 @@ export class FptProvider implements ITextToSpeechProvider {
       let arrayBuffer: ArrayBuffer | null = null;
       for (let i = 0; i < 20; i++) {
         await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s before each poll
-        
+
         const audioRes = await fetch(asyncUrl);
         // FPT returns 200 but might return HTML or some text if not ready, check content-type
         const contentType = audioRes.headers.get('content-type');

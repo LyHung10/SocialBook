@@ -88,29 +88,35 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     }
   }
 
-  private ensureInitialized(): void {
+  private async ensureInitialized(): Promise<void> {
     if (!this.isInitialized) {
-      throw new Error('Vector store not initialized');
+      this.logger.warn(
+        'Vector store not initialized. Attempting to reconnect to ChromaDB...',
+      );
+      await this.onModuleInit();
+      if (!this.isInitialized) {
+        throw new Error('Vector store not initialized');
+      }
     }
   }
 
   // ─── Embedding ───────────────────────────────────
 
-  embedQuery(text: string): Promise<number[]> {
-    this.ensureInitialized();
+  async embedQuery(text: string): Promise<number[]> {
+    await this.ensureInitialized();
     return this.embeddings.embedQuery(text);
   }
 
   // ─── Document Operations ─────────────────────────
 
   async save(document: VectorDocument): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     await this.vectorStore.addDocuments([this.toLangchainDocument(document)]);
   }
 
   async saveBatch(documents: VectorDocument[]): Promise<BatchIndexResult> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     if (documents.length === 0) {
       return { totalProcessed: 0, successful: 0, failed: 0, errors: [] };
@@ -165,7 +171,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   }
 
   async findById(id: VectorId): Promise<VectorDocument | null> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       // ✅ Use direct ID lookup for better performance
@@ -194,7 +200,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     contentId: string,
     contentType?: ContentType,
   ): Promise<VectorDocument[]> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const where: Record<string, string> = { contentId };
@@ -227,7 +233,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   }
 
   async deleteById(id: VectorId): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       await this.collection.delete({ where: { id: id.toString() } });
@@ -244,7 +250,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     contentId: string,
     contentType?: ContentType,
   ): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const where: Record<string, string> = { contentId };
@@ -265,7 +271,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   // ─── Search Operations ───────────────────────────
 
   async search(query: SearchQuery): Promise<SearchResult[]> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const filter: Where = {};
@@ -308,7 +314,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     contentType?: ContentType,
     limit?: number,
   ): Promise<SearchResult[]> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const filter: Where = {};
@@ -340,7 +346,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     limit?: number,
     threshold?: number,
   ): Promise<SearchResult[]> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const document = await this.findById(documentId);
@@ -379,7 +385,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   // ─── Collection Operations ───────────────────────
 
   async clearCollection(): Promise<void> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const collectionName = this.configService.get<string>(
@@ -420,7 +426,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   }
 
   async getCollectionStats(): Promise<CollectionStats> {
-    this.ensureInitialized();
+    await this.ensureInitialized();
 
     try {
       const count = await this.collection.count();
