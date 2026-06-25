@@ -35,7 +35,8 @@ export default registerAs('env', () => ({
 
   // External APIs
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
-  VOICERSS_API_KEY: process.env.VOICERSS_API_KEY || '',
+  FPT_API_KEY: process.env.FPT_API_KEY || '',
+  FPT_VOICE: process.env.FPT_VOICE || 'banmai',
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY || '',
 
   // Content Moderation API

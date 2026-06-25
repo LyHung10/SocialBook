@@ -63,8 +63,8 @@ export enum ErrorMessages {
 
   // TTS
   TTS_UPDATE_FAILED = 'Cập nhật bản ghi TTS thất bại',
-  TTS_API_KEY_NOT_FOUND = 'Không tìm thấy API key của VoiceRSS',
-  TTS_API_ERROR = 'Lỗi từ API VoiceRSS',
+  TTS_API_KEY_NOT_FOUND = 'Không tìm thấy API key của FPT.AI',
+  TTS_API_ERROR = 'Lỗi từ API FPT.AI',
 
   // Onboarding
   ONBOARDING_NOT_FOUND = 'Không tìm thấy phiên hướng dẫn',

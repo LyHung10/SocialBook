@@ -1,5 +1,5 @@
 # SocialBook Agent Guide
-
+Never use the `any` type in TypeScript. Always define an Interface, Type, or use `unknown` instead.
 ## Quick Reference
 
 - Before any task, read `.opencode/agents/CRAFTSMAN.md`
