@@ -19,9 +19,14 @@ export default registerAs('env', () => ({
   JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',
   JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
 
-  // Email
+  // Email (legacy SMTP — kept for reference, no longer used)
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASS: process.env.EMAIL_PASS || '',
+
+  // Resend (transactional email via HTTPS)
+  RESEND_API_KEY: process.env.RESEND_API_KEY || '',
+  RESEND_FROM_EMAIL:
+    process.env.RESEND_FROM_EMAIL || 'noreply@socialbook.io.vn',
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',

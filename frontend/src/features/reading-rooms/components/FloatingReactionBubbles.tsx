@@ -91,10 +91,10 @@ export const FloatingReactionBubbles = memo(function FloatingReactionBubbles({
               <img
                 src={bubble.avatarUrl}
                 alt=""
-                className="w-4 h-4 rounded-full object-cover border border-white/50 shadow-sm opacity-80"
+                className="w-4 h-4 rounded-full object-cover border border-border/50 shadow-sm opacity-80"
               />
             ) : (
-              <div className="w-4 h-4 rounded-full bg-primary/20 border border-white/50 text-[8px] flex items-center justify-center text-primary font-bold shadow-sm opacity-80">
+              <div className="w-4 h-4 rounded-full bg-primary/20 border border-border/50 text-[8px] flex items-center justify-center text-primary font-bold shadow-sm opacity-80">
                 {bubble.displayName.charAt(0).toUpperCase()}
               </div>
             )}

@@ -296,6 +296,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           className="rounded-full w-10 h-10 shadow-lg bg-background/80 hover:bg-primary/10 border-border hover:border-primary/30 text-foreground hover:text-primary backdrop-blur-md transition-all duration-300 hover:scale-105" 
           onClick={zoomIn}
           title="Phóng to"
+          aria-label="Phóng to"
         >
           <ZoomIn className="w-5 h-5" />
         </Button>
@@ -305,6 +306,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           className="rounded-full w-10 h-10 shadow-lg bg-background/80 hover:bg-primary/10 border-border hover:border-primary/30 text-foreground hover:text-primary backdrop-blur-md transition-all duration-300 hover:scale-105" 
           onClick={zoomOut}
           title="Thu nhỏ"
+          aria-label="Thu nhỏ"
         >
           <ZoomOut className="w-5 h-5" />
         </Button>
@@ -314,6 +316,7 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           className="rounded-full w-10 h-10 shadow-lg bg-background/80 hover:bg-primary/10 border-border hover:border-primary/30 text-foreground hover:text-primary backdrop-blur-md transition-all duration-300 hover:scale-105" 
           onClick={resetZoom}
           title="Vừa màn hình"
+          aria-label="Vừa màn hình"
         >
           <Maximize2 className="w-5 h-5" />
         </Button>

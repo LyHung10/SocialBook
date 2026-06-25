@@ -33,6 +33,8 @@ import { ChaptersImportModule } from './queues/chapters-import/chapters-import.m
 import { PostModerationQueueModule } from './queues/post-moderation/post-moderation.module';
 import { ReadingRoomsRepositoryModule } from './database/repositories/reading-rooms/reading-rooms-repository.module';
 import { AnalyticsRepositoryModule } from './database/repositories/analytics/analytics-repository.module';
+import { BookmarksRepositoryModule } from './database/repositories/bookmarks/bookmarks-repository.module';
+import { UserHighlightsRepositoryModule } from './database/repositories/user-highlights/user-highlights-repository.module';
 
 @Module({
   imports: [
@@ -66,6 +68,8 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     RecommendationsInfrastructureModule,
     ReadingRoomsRepositoryModule,
     AnalyticsRepositoryModule,
+    BookmarksRepositoryModule,
+    UserHighlightsRepositoryModule,
     IdGeneratorModule,
     GatewaysModule,
     ChaptersImportModule,
@@ -102,6 +106,8 @@ import { AnalyticsRepositoryModule } from './database/repositories/analytics/ana
     RecommendationsInfrastructureModule,
     ReadingRoomsRepositoryModule,
     AnalyticsRepositoryModule,
+    BookmarksRepositoryModule,
+    UserHighlightsRepositoryModule,
     IdGeneratorModule,
     GatewaysModule,
     ChaptersImportModule,

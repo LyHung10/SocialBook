@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { ChromaClient, type Where, type Collection } from 'chromadb';
@@ -35,7 +35,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   private collection: Collection;
   private readonly DEFAULT_SEARCH_LIMIT = 10;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   async onModuleInit(): Promise<void> {
     try {
@@ -448,17 +448,23 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
   indexBooks(_bookIds: string[]): Promise<BatchIndexResult> {
     void _bookIds;
-    throw new Error('Not implemented — use ReindexAllUseCase');
+    throw new InternalServerErrorException(
+      'Not implemented — use ReindexAllUseCase',
+    );
   }
 
   indexAuthors(_authorIds: string[]): Promise<BatchIndexResult> {
     void _authorIds;
-    throw new Error('Not implemented — use ReindexAllUseCase');
+    throw new InternalServerErrorException(
+      'Not implemented — use ReindexAllUseCase',
+    );
   }
 
   indexChapters(_chapterIds: string[]): Promise<BatchIndexResult> {
     void _chapterIds;
-    throw new Error('Not implemented — use ReindexAllUseCase');
+    throw new InternalServerErrorException(
+      'Not implemented — use ReindexAllUseCase',
+    );
   }
 
   // ─── Private Helpers ─────────────────────────────

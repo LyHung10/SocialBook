@@ -120,7 +120,7 @@ export default function LibraryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {[1, 2, 3, 4].map((i) => (
                   <Card
-                    key={i}
+                    key={`skeleton-collection-${i}`}
                     className="h-32 border-border/80 animate-pulse bg-card"
                   >
                     <CardContent className="p-5 flex flex-col justify-between h-full">
@@ -296,7 +296,7 @@ function LibrarySkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
       {[...Array(10)].map((_, i) => (
-        <Card key={i} className="flex flex-col h-full overflow-hidden border-border/80">
+        <Card key={`skeleton-book-${i}`} className="flex flex-col h-full overflow-hidden border-border/80">
           <Skeleton className="aspect-[2/3] w-full rounded-none" />
           <CardContent className="p-4 space-y-3 flex-1 flex flex-col justify-between">
             <div className="space-y-2">

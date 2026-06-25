@@ -7,7 +7,6 @@ import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
 import { cn } from '@/lib/utils';
 import { ShieldAlert, Info } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useModalStore } from '@/store/useModalStore';
 import { usePostComments } from '@/features/posts/hooks/usePostComments';
 import { usePostActions } from '@/features/posts/hooks/usePostActions';
@@ -32,7 +31,6 @@ import { Separator } from "@/components/ui/separator";
 export default function ModalPostComment() {
     const { isPostCommentOpen, closePostComment, postCommentData, openSharePost } = useModalStore();
     const router = useRouter();
-    const { theme } = useTheme();
     const [createComment] = usePostCreateMutation();
 
     const post = postCommentData?.post;
@@ -236,7 +234,6 @@ export default function ModalPostComment() {
                                     isCommentOpen={isPostCommentOpen}
                                     parentId={null}
                                     targetType={'post'}
-                                    theme={theme as 'light' | 'dark' | undefined}
                                 />
                             </div>
                         </ScrollArea>

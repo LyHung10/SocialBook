@@ -418,7 +418,7 @@ function CollectionDetailSkeleton() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {[...Array(5)].map((_, i) => (
-            <Card key={i} className="flex flex-col h-full overflow-hidden border-border/80">
+            <Card key={`skeleton-collection-detail-${i}`} className="flex flex-col h-full overflow-hidden border-border/80">
               <Skeleton className="aspect-[2/3] w-full rounded-none" />
               <CardContent className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 <div className="space-y-2">

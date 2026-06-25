@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
 
 export const createPostSchema = z.object({
   content: z.string().min(1, "Vui lòng nhập nội dung bài viết"),
@@ -122,7 +123,7 @@ export function useCreatePost(
       try {
         await externalOnSubmit(values);
       } catch (error) {
-        console.error("Submit failed:", error);
+        toast.error(getErrorMessage(error));
       } finally {
         setIsSubmitting(false);
       }

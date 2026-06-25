@@ -4,7 +4,6 @@ import { NotificationsService } from '@/infrastructure/notifications/notificatio
 import { IPostRepository } from '@/domain/posts/repositories/post.repository.interface';
 import { ICommentRepository } from '@/domain/comments/repositories/comment.repository.interface';
 import { CommentId } from '@/domain/comments/value-objects/comment-id.vo';
-import { CreateNotificationDto } from '@/application/notifications/dto/create-notification.dto';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
 import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
@@ -110,20 +109,19 @@ export class NotificationEventHandler {
           payload.targetId,
         );
 
-        const notificationDto = new CreateNotificationDto(
-          ownerId,
+        await this.notificationsService.create({
+          userId: ownerId,
           title,
           message,
-          'like',
-          {
+          type: 'like',
+          meta: {
             actorId: payload.userId,
             username,
             image,
             targetId: payload.targetId,
           },
           actionUrl,
-        );
-        await this.notificationsService.create(notificationDto);
+        });
       }
     } catch (error) {
       this.logger.error('Error handling like notification event', error);
@@ -172,20 +170,19 @@ export class NotificationEventHandler {
           payload.targetId,
         );
 
-        const notificationDto = new CreateNotificationDto(
-          ownerId,
+        await this.notificationsService.create({
+          userId: ownerId,
           title,
           message,
-          payload.parentId ? 'reply' : 'comment',
-          {
+          type: payload.parentId ? 'reply' : 'comment',
+          meta: {
             actorId: payload.userId,
             username,
             image,
             targetId: payload.targetId,
           },
           actionUrl,
-        );
-        await this.notificationsService.create(notificationDto);
+        });
       }
     } catch (error) {
       this.logger.error('Error handling comment notification event', error);
@@ -208,20 +205,19 @@ export class NotificationEventHandler {
       if (ownerId && ownerId !== payload.userId) {
         const actionUrl = `/users/${payload.userId}`;
 
-        const notificationDto = new CreateNotificationDto(
-          ownerId,
+        await this.notificationsService.create({
+          userId: ownerId,
           title,
           message,
-          'follow',
-          {
+          type: 'follow',
+          meta: {
             actorId: payload.userId,
             username,
             image,
             targetId: payload.targetId,
           },
           actionUrl,
-        );
-        await this.notificationsService.create(notificationDto);
+        });
       }
     } catch (error) {
       this.logger.error('Error handling follow notification event', error);
@@ -246,18 +242,16 @@ export class NotificationEventHandler {
 
       const actionUrl = `/posts/${payload.postId}`;
 
-      const notificationDto = new CreateNotificationDto(
-        ownerId,
+      await this.notificationsService.create({
+        userId: ownerId,
         title,
         message,
-        'system',
-        {
+        type: 'system',
+        meta: {
           targetId: payload.postId,
         },
         actionUrl,
-      );
-
-      await this.notificationsService.create(notificationDto);
+      });
       this.logger.log(`Created moderation notification for user ${ownerId}`);
     } catch (error) {
       this.logger.error(

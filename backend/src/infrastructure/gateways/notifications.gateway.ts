@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { NotificationsService } from '@/infrastructure/notifications/notifications.service';
-import { CreateNotificationDto } from '@/application/notifications/dto/create-notification.dto';
+import type { CreateNotificationInput } from '@/infrastructure/notifications/dto/create-notification-input.interface';
 import { JwtService } from '@nestjs/jwt';
 
 interface SocketData {
@@ -101,8 +101,8 @@ export class NotificationsGateway
   @SubscribeMessage('createNotification')
   async createFromClient(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() dto: CreateNotificationDto,
+    @MessageBody() data: CreateNotificationInput,
   ) {
-    return this.notificationsService.create(dto);
+    return this.notificationsService.create(data);
   }
 }

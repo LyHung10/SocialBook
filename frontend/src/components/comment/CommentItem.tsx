@@ -187,7 +187,7 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
                                     {optimisticReplyCount === 0 && (
                                         <DropdownMenuItem
                                             onClick={handleDeleteComment}
-                                            className="text-red-600 focus:bg-red-50 focus:text-red-700"
+                                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
                                         >
                                             {isDeletingComment
                                                 ? 'Đang xóa...'
@@ -205,9 +205,9 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
                         onClick={handleLikeComment}
                         className={cn(
                             'flex items-center gap-1.5 text-xs font-medium transition-colors hover:bg-transparent',
-                            optimisticIsLiked
-                                ? 'text-red-500'
-                                : 'text-muted-foreground hover:text-red-500'
+                                    optimisticIsLiked
+                                        ? 'text-destructive'
+                                        : 'text-muted-foreground hover:text-destructive'
                         )}
                     >
                         <Heart

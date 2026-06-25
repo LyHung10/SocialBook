@@ -10,7 +10,7 @@ import { BookId } from '@/domain/library/value-objects/book-id.vo';
 import { ChapterId } from '@/domain/library/value-objects/chapter-id.vo';
 import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UpdateProgressCommand } from './update-progress.command';
 import { ReadingProgressResult } from '../../dto/library.dto';
 import { LibraryApplicationMapper } from '../../mappers/library.mapper';
@@ -117,7 +117,9 @@ export class UpdateProgressUseCase {
       bookId,
     );
     if (!detail) {
-      throw new Error('Failed to retrieve updated reading list detail');
+      throw new InternalServerErrorException(
+        'Failed to retrieve updated reading list detail',
+      );
     }
 
     return {

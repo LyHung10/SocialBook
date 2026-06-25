@@ -1,7 +1,7 @@
 import { Review as ReviewEntity } from '@/domain/reviews/entities/review.entity';
 import { IReviewRepository } from '@/domain/reviews/repositories/review.repository.interface';
 import { ReviewMapper } from '@/infrastructure/database/repositories/reviews/review.mapper';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Review, ReviewDocument } from '../../schemas/review.schema';
@@ -35,7 +35,7 @@ export class ReviewRepository implements IReviewRepository {
       )
       .populate('userId', 'username image');
 
-    if (!updated) throw new Error('Review not found');
+    if (!updated) throw new NotFoundException('Review not found');
     return ReviewMapper.toDomain(updated);
   }
 

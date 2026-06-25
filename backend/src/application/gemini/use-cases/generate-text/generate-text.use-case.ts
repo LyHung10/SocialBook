@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import type { IAIRequestRepository } from '@/domain/gemini/repositories/ai-request.repository.interface';
@@ -41,7 +41,9 @@ export class GenerateTextUseCase {
     });
 
     if (!aiRequest.hasValidPrompt()) {
-      throw new Error('Prompt must be between 1 and 10000 characters');
+      throw new BadRequestException(
+        'Prompt must be between 1 and 10000 characters',
+      );
     }
 
     try {

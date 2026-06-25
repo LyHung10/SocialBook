@@ -1,10 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "@/lib/nestjs-client-api";
 import { NESTJS_LIKES_ENDPOINTS } from "@/constants/server-endpoints";
+import { axiosBaseQuery } from "@/lib/nestjs-client-api";
+import type { RootState } from '@/store/store';
 import { recommendationsApi } from '../../recommendations/api/recommendationsApi';
 import { postApi } from '../../posts/api/postApi';
 import type { PaginatedPostsResponse, Post } from '../../posts/types/post.interface';
-import type { RootState } from '@/store/store';
 
 export interface LikeRequest {
     targetId: string;

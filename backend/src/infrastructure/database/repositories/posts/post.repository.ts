@@ -7,10 +7,13 @@ import {
   PaginatedResult,
 } from '@/domain/posts/repositories/post.repository.interface';
 import { PostMapper } from '@/infrastructure/database/repositories/posts/post.mapper';
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types, PipelineStage } from 'mongoose';
 import { CommentDocument } from '../../schemas/comment.schema';
 import { LikeDocument } from '../../schemas/like.schema';
 import { Post, PostDocument } from '../../schemas/post.schema';
@@ -44,7 +47,8 @@ export class PostRepository implements IPostRepository {
       .exec();
 
     const domain = PostMapper.toDomain(populated as PostDocument);
-    if (!domain) throw new Error('Failed to create post');
+    if (!domain)
+      throw new InternalServerErrorException('Failed to create post');
     return domain;
   }
 
@@ -56,9 +60,11 @@ export class PostRepository implements IPostRepository {
       .populate(POPULATE_BOOK)
       .exec();
 
-    if (!updated) throw new Error('Failed to update post');
+    if (!updated)
+      throw new InternalServerErrorException('Failed to update post');
     const domain = PostMapper.toDomain(updated as PostDocument);
-    if (!domain) throw new Error('Failed to map updated post');
+    if (!domain)
+      throw new InternalServerErrorException('Failed to map updated post');
     return domain;
   }
 
@@ -133,6 +139,18 @@ export class PostRepository implements IPostRepository {
     // Otherwise, we calculate the personalized feed!
     const viewerObjId = new Types.ObjectId(options.viewerUserId);
 
+    interface PostAggregationResult {
+      score: number;
+      likesCount: number;
+      commentsCount: number;
+      genreScore: number;
+      followScore: number;
+      engagementScore: number;
+      hoursAge: number;
+    }
+
+    type PostAggregateDoc = PostDocument & PostAggregationResult;
+
     let cursorScore: number | null = null;
     let cursorId: string | null = null;
 
@@ -154,7 +172,7 @@ export class PostRepository implements IPostRepository {
       }
     }
 
-    const pipeline: any[] = [
+    const pipeline: PipelineStage[] = [
       { $match: { isDeleted: false, isFlagged: { $ne: true } } },
       // 1. Lookup likes count
       {
@@ -311,17 +329,20 @@ export class PostRepository implements IPostRepository {
     pipeline.push({ $sort: { score: -1, _id: -1 } });
     pipeline.push({ $limit: options.limit + 1 });
 
-    let docs = await this.model.aggregate(pipeline).exec();
+    const aggDocs = await this.model
+      .aggregate<PostAggregateDoc>(pipeline)
+      .exec();
 
-    console.log('=== PERSONALIZED FEED SCORES ===');
-    docs.forEach((doc: any) => {
-      console.log(
-        `Post ID: ${doc._id.toString()} | Score: ${Number(doc.score || 0).toFixed(4)} | FollowScore: ${doc.followScore} | GenreScore: ${doc.genreScore} | Engagement: ${doc.engagementScore} | Age: ${Number(doc.hoursAge || 0).toFixed(2)}h`,
+    if (aggDocs.length > 0) {
+      const logger = new Logger(PostRepository.name);
+      logger.debug(
+        `Personalized feed: ${aggDocs.length} posts fetched (score sample: ${aggDocs[0]?.score ?? 'N/A'})`,
       );
-    });
+    }
 
-    if (docs.length > 0) {
-      docs = await this.model.populate(docs, [POPULATE_USER, POPULATE_BOOK]);
+    let docs: PostDocument[] = [];
+    if (aggDocs.length > 0) {
+      docs = await this.model.populate(aggDocs, [POPULATE_USER, POPULATE_BOOK]);
     }
 
     const hasMore = docs.length > options.limit;
@@ -336,7 +357,7 @@ export class PostRepository implements IPostRepository {
     return {
       data,
       nextCursor: hasMore
-        ? `${docs[docs.length - 1].score}_${docs[docs.length - 1]._id.toString()}`
+        ? `${aggDocs[aggDocs.length - 1].score}_${aggDocs[aggDocs.length - 1]._id.toString()}`
         : null,
       hasMore,
     };

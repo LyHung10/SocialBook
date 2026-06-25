@@ -21,7 +21,7 @@ import {
   TextToSpeech,
   TextToSpeechDocument,
 } from '@/infrastructure/database/schemas/text-to-speech.schema';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { Book, BookDocument } from '../../schemas/book.schema';
@@ -173,7 +173,7 @@ export class ChapterRepository
       .lean()
       .exec();
     if (!bookDocument) {
-      throw new Error('Book not found');
+      throw new NotFoundException('Book not found');
     }
 
     const bookObjectId = bookDocument._id;

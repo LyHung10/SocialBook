@@ -1,5 +1,5 @@
 import { getErrorMessage } from '@/common/utils/error.util';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
 import { ScraperFactory } from '@/infrastructure/scraper/factories/scraper.factory';
@@ -28,7 +28,7 @@ export class ScrapeChapterUseCase {
     try {
       const bookId = BookId.create(bookIdStr);
       const book = await this.bookRepository.findById(bookId);
-      if (!book) throw new Error('Book not found');
+      if (!book) throw new NotFoundException('Book not found');
 
       const strategy = this.scraperFactory.getStrategy(chapterUrl);
       const chapterData: ScrapedChapterData =

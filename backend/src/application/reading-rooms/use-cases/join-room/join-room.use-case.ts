@@ -4,7 +4,7 @@ import {
   ForbiddenDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
-import { ReadingRoomResult } from '../reading-room.interface';
+import { ReadingRoomResult } from '../../reading-room.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
 import { JoinRoomCommand } from './join-room.command';
 import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';

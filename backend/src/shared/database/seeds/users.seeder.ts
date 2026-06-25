@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '@/infrastructure/database/schemas/user.schema';
@@ -7,6 +7,8 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersSeed {
+  private readonly logger = new Logger(UsersSeed.name);
+
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Role.name) private roleModel: Model<Role>,
@@ -82,7 +84,7 @@ export class UsersSeed {
     ];
 
     const createdUsers = await this.userModel.insertMany(users);
-    console.log(`✅ Seed users done! Created ${createdUsers.length} users.`);
+    this.logger.log(`Seed users done! Created ${createdUsers.length} users.`);
 
     return createdUsers;
   }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -11,6 +12,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
+
   useEffect(() => {
     console.error('Render error:', error);
   }, [error]);
@@ -48,7 +51,7 @@ export default function Error({
         </Button>
         <Button
           variant="outline"
-          onClick={() => window.location.href = '/'}
+          onClick={() => router.push('/')}
           className="h-12 px-6 border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-xl font-bold transition-all flex items-center gap-2"
         >
           <Home size={18} />

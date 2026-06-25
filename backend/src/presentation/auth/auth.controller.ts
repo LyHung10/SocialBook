@@ -2,7 +2,7 @@ import { Public } from '@/common/decorators/custom.decorator';
 import { JwtRefreshAuthGuard } from '@/common/guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from '@/common/guards/local-auth.guard';
 import { User } from '@/domain/users/entities/user.entity';
-import type { JwtValidatedUser } from '@/infrastructure/auth/strategies/jwt.strategy';
+
 import {
   Body,
   Controller,
@@ -13,6 +13,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+
 import { Throttle } from '@nestjs/throttler';
 
 // Use Cases
@@ -35,6 +36,8 @@ import { ResetPasswordUseCase } from '@/application/auth/use-cases/reset-passwor
 import { VerifyOtpCommand } from '@/application/auth/use-cases/verify-otp/verify-otp.command';
 import { VerifyOtpUseCase } from '@/application/auth/use-cases/verify-otp/verify-otp.use-case';
 
+import type { JwtValidatedUser } from '@/common/interfaces/jwt-validated-user.interface';
+import type { ApiResponse } from '@/common/interfaces/api-response.interface';
 import {
   ForgotPasswordDto,
   RefreshTokenDto,
@@ -44,6 +47,11 @@ import {
   SignupLocalDto,
   VerifyOtpDto,
 } from '@/presentation/auth/dto/auth.dto';
+import {
+  LoginResponseDto,
+  ProfileResponseDto,
+  TokenPairDto,
+} from '@/presentation/auth/dto/auth-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -61,7 +69,9 @@ export class AuthController {
 
   @Public()
   @Post('google/login')
-  async handleGoogleLogin(@Body() data: SignupGoogleDto) {
+  async handleGoogleLogin(
+    @Body() data: SignupGoogleDto,
+  ): Promise<{ data: unknown }> {
     const command = new GoogleAuthCommand(
       data.email,
       data.googleId,
@@ -79,7 +89,9 @@ export class AuthController {
   @Throttle({ global: { limit: 5 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: { user: User }) {
+  async login(
+    @Req() req: { user: User },
+  ): Promise<ApiResponse<LoginResponseDto>> {
     const command = new LoginCommand(req.user);
     const result = await this.loginUseCase.execute(command);
 
@@ -94,7 +106,9 @@ export class AuthController {
   }
 
   @Get('profile')
-  getProfile(@Req() req: { user: JwtValidatedUser }) {
+  getProfile(
+    @Req() req: { user: JwtValidatedUser },
+  ): ApiResponse<ProfileResponseDto> {
     const { id, email, role } = req.user;
     return {
       data: {
@@ -106,7 +120,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Req() req: { user: { id: string } }) {
+  async logout(@Req() req: { user: { id: string } }): Promise<ApiResponse> {
     const command = new LogoutCommand(req.user.id);
     return await this.logoutUseCase.execute(command);
   }
@@ -149,7 +163,9 @@ export class AuthController {
   @UseGuards(JwtRefreshAuthGuard)
   @Public()
   @Post('refresh')
-  async refresh(@Body() body: RefreshTokenDto) {
+  async refresh(
+    @Body() body: RefreshTokenDto,
+  ): Promise<ApiResponse<TokenPairDto>> {
     const { refreshToken } = body;
     if (!refreshToken) {
       throw new HttpException(

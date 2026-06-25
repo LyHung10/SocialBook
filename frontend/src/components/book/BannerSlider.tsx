@@ -133,9 +133,9 @@ export function BannerSlider({ books }: BannerSliderProps) {
       </div>
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {books.map((_, index) => (
+        {books.map((book, index) => (
           <button
-            key={index}
+            key={book.id}
             onClick={() => setCurrentSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
               ? 'w-8 bg-brand'

@@ -5,7 +5,6 @@ import { Separator } from '@/components/ui/separator';
 import { useGetCommentCountQuery, usePostCreateMutation } from '@/features/comments/api/commentApi';
 import { useAppAuth } from '@/features/auth/hooks';
 import { getErrorMessage } from '@/lib/utils';
-import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { memo, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,7 +34,6 @@ const CommentSection = memo(function CommentSection({
 }: CommentSectionProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [createComment] = usePostCreateMutation();
-    const { theme } = useTheme();
 
     const { data: commentCount } = useGetCommentCountQuery({
         targetId: targetId,
@@ -95,7 +93,6 @@ const CommentSection = memo(function CommentSection({
                     isCommentOpen={true}
                     parentId={null}
                     targetType={'chapter'}
-                    theme={theme as 'light' | 'dark' | undefined}
                 />
             </div>
         </section>

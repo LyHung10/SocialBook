@@ -1,8 +1,8 @@
+import { createApi } from '@reduxjs/toolkit/query/react';
 import { NESTJS_POSTS_ENDPOINTS } from '@/constants/server-endpoints';
 import { axiosBaseQuery } from '@/lib/nestjs-client-api';
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { CreatePostRequest, DeleteImageRequest, PaginatedPostsResponse, PaginationParams, PaginationParamsByUser, Post, UpdatePostRequest } from '../../posts/types/post.interface';
 import { buildFormData } from '@/lib/utils';
+import { CreatePostRequest, DeleteImageRequest, PaginatedPostsResponse, PaginationParams, PaginationParamsByUser, Post, UpdatePostRequest } from '../../posts/types/post.interface';
 
 type RawPost = Post & {
   likesCount?: number;

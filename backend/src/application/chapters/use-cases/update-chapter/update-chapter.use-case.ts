@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   NotFoundDomainException,
   ConflictDomainException,
@@ -51,7 +51,9 @@ export class UpdateChapterUseCase {
 
     if (command.paragraphs !== undefined) {
       if (command.paragraphs.length === 0) {
-        throw new Error('Chapter must have at least one paragraph');
+        throw new BadRequestException(
+          'Chapter must have at least one paragraph',
+        );
       }
 
       // Clear existing paragraphs and add new ones

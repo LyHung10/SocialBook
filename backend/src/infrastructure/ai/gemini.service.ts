@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
@@ -12,7 +16,9 @@ export class GeminiService implements IGeminiService {
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('env.GOOGLE_API_KEY');
     if (!apiKey) {
-      throw new Error('GOOGLE_API_KEY is not configured');
+      throw new InternalServerErrorException(
+        'GOOGLE_API_KEY is not configured',
+      );
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -26,7 +32,9 @@ export class GeminiService implements IGeminiService {
       return response.text();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to generate text: ${message}`);
+      throw new InternalServerErrorException(
+        `Failed to generate text: ${message}`,
+      );
     }
   }
 
@@ -48,13 +56,15 @@ export class GeminiService implements IGeminiService {
             return JSON.parse(jsonMatch[0]) as T;
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            throw new Error(`Parse matched JSON failed: ${msg}`);
+            throw new InternalServerErrorException(
+              `Parse matched JSON failed: ${msg}`,
+            );
           }
         }
         const parseMsg =
           parseError instanceof Error ? parseError.message : String(parseError);
         this.logger.error(`JSON Parse Error: ${parseMsg}. Content: ${text}`);
-        throw new Error('Could not parse JSON response');
+        throw new InternalServerErrorException('Could not parse JSON response');
       }
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -63,7 +73,9 @@ export class GeminiService implements IGeminiService {
           'LỖI 404: Model không tồn tại hoặc API Key không có quyền. Hãy thử dùng model "gemini-pro" hoặc kiểm tra lại Key trên Google AI Studio.',
         );
       }
-      throw new Error(`Failed to generate JSON: ${errMsg}`);
+      throw new InternalServerErrorException(
+        `Failed to generate JSON: ${errMsg}`,
+      );
     }
   }
 
@@ -76,7 +88,9 @@ export class GeminiService implements IGeminiService {
       return result.embedding.values;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to generate embedding: ${message}`);
+      throw new InternalServerErrorException(
+        `Failed to generate embedding: ${message}`,
+      );
     }
   }
 

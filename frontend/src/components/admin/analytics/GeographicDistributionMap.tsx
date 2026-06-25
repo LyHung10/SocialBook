@@ -1,6 +1,6 @@
 'use client';
 
-import WorldMap from '../analyst/WorldMap';
+import WorldMap from './WorldMap';
 
 type GeographicDatum = {
   country: string;

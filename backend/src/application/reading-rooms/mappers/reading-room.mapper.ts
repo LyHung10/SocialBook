@@ -1,5 +1,5 @@
 import { ReadingRoom } from '@/domain/reading-rooms/entities/reading-room.entity';
-import { ReadingRoomResult } from '../use-cases/reading-room.interface';
+import { ReadingRoomResult } from '../reading-room.interface';
 
 export class ReadingRoomApplicationMapper {
   static toResult(room: ReadingRoom): ReadingRoomResult {

@@ -1,7 +1,7 @@
 import { CreateChapterUseCase } from '@/application/chapters/use-cases/create-chapter/create-chapter.use-case';
 import { CreateChapterCommand } from '@/application/chapters/use-cases/create-chapter/create-chapter.command';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
+import { Logger, BadRequestException } from '@nestjs/common';
 import type { Job } from 'bullmq';
 import { promises as fs } from 'fs';
 import { unlink } from 'fs/promises';
@@ -43,7 +43,7 @@ export class ChaptersImportProcessor extends WorkerHost {
       const raw = await fs.readFile(tempJsonPath, 'utf8');
       const parsed: unknown = JSON.parse(raw);
       if (!Array.isArray(parsed)) {
-        throw new Error('Invalid import payload: expected array');
+        throw new BadRequestException('Invalid import payload: expected array');
       }
       chapters = parsed as ImportChaptersChapterInput[];
     } catch (error: unknown) {

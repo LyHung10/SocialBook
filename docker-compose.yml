@@ -8,11 +8,11 @@ x-backend-common: &backend-common
     - backend.env
   depends_on:
     mongo:
-      condition: service_healthy
+      condition: service_started
     redis:
-      condition: service_healthy
+      condition: service_started
     chroma:
-      condition: service_healthy
+      condition: service_started
 
 services:
   nginx:
@@ -21,8 +21,10 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
+      - '443:443'
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend1
       - frontend
@@ -52,12 +54,7 @@ services:
       - mongo_data:/data/db
     env_file:
       - mongo.env
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
+
 
   redis:
     image: redis:7-alpine
@@ -68,11 +65,6 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --save 60 1 --loglevel warning
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   chroma:
     image: chromadb/chroma:latest
@@ -86,12 +78,7 @@ services:
       - IS_PERSISTENT=TRUE
       - ANONYMIZED_TELEMETRY=FALSE
       - CHROMA_SERVER_CORS_ALLOW_ORIGINS=["*"]
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/v1/health']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
+
 
 volumes:
   mongo_data:

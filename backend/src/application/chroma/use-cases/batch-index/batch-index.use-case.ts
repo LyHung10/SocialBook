@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { IVectorRepository } from '@/domain/chroma/repositories/vector.repository.interface';
 import { BatchIndexCommand } from './batch-index.command';
 
@@ -37,7 +37,7 @@ export class BatchIndexUseCase {
               command.contentIds,
             ) as Promise<BatchResult>;
           default:
-            throw new Error(
+            throw new BadRequestException(
               `Unsupported content type: ${String(command.contentType)}`,
             );
         }

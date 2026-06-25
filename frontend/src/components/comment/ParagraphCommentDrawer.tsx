@@ -129,7 +129,6 @@ export default function ParagraphCommentDrawer({
                                 parentId={null}
                                 targetType="paragraph"
                                 isCommentOpen={true}
-                                theme="dark"
                             />
                         )}
                     </ScrollArea>

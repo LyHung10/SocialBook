@@ -103,7 +103,7 @@ export default function SignupPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormLabel>Tên người dùng</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="thungly123"

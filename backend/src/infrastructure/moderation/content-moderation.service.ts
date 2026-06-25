@@ -1,4 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { IContentModerationService } from '@/domain/content-moderation/interfaces/content-moderation.service.interface';
@@ -36,7 +41,7 @@ export class ContentModerationService implements IContentModerationService {
       };
     }
 
-    // 1. Kiểm tra nhanh bằng Regex (Các từ cực kỳ thô tục)
+    // 1. Quick regex check (extreme profanity)
     const quickCheck = containsVietnameseToxicWords(text);
     if (quickCheck) {
       this.logger.debug(
@@ -53,7 +58,7 @@ export class ContentModerationService implements IContentModerationService {
       };
     }
 
-    // 2. Sử dụng AI để đánh giá ngữ cảnh (Tiếng Việt)
+    // 2. Use AI for contextual evaluation (Vietnamese)
     try {
       this.logger.debug(
         `[AI] Đang đánh giá nội dung: "${text.substring(0, 50)}..."`,
@@ -130,7 +135,7 @@ export class ContentModerationService implements IContentModerationService {
         const responseContent =
           responseData.choices?.[0]?.message?.content ?? null;
         if (!responseContent) {
-          throw new Error(
+          throw new InternalServerErrorException(
             'Không nhận được nội dung phản hồi từ API kiểm duyệt.',
           );
         }

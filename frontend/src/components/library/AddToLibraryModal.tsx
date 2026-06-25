@@ -11,6 +11,7 @@ import {
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { useAddToLibrary } from '@/features/library/hooks/useAddToLibrary';
 import { LibraryStatus } from '@/features/library/types/library.interface';
@@ -35,6 +36,7 @@ export default function AddToLibraryModal() {
 
   const { data: book } = useGetBookByIdQuery(bookId, { skip: !bookId || !isAddToLibraryOpen });
 
+  const router = useRouter();
   const { user, isAuthenticated } = useAppAuth();
   const isLoggedIn = isAuthenticated;
   const currentUserId = user?.id;
@@ -63,13 +65,13 @@ export default function AddToLibraryModal() {
         action: {
           label: 'Đăng nhập',
           onClick: () => {
-            window.location.href = '/login';
+            router.push('/login');
           },
         },
       });
       closeAddToLibrary();
     }
-  }, [isAddToLibraryOpen, isAuthenticated, closeAddToLibrary]);
+  }, [isAddToLibraryOpen, isAuthenticated, closeAddToLibrary, router]);
 
   if (!isAuthenticated || !bookId) return null;
 

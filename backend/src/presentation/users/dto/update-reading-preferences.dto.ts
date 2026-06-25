@@ -10,7 +10,7 @@ import {
 export class UpdateReadingPreferencesDto {
   @IsOptional()
   @IsString()
-  @IsIn(['light', 'dark', 'sepia'])
+  @IsIn(['light', 'dark', 'sepia', 'paper'])
   theme?: string;
 
   @IsOptional()
@@ -53,6 +53,18 @@ export class UpdateReadingPreferencesDto {
   @Min(0)
   @Max(100)
   marginWidth?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  warmth?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(10)
+  @Max(100)
+  brightness?: number;
 
   @IsOptional()
   @IsString({ each: true })
