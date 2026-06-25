@@ -71,6 +71,7 @@
     "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
+    "elevenlabs": "^1.59.0",
     "epub2": "^3.0.2",
     "exceljs": "^4.4.0",
     "helmet": "^8.1.0",
