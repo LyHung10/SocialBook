@@ -2,7 +2,6 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CacheModule } from '@/shared/cache/redis.module';
 import { LoggerModule } from '@/shared/logger/logger.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -34,24 +33,6 @@ import { PresentationModule } from './presentation/presentation.module';
           'env.MONGO_URI',
           'mongodb://localhost:27017/socialbook',
         ),
-      }),
-    }),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        transport: {
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: configService.get<string>('env.EMAIL_USER'),
-            pass: configService.get<string>('env.EMAIL_PASS'),
-          },
-        },
-        defaults: {
-          from: `"No Reply" <${configService.get<string>('env.EMAIL_USER')}>`,
-        },
       }),
     }),
     RedisModule.forRootAsync({
