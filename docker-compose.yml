@@ -55,7 +55,7 @@ services:
     env_file:
       - mongo.env
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -89,7 +89,7 @@ services:
       - ANONYMIZED_TELEMETRY=FALSE
       - CHROMA_SERVER_CORS_ALLOW_ORIGINS=["*"]
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/v1/health']
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')"]
       interval: 30s
       timeout: 10s
       retries: 5
