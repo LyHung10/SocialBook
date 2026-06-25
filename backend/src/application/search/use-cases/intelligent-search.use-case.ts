@@ -118,7 +118,7 @@ export class IntelligentSearchUseCase {
       ]);
 
       // Bước 2b: Dùng expandedQuery (đã được Gemini làm giàu) để embed — quan trọng!
-      
+
       const expandedQuery = analysis?.expandedQuery ?? query;
       const semanticResults = await this.rankingService.search(
         expandedQuery,
