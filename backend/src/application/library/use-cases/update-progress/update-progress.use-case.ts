@@ -71,14 +71,12 @@ export class UpdateProgressUseCase {
           rp.updateProgress(command.progress);
           return rp;
         }),
-      !readingList.isCompleted()
-        ? this.bookRepository.findById(DomainBookId.create(command.bookId))
-        : Promise.resolve(null),
+      this.bookRepository.findById(DomainBookId.create(command.bookId)),
     ]);
 
     readingList.updateLastReadChapter(command.chapterId);
 
-    if (book && book.status.toString() === 'completed') {
+    if (book) {
       const [totalChapters, allProgresses] = await Promise.all([
         this.chapterRepository.countByBook(
           ChapterBookId.create(command.bookId),
@@ -101,8 +99,6 @@ export class UpdateProgressUseCase {
       } else {
         readingList.updateStatus(ReadingStatus.READING);
       }
-    } else if (!readingList.isCompleted()) {
-      readingList.updateStatus(ReadingStatus.READING);
     }
 
     await Promise.all([

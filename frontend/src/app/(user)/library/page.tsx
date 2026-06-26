@@ -246,6 +246,28 @@ export default function LibraryPage() {
                                   Đọc tiếp
                                 </Link>
                               </div>
+                            ) : activeTab === LibraryStatus.COMPLETED &&
+                              item.totalChapters !== undefined &&
+                              item.completedChapters !== undefined &&
+                              item.totalChapters > item.completedChapters ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-red-500 font-semibold flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                    Có chương mới
+                                  </span>
+                                  <span className="font-semibold text-foreground">
+                                    {item.completedChapters} / {item.totalChapters} chương
+                                  </span>
+                                </div>
+                                <Link
+                                  href={`/books/${item.bookId.slug}`}
+                                  className="w-full flex items-center justify-center gap-1.5 bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 text-xs font-bold py-2 rounded-full transition-all duration-300"
+                                >
+                                  <BookOpen size={13} />
+                                  Đọc tiếp
+                                </Link>
+                              </div>
                             ) : (
                               <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
                                 <span>Cập nhật</span>

@@ -105,7 +105,7 @@ export class ReadingProgress extends Entity<string> {
   updateProgress(progress: number): void {
     this._props.progress = Math.max(0, Math.min(100, progress));
     this._props.status =
-      this._props.progress >= 80
+      this._props.progress >= 100
         ? ChapterStatus.COMPLETED
         : this._props.progress > 0
           ? ChapterStatus.IN_PROGRESS

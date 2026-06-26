@@ -130,6 +130,31 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
     return docs.map((doc) => this.toDomain(doc));
   }
 
+  async countCompletedByBookIds(
+    userId: UserId,
+    bookIds: BookId[],
+  ): Promise<Map<string, number>> {
+    const objectIds = bookIds.map((id) => new Types.ObjectId(id.toString()));
+    const results = await this.progressModel
+      .aggregate<{ _id: Types.ObjectId; count: number }>([
+        {
+          $match: {
+            userId: new Types.ObjectId(userId.toString()),
+            bookId: { $in: objectIds },
+            status: ReadingStatus.COMPLETED,
+          },
+        },
+        { $group: { _id: '$bookId', count: { $sum: 1 } } },
+      ])
+      .exec();
+
+    const map = new Map<string, number>();
+    results.forEach((item) => {
+      map.set(item._id.toString(), item.count);
+    });
+    return map;
+  }
+
   async remove(userId: UserId, chapterId: ChapterId): Promise<void> {
     await this.progressModel
       .deleteOne({

@@ -14,6 +14,10 @@ export abstract class IReadingProgressRepository {
     bookId: BookId,
   ): Promise<ReadingProgress[]>;
   abstract findByUserId(userId: UserId): Promise<ReadingProgress[]>;
+  abstract countCompletedByBookIds(
+    userId: UserId,
+    bookIds: BookId[],
+  ): Promise<Map<string, number>>;
   abstract remove(userId: UserId, chapterId: ChapterId): Promise<void>;
   abstract exists(userId: UserId, chapterId: ChapterId): Promise<boolean>;
 }
