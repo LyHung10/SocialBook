@@ -9,6 +9,9 @@ export class ToxicWordDocument extends Document {
   @Prop({ required: true })
   group: string;
 
+  @Prop({ required: true })
+  originalWord: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

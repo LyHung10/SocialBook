@@ -40,7 +40,6 @@ export class CreateCommentUseCase {
         );
       }
 
-      // Lưu comment ngay với trạng thái pending, AI sẽ kiểm tra ngầm qua event
       const comment = Comment.create({
         id: CommentId.create(this.idGenerator.generate()),
         userId: command.userId,
@@ -48,7 +47,7 @@ export class CreateCommentUseCase {
         targetId: command.targetId,
         content: command.content,
         parentId: effectiveParentId ?? undefined,
-        moderationStatus: 'pending',
+        moderationStatus: 'approved',
       });
 
       await this.commentRepository.save(comment);

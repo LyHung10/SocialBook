@@ -7,14 +7,11 @@ import {
 import { IReviewRepository } from '@/domain/reviews/repositories/review.repository.interface';
 import { Review } from '@/domain/reviews/entities/review.entity';
 import { UpdateReviewDto } from '@/application/reviews/dto/update-review.dto';
-import { CheckContentUseCase } from '@/application/content-moderation/use-cases/check-content.use-case';
+import { containsVietnameseToxicWords } from '@/domain/content-moderation/utils/vietnamese-profanity';
 
 @Injectable()
 export class UpdateReviewUseCase {
-  constructor(
-    private readonly reviewRepository: IReviewRepository,
-    private readonly checkContentUseCase: CheckContentUseCase,
-  ) {}
+  constructor(private readonly reviewRepository: IReviewRepository) {}
 
   async execute(
     userId: string,
@@ -35,12 +32,10 @@ export class UpdateReviewUseCase {
     let updated = false;
 
     if (dto.content !== undefined) {
-      const moderationResult = await this.checkContentUseCase.execute(
-        dto.content,
-      );
-      if (!moderationResult.isSafe) {
+      const quickCheck = containsVietnameseToxicWords(dto.content);
+      if (quickCheck) {
         throw new BadRequestDomainException(
-          `Nội dung bị từ chối: ${moderationResult.reason}`,
+          'Nội dung chứa từ ngữ thô tục không phù hợp với tiêu chuẩn cộng đồng.',
         );
       }
       review.updateContent(dto.content);

@@ -3,9 +3,10 @@ import { axiosBaseQuery } from '@/lib/nestjs-client-api';
 import { normalizeArrayResponse, PaginatedApiResult } from '@/lib/api-response';
 
 export interface ToxicWord {
-    id: string; // Backend TransformInterceptor converts _id to id
+    id: string;
     pattern: string;
     group: string;
+    originalWord: string;
     createdAt: string;
     updatedAt: string;
 }

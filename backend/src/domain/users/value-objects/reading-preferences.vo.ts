@@ -34,15 +34,15 @@ export class ReadingPreferences {
   static createDefault(): ReadingPreferences {
     return new ReadingPreferences(
       'dark',
-      18,
-      'Georgia, serif',
-      1.8,
-      0.5,
-      '#1a1a1a',
-      '#e5e5e5',
+      19, // Match frontend fontSize 19
+      'var(--font-merriweather), serif',
+      1.7, // Match frontend lineHeight
+      0.2, // Match frontend letterSpacing
+      '#1c1e1eff', // Match frontend backgroundColor
+      '#d8d3c8', // Match frontend textColor
       'justify',
-      40,
-      0,
+      52, // Match frontend marginWidth
+      30, // Match frontend warmth
       100,
       [],
       0,
