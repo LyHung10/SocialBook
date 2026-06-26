@@ -36,6 +36,7 @@ export class AddToxicWordUseCase {
       id: this.idGenerator.generate(),
       pattern: finalPattern,
       group: command.group,
+      originalWord: command.pattern,
     });
 
     const savedWord = await this.toxicWordRepository.create(toxicWord);

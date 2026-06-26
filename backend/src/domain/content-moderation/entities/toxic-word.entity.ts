@@ -3,6 +3,7 @@ import { Entity } from '@/shared/domain/entity.base';
 export interface ToxicWordProps {
   pattern: string;
   group: string; // 'thô tục mạnh', 'xúc phạm', etc.
+  originalWord: string;
 }
 
 export class ToxicWord extends Entity<string> {
@@ -22,10 +23,12 @@ export class ToxicWord extends Entity<string> {
     id: string;
     pattern: string;
     group: string;
+    originalWord: string;
   }): ToxicWord {
     return new ToxicWord(props.id, {
       pattern: props.pattern,
       group: props.group,
+      originalWord: props.originalWord,
     });
   }
 
@@ -33,6 +36,7 @@ export class ToxicWord extends Entity<string> {
     id: string;
     pattern: string;
     group: string;
+    originalWord: string;
     createdAt: Date;
     updatedAt: Date;
   }): ToxicWord {
@@ -41,6 +45,7 @@ export class ToxicWord extends Entity<string> {
       {
         pattern: props.pattern,
         group: props.group,
+        originalWord: props.originalWord,
       },
       props.createdAt,
       props.updatedAt,
@@ -53,5 +58,9 @@ export class ToxicWord extends Entity<string> {
 
   get group(): string {
     return this._props.group;
+  }
+
+  get originalWord(): string | undefined {
+    return this._props.originalWord;
   }
 }

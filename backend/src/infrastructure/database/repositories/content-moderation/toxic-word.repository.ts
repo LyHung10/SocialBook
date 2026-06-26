@@ -17,6 +17,7 @@ export class ToxicWordRepository implements IToxicWordRepository {
       _id: word.id,
       pattern: word.pattern,
       group: word.group,
+      originalWord: word.originalWord,
     });
     const saved = await created.save();
     return this.toEntity(saved);
@@ -42,6 +43,7 @@ export class ToxicWordRepository implements IToxicWordRepository {
       id: String(doc._id),
       pattern: doc.pattern,
       group: doc.group,
+      originalWord: doc.originalWord,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });

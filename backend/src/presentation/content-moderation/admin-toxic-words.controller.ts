@@ -38,6 +38,7 @@ export class AdminToxicWordsController {
         id: w.id,
         pattern: w.pattern,
         group: w.group,
+        originalWord: w.originalWord,
         createdAt: w.createdAt,
       })),
     };
@@ -53,6 +54,7 @@ export class AdminToxicWordsController {
         id: word.id,
         pattern: word.pattern,
         group: word.group,
+        originalWord: word.originalWord,
       },
     };
   }
