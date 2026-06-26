@@ -4,13 +4,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGetHighlightsByBookQuery, useDeleteHighlightMutation, useUpdateHighlightMutation } from '@/features/user-highlights/api/userHighlightsApi';
 import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
-import { Trash2, Edit3, Check, Highlighter, MoveRight } from 'lucide-react';
+import { Trash2, Edit3, Check, Highlighter, MoveRight, LogIn } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useAppAuth } from '@/features/auth/hooks';
 
 interface PersonalHighlightsDrawerProps {
   open: boolean;
@@ -131,6 +133,7 @@ const HighlightItem = ({ highlight, onSelect }: { highlight: UserHighlight; onSe
 
 export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId, bookSlug: propBookSlug, currentChapterId, chapters }: PersonalHighlightsDrawerProps) => {
   const router = useRouter();
+  const { isAuthenticated } = useAppAuth();
   const { data: highlights = [], isLoading } = useGetHighlightsByBookQuery(bookId, {
     skip: !open || !bookId
   });
@@ -185,9 +188,27 @@ export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId, bookSlug:
             </div>
           ) : highlights.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground pt-10">
-              <Highlighter className="w-12 h-12 mb-4 opacity-20" />
-              <p className="font-medium">Chưa có highlight nào</p>
-              <p className="text-sm mt-1">Hãy bôi đen những câu văn hay khi đọc để lưu lại nhé!</p>
+              {isAuthenticated ? (
+                <>
+                  <Highlighter className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="font-medium">Chưa có highlight nào</p>
+                  <p className="text-sm mt-1">Hãy bôi đen những câu văn hay khi đọc để lưu lại nhé!</p>
+                </>
+              ) : (
+                <>
+                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <LogIn className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <p className="font-medium text-foreground">Vui lòng đăng nhập</p>
+                  <p className="text-sm mt-1">Đăng nhập để xem và tạo highlight khi đọc sách nhé!</p>
+                  <Link
+                    href="/login"
+                    className="mt-4 px-6 py-2.5 bg-foreground text-background rounded-xl text-sm font-medium transition-all hover:scale-105"
+                  >
+                    Đăng nhập ngay
+                  </Link>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-4">

@@ -13,7 +13,7 @@ import { ChapterContent } from '@/components/chapter/ChapterContent';
 import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
 import ChapterListDrawer from '@/components/book/ChapterListDrawer';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Library, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion, List } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Library, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion, List, Sparkles } from 'lucide-react';
 import { useReadingView } from '@/features/books/hooks';
 import { useGetChapterProgressQuery } from '@/features/library/api/libraryApi';
 import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
@@ -27,6 +27,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { store } from '@/store/store';
 import { readingRoomsApi } from '@/features/reading-rooms/api/readingRoomsApi';
 import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -74,7 +75,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const searchParams = useSearchParams();
   const { copy, copiedText } = useCopyToClipboard();
   const copied = !!copiedText;
-  const { openConfirm, openAddToLibrary, openCreatePost } = useModalStore();
+  const { openConfirm, openAddToLibrary, openCreatePost, openChapterSummary } = useModalStore();
   
   const handleCopyCode = () => {
     copy(roomCode, 'Đã sao chép mã phòng!');
@@ -902,7 +903,9 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             label="Bookmarks"
             onClick={() => {
               if (!user) {
-                toast.error("Vui lòng đăng nhập để xem bookmark");
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
                 return;
               }
               setShowBookmarks(true);
@@ -919,6 +922,12 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             label="Chia sẻ"
             disabled={!chapter}
             onClick={handleShareRoom}
+          />
+          <DockButton
+            icon={<Sparkles size={20} />}
+            label="Tóm tắt AI"
+            disabled={!chapter}
+            onClick={() => chapter && openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
           />
           <DockButton
             icon={<MessageCircleQuestion size={20} />}

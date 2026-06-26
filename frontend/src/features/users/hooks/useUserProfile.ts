@@ -99,7 +99,7 @@ export function useUserProfile({
                     username: form.displayName,
                     bio: form.bio,
                     location: form.location,
-                    website: form.website,
+                    website: form.website || undefined,
                 },
             });
             toast.success('Cập nhật hồ sơ thành công');

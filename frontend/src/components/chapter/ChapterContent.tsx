@@ -5,6 +5,8 @@ import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Shar
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useShallow } from 'zustand/react/shallow';
+import { useRouter } from 'next/navigation';
+import { MESSAGES } from '@/constants/messages';
 
 import { useAppAuth } from '@/features/auth/hooks';
 import { useGetBookmarksByBookQuery, useCreateBookmarkMutation, useDeleteBookmarkMutation } from '@/features/bookmarks/api/bookmarkApi';
@@ -70,6 +72,7 @@ export const ChapterContent = memo(function ChapterContent({
     } = useChapterComments({ bookId, bookTitle });
     
     const { user } = useAppAuth();
+    const router = useRouter();
 
     const room = useReadingRoomStore((state) => state.room);
     const isEnded = room?.status === 'ended';
@@ -336,7 +339,9 @@ export const ChapterContent = memo(function ChapterContent({
 
     const handleToggleBookmark = useCallback(async (paraId: string, content: string) => {
         if (!user) {
-            toast.error('Vui lòng đăng nhập để lưu bookmark');
+            toast.info(MESSAGES.REQUIRE_LOGIN, {
+                action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+            });
             return;
         }
 
