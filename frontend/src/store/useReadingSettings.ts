@@ -26,9 +26,9 @@ const DARK_DEFAULTS: ReadingPreferences = {
     letterSpacing: 0.2,                      // nhẹ, tạo breathing room
     backgroundColor: '#1c1c1e',              // off-black (không pure #000) — giảm mỏi mắt
     textColor: '#d8d3c8',                    // warm off-white — ít contrast hơn #fff, dễ chịu hơn
-    textAlign: 'justify',                    // book-like, nhìn chỉnh hơn
+    textAlign: 'left',                       // left tránh rivers không hyphenation
     marginWidth: 52,                         // ~65–70 ký tự/dòng — độ dài lý tưởng
-    warmth: 30,                              // ấm vừa — giảm blue light ban đêm rõ hơn
+    warmth: 30,                              // ấm vừa, giảm ánh sáng xanh hiển thị
     brightness: 100,
 };
 
@@ -40,9 +40,9 @@ const LIGHT_DEFAULTS: ReadingPreferences = {
     letterSpacing: 0.2,
     backgroundColor: '#f7f3ed',              // warm off-white (cream) — dịu hơn pure #fff
     textColor: '#2c2925',                    // warm dark brown — không chói như #000
-    textAlign: 'justify',
+    textAlign: 'left',
     marginWidth: 52,
-    warmth: 5,                               // gần như không có — ban ngày không cần
+    warmth: 5,                               // ban ngày không cần ấm
     brightness: 100,
 };
 
@@ -114,8 +114,12 @@ export const useReadingSettings = create<ReadingSettingsStore>()(
                 }),
 
             loadUserPreferences: (prefs) =>
-                set({
-                    settings: prefs,
+                set((state) => {
+                    const hasDiff = (Object.keys(prefs) as (keyof ReadingPreferences)[]).some(
+                        (key) => state.settings[key] !== prefs[key],
+                    );
+                    if (!hasDiff) return state;
+                    return { settings: prefs };
                 }),
         }),
         {

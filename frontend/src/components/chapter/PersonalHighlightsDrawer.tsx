@@ -4,8 +4,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGetHighlightsByBookQuery, useDeleteHighlightMutation, useUpdateHighlightMutation } from '@/features/user-highlights/api/userHighlightsApi';
 import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
-import { Trash2, Edit3, Check, Highlighter, Download } from 'lucide-react';
-import { useState } from 'react';
+import { Trash2, Edit3, Check, Highlighter, MoveRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { format } from 'date-fns';
@@ -15,6 +16,9 @@ interface PersonalHighlightsDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bookId: string;
+  bookSlug?: string;
+  currentChapterId?: string;
+  chapters?: { id: string; slug: string }[];
 }
 
 const PRESET_COLORS = [
@@ -25,7 +29,7 @@ const PRESET_COLORS = [
   '#fca5a5', // red-300
 ];
 
-const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
+const HighlightItem = ({ highlight, onSelect }: { highlight: UserHighlight; onSelect?: (h: UserHighlight) => void }) => {
   const [deleteHighlight] = useDeleteHighlightMutation();
   const [updateHighlight] = useUpdateHighlightMutation();
   const [isEditingNote, setIsEditingNote] = useState(false);
@@ -42,13 +46,6 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
 
   return (
     <div className="flex flex-col gap-3 p-4 rounded-xl border border-border/50 bg-muted/30 relative group">
-      <button 
-        onClick={() => deleteHighlight(highlight.id)}
-        className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-
       <p className="text-sm leading-relaxed border-l-4 pl-3" style={{ borderColor: highlight.color }}>
         {highlight.content}
       </p>
@@ -58,21 +55,37 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
           {format(new Date(highlight.createdAt), 'dd MMMM yyyy, HH:mm', { locale: vi })}
         </span>
         <div className="flex items-center gap-1">
+          {onSelect && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(highlight); }}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all opacity-0 group-hover:opacity-100"
+              title="Đi đến đoạn này"
+            >
+              <MoveRight className="w-3.5 h-3.5" />
+            </button>
+          )}
           {PRESET_COLORS.map(color => (
             <button
               key={color}
-              onClick={() => handleColorChange(color)}
+              onClick={(e) => { e.stopPropagation(); handleColorChange(color); }}
               className="w-4 h-4 rounded-full border border-black/10 flex items-center justify-center transition-transform hover:scale-110"
               style={{ backgroundColor: color }}
             >
               {highlight.color === color && <Check className="w-2.5 h-2.5 text-black/60" />}
             </button>
           ))}
+          <button 
+            onClick={(e) => { e.stopPropagation(); deleteHighlight(highlight.id); }}
+            className="p-1 rounded-md text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all ml-auto"
+            title="Xóa highlight"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
       {isEditingNote ? (
-        <div className="space-y-2 mt-2">
+        <div className="space-y-2 mt-2" onClick={(e) => e.stopPropagation()}>
           <Textarea 
             value={noteContent}
             onChange={(e) => setNoteContent(e.target.value)}
@@ -81,10 +94,10 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
             autoFocus
           />
           <div className="flex gap-2 justify-end">
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setIsEditingNote(false)}>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setIsEditingNote(false); }}>
               Hủy
             </Button>
-            <Button size="sm" className="h-7 text-xs px-4" onClick={handleSaveNote}>
+            <Button size="sm" className="h-7 text-xs px-4" onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}>
               Lưu ghi chú
             </Button>
           </div>
@@ -94,7 +107,7 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
           {highlight.note ? (
             <div 
               className="text-sm bg-background/50 p-3 rounded-lg border border-border/40 cursor-text group/note relative"
-              onClick={() => setIsEditingNote(true)}
+              onClick={(e) => { e.stopPropagation(); setIsEditingNote(true); }}
             >
               <div className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover/note:opacity-100 transition-opacity bg-muted hover:bg-muted-foreground/10">
                 <Edit3 className="w-3 h-3" />
@@ -103,7 +116,7 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
             </div>
           ) : (
             <button 
-              onClick={() => setIsEditingNote(true)}
+              onClick={(e) => { e.stopPropagation(); setIsEditingNote(true); }}
               className="text-xs text-primary/70 hover:text-primary transition-colors flex items-center gap-1.5 py-1 px-2 -ml-2 rounded-md hover:bg-primary/10"
             >
               <Edit3 className="w-3 h-3" />
@@ -116,32 +129,39 @@ const HighlightItem = ({ highlight }: { highlight: UserHighlight }) => {
   );
 };
 
-export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId }: PersonalHighlightsDrawerProps) => {
+export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId, bookSlug: propBookSlug, currentChapterId, chapters }: PersonalHighlightsDrawerProps) => {
+  const router = useRouter();
   const { data: highlights = [], isLoading } = useGetHighlightsByBookQuery(bookId, {
     skip: !open || !bookId
   });
 
-  const handleExport = () => {
-    if (!highlights.length) return;
-    
-    let content = `# My Highlights\n\n`;
-    highlights.forEach(h => {
-      content += `> ${h.content}\n\n`;
-      if (h.note) {
-        content += `**Note:** ${h.note}\n\n`;
+  const chapterSlugMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (chapters) {
+      for (const ch of chapters) {
+        map.set(ch.id, ch.slug);
       }
-      content += `---\n\n`;
-    });
+    }
+    return map;
+  }, [chapters]);
 
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `highlights-${bookId}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleSelectHighlight = (h: UserHighlight) => {
+    onOpenChange(false);
+    const targetSlug = chapterSlugMap.get(h.chapterId);
+    if (!targetSlug || !propBookSlug) return;
+
+    if (h.chapterId === currentChapterId) {
+      setTimeout(() => {
+        const el = document.getElementById(`paragraph-${h.paragraphId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
+          setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
+        }
+      }, 300);
+    } else {
+      router.push(`/books/${propBookSlug}/chapters/${targetSlug}#paragraph-${h.paragraphId}`);
+    }
   };
 
   return (
@@ -153,16 +173,6 @@ export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId }: Persona
               <Highlighter className="w-5 h-5 text-yellow-400" />
               Highlights & Ghi chú
             </SheetTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-8 gap-1.5" 
-              onClick={handleExport}
-              disabled={!highlights.length || isLoading}
-            >
-              <Download className="w-3.5 h-3.5" />
-              Xuất file
-            </Button>
           </div>
         </SheetHeader>
 
@@ -182,7 +192,7 @@ export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId }: Persona
           ) : (
             <div className="space-y-4">
               {highlights.map(highlight => (
-                <HighlightItem key={highlight.id} highlight={highlight} />
+                <HighlightItem key={highlight.id} highlight={highlight} onSelect={handleSelectHighlight} />
               ))}
             </div>
           )}

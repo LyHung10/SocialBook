@@ -16,7 +16,7 @@ import {
   Settings,
   Share2,
   Highlighter,
-  Sparkles,
+  Bot,
   Library,
 } from "lucide-react";
 
@@ -43,7 +43,6 @@ import ReadingSettingsPanel from "@/components/chapter/ReadingSettingsPanel";
 import { KnowledgeSidebar } from "@/features/reading-rooms/components/KnowledgeSidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useTheme } from "next-themes";
 
 interface ChapterPageProps {
   params: Promise<{
@@ -99,27 +98,6 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   const [showHighlights, setShowHighlights] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const { settings, updateSettings } = useReadingSettings();
-  const { resolvedTheme, setTheme: setAppTheme } = useTheme();
-
-  // Sync reading settings khi app theme thay đổi từ bên ngoài (ví dụ navbar toggle)
-  const prevAppThemeRef = useRef<string | undefined>(undefined);
-  useEffect(() => {
-    if (!resolvedTheme) return;
-    if (resolvedTheme === prevAppThemeRef.current) return; // không đổi thực sự
-    prevAppThemeRef.current = resolvedTheme;
-
-    // Chỉ sync khi reading theme chưa khớp với app theme
-    const readingIsDark = settings.theme === 'dark';
-    const appIsDark = resolvedTheme === 'dark';
-    if (readingIsDark === appIsDark) return; // đã khớp rồi, bỏ qua
-
-    updateSettings({
-      theme: appIsDark ? 'dark' : 'light',
-      backgroundColor: appIsDark ? '#1c1c1e' : '#f7f3ed',
-      textColor: appIsDark ? '#d8d3c8' : '#2c2925',
-      warmth: appIsDark ? 30 : 5,
-    });
-  }, [resolvedTheme]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -434,7 +412,7 @@ ${book.description?.slice(0, 100)}...
           />
 
           <DockButton
-            icon={<Sparkles size={20} />}
+            icon={<Bot size={20} />}
             label="Trợ lý sách"
             onClick={() => {
               if (window.innerWidth < 1024) {
@@ -500,6 +478,9 @@ ${book.description?.slice(0, 100)}...
         open={showHighlights}
         onOpenChange={setShowHighlights}
         bookId={book.id}
+        bookSlug={bookSlug}
+        currentChapterId={chapter.id}
+        chapters={chapters.map(c => ({ id: c.id, slug: c.slug }))}
       />
 
       <BookmarksDrawer

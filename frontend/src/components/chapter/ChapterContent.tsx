@@ -304,11 +304,22 @@ export const ChapterContent = memo(function ChapterContent({
     const handleAddHighlight = () => {
         if (!selection || !room) return;
 
-        addHighlight({
-            chapterSlug: room.currentChapterSlug,
-            paragraphId: selection.paraId,
-            content: selection.text,
-        });
+        const paras = getSelectionPerParagraph();
+        if (!paras) {
+            addHighlight({
+                chapterSlug: room.currentChapterSlug,
+                paragraphId: selection.paraId,
+                content: selection.text.replace(/\s+/g, ' ').trim(),
+            });
+        } else {
+            for (const p of paras) {
+                addHighlight({
+                    chapterSlug: room.currentChapterSlug,
+                    paragraphId: p.paraId,
+                    content: p.text,
+                });
+            }
+        }
 
         setSelection(null);
         window.getSelection()?.removeAllRanges();
@@ -350,19 +361,76 @@ export const ChapterContent = memo(function ChapterContent({
         }
     }, [user, bookmarks, bookId, chapterId, chapterSlug, createBookmark, deleteBookmark]);
 
+    const getSelectionPerParagraph = useCallback((): { paraId: string; text: string }[] | null => {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+        const range = sel.getRangeAt(0);
+        const startPara = range.startContainer instanceof Element
+            ? range.startContainer.closest('[data-para-id]')
+            : range.startContainer.parentElement?.closest('[data-para-id]');
+        const endPara = range.endContainer instanceof Element
+            ? range.endContainer.closest('[data-para-id]')
+            : range.endContainer.parentElement?.closest('[data-para-id]');
+        if (!startPara || !endPara || startPara === endPara) return null;
+
+        const results: { paraId: string; text: string }[] = [];
+        let currentEl: Element | null = startPara;
+        while (currentEl) {
+            const paraId = currentEl.getAttribute('data-para-id');
+            if (!paraId) { currentEl = currentEl.nextElementSibling; continue; }
+            const walker = document.createTreeWalker(currentEl, NodeFilter.SHOW_TEXT);
+            const fragments: string[] = [];
+            let node: Node | null;
+            while ((node = walker.nextNode())) {
+                const tc = node.textContent || '';
+                if (node === range.startContainer && node === range.endContainer) {
+                    fragments.push(tc.substring(range.startOffset, range.endOffset)); break;
+                } else if (node === range.startContainer) {
+                    fragments.push(tc.substring(range.startOffset));
+                } else if (node === range.endContainer) {
+                    fragments.push(tc.substring(0, range.endOffset)); break;
+                } else {
+                    fragments.push(tc);
+                }
+            }
+            const text = fragments.join('').replace(/\s+/g, ' ').trim();
+            if (text) results.push({ paraId, text });
+            if (currentEl === endPara) break;
+            currentEl = currentEl.nextElementSibling;
+        }
+        return results.length > 0 ? results : null;
+    }, []);
+
     const handleAddPersonalHighlight = async () => {
         if (!selection) return;
 
-        try {
-            await createPersonalHighlight({
-                bookId,
-                chapterId,
-                paragraphId: selection.paraId,
-                content: selection.text,
-            }).unwrap();
-            toast.success('Đã lưu highlight cá nhân');
-        } catch {
-            toast.error('Không thể lưu highlight cá nhân');
+        const paras = getSelectionPerParagraph();
+        if (!paras) {
+            try {
+                await createPersonalHighlight({
+                    bookId,
+                    chapterId,
+                    paragraphId: selection.paraId,
+                    content: selection.text.replace(/\s+/g, ' ').trim(),
+                }).unwrap();
+                toast.success('Đã lưu highlight cá nhân');
+            } catch {
+                toast.error('Không thể lưu highlight cá nhân');
+            }
+        } else {
+            try {
+                for (const p of paras) {
+                    await createPersonalHighlight({
+                        bookId,
+                        chapterId,
+                        paragraphId: p.paraId,
+                        content: p.text,
+                    }).unwrap();
+                }
+                toast.success(`Đã lưu ${paras.length} highlight`);
+            } catch {
+                toast.error('Không thể lưu highlight cá nhân');
+            }
         }
 
         setSelection(null);
@@ -470,63 +538,45 @@ export const ChapterContent = memo(function ChapterContent({
                                     <FloatingReactionBubbles paragraphId={para.id} />
                                 )}
 
-                                <div className="absolute right-full top-0 mr-14 flex flex-col gap-0.5 p-0.5 rounded-md bg-background backdrop-blur-xl border border-border shadow-sm shrink-0 z-10 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity duration-200">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="secondary"
-                                                size="icon"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleToggleBookmark(para.id, para.content);
-                                                }}
-                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
-                                                aria-label="Bookmark đoạn này"
-                                            >
-                                                <BookmarkIcon 
-                                                    size={10} 
-                                                    className={bookmarks.some(b => b.paragraphId === para.id) ? "fill-primary text-primary" : ""} 
-                                                />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right">
-                                            <p>{bookmarks.some(b => b.paragraphId === para.id) ? 'Bỏ bookmark' : 'Bookmark'}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                <div className="absolute right-full top-1/2 -translate-y-1/2 -translate-x-1/2 mr-6 flex flex-row items-center gap-1 p-0.5 rounded-md bg-background backdrop-blur-xl border border-border shadow-sm shrink-0 z-10 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity duration-200">
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleBookmark(para.id, para.content);
+                                        }}
+                                        title={bookmarks.some(b => b.paragraphId === para.id) ? 'Bỏ bookmark' : 'Bookmark'}
+                                        className="h-7 w-7 rounded-md hover:scale-110 transition-transform"
+                                        aria-label="Bookmark đoạn này"
+                                    >
+                                        <BookmarkIcon 
+                                            size={14} 
+                                            className={bookmarks.some(b => b.paragraphId === para.id) ? "fill-primary text-primary" : ""} 
+                                        />
+                                    </Button>
 
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="secondary"
-                                                size="icon"
-                                                onClick={() => handleToggleComments(para)}
-                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
-                                                aria-label="Bình luận"
-                                            >
-                                                <MessageSquarePlus size={10} />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right">
-                                            <p>Bình luận</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        onClick={() => handleToggleComments(para)}
+                                        title="Bình luận"
+                                        className="h-7 w-7 rounded-md hover:scale-110 transition-transform"
+                                        aria-label="Bình luận"
+                                    >
+                                        <MessageSquarePlus size={14} />
+                                    </Button>
 
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="secondary"
-                                                size="icon"
-                                                onClick={() => handleOpenPostModal(para)}
-                                                className="h-5 w-5 rounded-[4px] hover:scale-110 transition-transform"
-                                                aria-label="Chia sẻ"
-                                            >
-                                                <Share2 size={10} />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right">
-                                            <p>Chia sẻ</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        onClick={() => handleOpenPostModal(para)}
+                                        title="Chia sẻ"
+                                        className="h-7 w-7 rounded-md hover:scale-110 transition-transform"
+                                        aria-label="Chia sẻ"
+                                    >
+                                        <Share2 size={14} />
+                                    </Button>
                                 </div>
                             </div>
                         );
@@ -548,33 +598,29 @@ export const ChapterContent = memo(function ChapterContent({
                                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                className="pointer-events-auto flex items-center gap-0.5 p-1 bg-neutral-900 dark:bg-black/90 backdrop-blur-xl border border-neutral-700 dark:border-gray-700 rounded-full shadow-2xl shadow-black/30 dark:shadow-black/60 -translate-x-1/2 -translate-y-[120%]"
+                                className="pointer-events-auto flex items-center gap-0.5 p-1 bg-background/80 backdrop-blur-xl border border-border rounded-lg shadow-lg -translate-x-1/2 -translate-y-[110%]"
                             >
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-9 w-9 rounded-full p-0 text-neutral-200 hover:bg-white/10 hover:text-white"
-                                            onClick={() => handleAIAction('explain')}
-                                        >
-                                            <Sparkles className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p className="text-[10px]">Giải thích AI</p></TooltipContent>
-                                </Tooltip>
+                                <Button
+                                    title="Giải thích AI"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 rounded-md p-0 text-foreground hover:bg-accent"
+                                    onClick={() => handleAIAction('explain')}
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                </Button>
 
                                 {user && !room && (
                                     <>
                                         <div className="w-[1px] h-4 bg-border mx-1" />
                                         <Button
+                                            title="Highlight"
                                             size="sm"
                                             variant="ghost"
-                                            className="h-9 rounded-full gap-2 px-3 text-neutral-200 hover:bg-white/10 hover:text-white"
+                                            className="h-8 w-8 rounded-md p-0 text-foreground hover:bg-accent"
                                             onClick={handleAddPersonalHighlight}
                                         >
                                             <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
-                                            <span className="text-[11px] font-bold">Highlight</span>
                                         </Button>
                                     </>
                                 )}
@@ -584,23 +630,24 @@ export const ChapterContent = memo(function ChapterContent({
                                         <div className="w-[1px] h-4 bg-border mx-1" />
 
                                         <Button
+                                            title="Highlight"
                                             size="sm"
                                             variant="ghost"
-                                            className="h-9 rounded-full gap-2 px-3 text-neutral-200 hover:bg-white/10 hover:text-white"
+                                            className="h-8 w-8 rounded-md p-0 text-foreground hover:bg-accent"
                                             onClick={handleAddHighlight}
                                         >
                                             <Highlighter className="w-3.5 h-3.5" />
-                                            <span className="text-[11px] font-bold">Highlight</span>
                                         </Button>
 
                                         <Button
+                                            title="Trích dẫn"
                                             size="sm"
                                             variant="ghost"
-                                            className="h-9 rounded-full gap-2 px-3 text-neutral-200 hover:bg-white/10 hover:text-white"
+                                            className="h-8 rounded-md gap-1.5 px-2 text-foreground hover:bg-accent"
                                             onClick={handleAddQuote}
                                         >
-                                            <QuoteIcon className="w-3.5 h-3.5" />
-                                            <span className="text-[11px] font-bold">Trích dẫn</span>
+                                            <QuoteIcon className="w-3 h-3" />
+                                            <span className="text-[10px] font-bold">Trích dẫn</span>
                                         </Button>
                                     </>
                                 )}
