@@ -108,4 +108,4 @@ import { ToxicWordsSeed } from './toxic-words.seeder';
   ],
   exports: [SeederService],
 })
-export class DatabaseSeedModule { }
+export class DatabaseSeedModule {}
