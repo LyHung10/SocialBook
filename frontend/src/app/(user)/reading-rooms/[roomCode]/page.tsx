@@ -107,7 +107,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const chapter = chapterData?.chapter;
   const navigation = chapterData?.navigation;
   const { data: chaptersData } = useGetChaptersQuery({ bookSlug: bookData?.slug || '' }, { skip: !bookData?.slug });
-  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room || isEnded });
+  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room });
 
   useEffect(() => {
     if (quotesData) {

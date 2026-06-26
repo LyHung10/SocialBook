@@ -11,6 +11,15 @@ export class ReadingRoomResponseDto {
   membersCount: number;
   members: Array<{ userId: string; role: string }>;
   createdAt: Date;
+  highlights: Array<{
+    id: string;
+    userId: string;
+    chapterSlug: string;
+    paragraphId: string;
+    content: string;
+    aiInsight?: string;
+    createdAt: Date;
+  }>;
 
   constructor(room: ReadingRoomResult) {
     this.roomId = room.roomId;
@@ -23,6 +32,7 @@ export class ReadingRoomResponseDto {
     this.membersCount = room.membersCount;
     this.members = room.members;
     this.createdAt = room.createdAt;
+    this.highlights = room.highlights;
   }
 
   static fromResult(room: ReadingRoomResult): ReadingRoomResponseDto {

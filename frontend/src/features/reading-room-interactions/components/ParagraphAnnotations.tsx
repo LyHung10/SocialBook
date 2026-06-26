@@ -48,14 +48,16 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
     <div className="w-full min-w-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer leading-none"
+        className="inline-flex items-center transition-colors cursor-pointer leading-none"
       >
-        <MessageCircle size={14} className="text-xs leading-none translate-y-[0.5px]" />
-        {commentCount > 0 && (
-          <span className="text-[10px] font-medium tabular-nums text-foreground">
-            {commentCount}
-          </span>
-        )}
+        <span className="inline-flex items-center gap-0.5 rounded-md bg-muted border px-1.5 py-0.5 text-foreground hover:bg-muted/80 transition-colors">
+          <MessageCircle size={14} className="text-xs leading-none translate-y-[0.5px]" />
+          {commentCount > 0 && (
+            <span className="text-xs font-medium tabular-nums">
+              {commentCount}
+            </span>
+          )}
+        </span>
       </button>
 
       <AnimatePresence initial={false}>
@@ -97,7 +99,7 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Viết bình luận..."
-                  className="h-9 text-xs rounded-xl bg-background border-border focus-visible:ring-primary/30 shadow-sm"
+                  className="h-9 text-xs rounded-xl bg-background text-foreground border-border focus-visible:ring-primary/30 shadow-sm"
                 />
                 <Button type="submit" size="icon" className="h-9 w-9 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm" disabled={!text.trim()}>
                   <Send className="w-4 h-4" />
