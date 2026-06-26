@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { FptProvider } from './fpt.provider';
+import { ElevenLabsProvider } from './elevenlabs.provider';
 import { ITextToSpeechProvider } from '@/domain/text-to-speech/interfaces/text-to-speech.provider.interface';
 import { MediaInfrastructureModule } from '../media/media-infrastructure.module';
 
@@ -8,7 +8,7 @@ import { MediaInfrastructureModule } from '../media/media-infrastructure.module'
   providers: [
     {
       provide: ITextToSpeechProvider,
-      useClass: FptProvider,
+      useClass: ElevenLabsProvider,
     },
   ],
   exports: [ITextToSpeechProvider],
