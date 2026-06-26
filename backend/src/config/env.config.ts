@@ -35,8 +35,9 @@ export default registerAs('env', () => ({
 
   // External APIs
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
-  FPT_API_KEY: process.env.FPT_API_KEY || '',
-  FPT_VOICE: process.env.FPT_VOICE || 'banmai',
+  ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY || '',
+  ELEVENLABS_VOICE_ID: process.env.ELEVENLABS_VOICE_ID || 'BYtZrKUsiaR2iHNpf2uV',
+  ELEVENLABS_MODEL_ID: process.env.ELEVENLABS_MODEL_ID || 'eleven_v3',
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY || '',
 
   // Content Moderation API
