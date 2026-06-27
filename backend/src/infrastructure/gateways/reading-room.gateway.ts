@@ -58,7 +58,7 @@ interface SocketData {
 
 @WebSocketGateway({
   namespace: '/reading-rooms',
-  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:3000' },
+  cors: { origin: '*' },
   maxHttpBufferSize: 1e6,
 })
 export class ReadingRoomGateway
