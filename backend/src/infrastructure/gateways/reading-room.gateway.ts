@@ -62,8 +62,7 @@ interface SocketData {
   maxHttpBufferSize: 1e6,
 })
 export class ReadingRoomGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ReadingRoomGateway.name);
   private readonly eventTimestamps = new Map<string, number>();
 
@@ -91,7 +90,7 @@ export class ReadingRoomGateway
     private readonly generateHighlightInsightUseCase: GenerateHighlightInsightUseCase,
     private readonly updateProgressUseCase: UpdateProgressUseCase,
     private readonly chapterRepository: IChapterRepository,
-  ) {}
+  ) { }
 
   private async saveReadingProgress(
     userId: string,

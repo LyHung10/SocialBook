@@ -23,7 +23,7 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | null>(null);
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (process.env.NODE_ENV === 'production' ? '/' : 'http://localhost:5000');
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const managerRef = useRef<Manager | null>(null);

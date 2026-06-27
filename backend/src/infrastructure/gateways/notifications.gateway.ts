@@ -27,8 +27,7 @@ interface SocketData {
   maxHttpBufferSize: 1e6,
 })
 export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(NotificationsGateway.name);
 
   @WebSocketServer() server: Server;
@@ -36,7 +35,7 @@ export class NotificationsGateway
   constructor(
     private readonly notificationsService: NotificationsService,
     private readonly jwt: JwtService,
-  ) {}
+  ) { }
 
   afterInit() {
     this.notificationsService.setServer(this.server);
