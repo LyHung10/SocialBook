@@ -30,7 +30,7 @@ export class UpdateUserOverviewDto {
   location?: string;
 
   @IsOptional()
-  @ValidateIf((o) => o.website !== '')
+  @ValidateIf((o: UpdateUserOverviewDto) => o.website !== '')
   @IsUrl({}, { message: 'Website must be a valid URL' })
   website?: string;
 
