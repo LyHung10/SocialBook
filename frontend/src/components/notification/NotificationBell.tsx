@@ -48,7 +48,7 @@ export function NotificationBell() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h4 className="font-semibold text-sm">Thông báo</h4>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary-foreground/90 hover:bg-primary/20">
+            <Badge variant="default" className="rounded-full px-2 py-0.5 text-[11px] font-bold">
               {unreadCount} mới
             </Badge>
           )}
