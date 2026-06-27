@@ -21,7 +21,8 @@ interface SocketData {
 @WebSocketGateway({
   namespace: '/notifications',
   cors: {
-    origin: '*',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
   },
   maxHttpBufferSize: 1e6,
 })
