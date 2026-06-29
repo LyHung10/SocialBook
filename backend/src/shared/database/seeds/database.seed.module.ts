@@ -62,6 +62,9 @@ import { PostsSeed } from './posts.seeder';
 import { NotificationSeed } from './notifications.seeder';
 import { ToxicWordsSeed } from './toxic-words.seeder';
 import { ChapterDiscussionsSeed } from './chapter-discussions.seeder';
+import { ReadProgressReviewSeed } from './read-progress-review.seeder';
+import { PostsDiverseSeed } from './posts-diverse.seeder';
+import { BookPostLikesSeed } from './book-post-likes.seeder';
 
 @Module({
   imports: [
@@ -107,6 +110,9 @@ import { ChapterDiscussionsSeed } from './chapter-discussions.seeder';
     NotificationSeed,
     ToxicWordsSeed,
     ChapterDiscussionsSeed,
+    ReadProgressReviewSeed,
+    PostsDiverseSeed,
+    BookPostLikesSeed,
   ],
   exports: [SeederService],
 })
