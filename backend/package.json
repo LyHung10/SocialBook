@@ -13,6 +13,7 @@
     "seed:read-progress-review:prod": "node -r tsconfig-paths/register dist/shared/database/seeds/run-read-progress-review.js",
     "seed:posts-diverse:prod": "node -r tsconfig-paths/register dist/shared/database/seeds/run-posts-diverse.js",
     "seed:book-post-likes:prod": "node -r tsconfig-paths/register dist/shared/database/seeds/run-book-post-likes.js",
+    "seed:reading-rooms:prod": "node -r tsconfig-paths/register dist/shared/database/seeds/run-reading-rooms.js",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

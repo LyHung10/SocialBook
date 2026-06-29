@@ -65,6 +65,23 @@ import { ChapterDiscussionsSeed } from './chapter-discussions.seeder';
 import { ReadProgressReviewSeed } from './read-progress-review.seeder';
 import { PostsDiverseSeed } from './posts-diverse.seeder';
 import { BookPostLikesSeed } from './book-post-likes.seeder';
+import {
+  ReadingRoom,
+  ReadingRoomSchema,
+} from '@/infrastructure/database/schemas/reading-room.schema';
+import {
+  RoomCommentSchema,
+  RoomCommentSchemaFactory,
+} from '@/infrastructure/database/schemas/reading-room-interactions/room-comment.schema';
+import {
+  RoomReactionSchema,
+  RoomReactionSchemaFactory,
+} from '@/infrastructure/database/schemas/reading-room-interactions/room-reaction.schema';
+import {
+  RoomQuoteSchema,
+  RoomQuoteSchemaFactory,
+} from '@/infrastructure/database/schemas/reading-room-interactions/room-quote.schema';
+import { ReadingRoomsSeed } from './reading-rooms.seeder';
 
 @Module({
   imports: [
@@ -95,6 +112,10 @@ import { BookPostLikesSeed } from './book-post-likes.seeder';
       { name: Post.name, schema: PostSchema },
       { name: Notification.name, schema: NotificationSchema },
       { name: ToxicWordDocument.name, schema: ToxicWordSchema },
+      { name: ReadingRoom.name, schema: ReadingRoomSchema },
+      { name: RoomCommentSchema.name, schema: RoomCommentSchemaFactory },
+      { name: RoomReactionSchema.name, schema: RoomReactionSchemaFactory },
+      { name: RoomQuoteSchema.name, schema: RoomQuoteSchemaFactory },
     ]),
   ],
   providers: [
@@ -113,6 +134,7 @@ import { BookPostLikesSeed } from './book-post-likes.seeder';
     ReadProgressReviewSeed,
     PostsDiverseSeed,
     BookPostLikesSeed,
+    ReadingRoomsSeed,
   ],
   exports: [SeederService],
 })
