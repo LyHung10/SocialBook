@@ -44,14 +44,13 @@ export class ChapterDiscussionsSeed {
   async run(): Promise<void> {
     this.logger.log('💬 Seeding chapter discussions...');
 
-    const existingChapterComments = await this.commentModel.countDocuments({
-      targetType: 'chapter',
+    const deleted = await this.commentModel.deleteMany({
+      targetType: { $in: ['chapter', 'paragraph'] },
     });
-    if (existingChapterComments > 0) {
-      this.logger.warn(
-        `⚠️ Found ${existingChapterComments} existing chapter comments. Skipping...`,
+    if (deleted.deletedCount > 0) {
+      this.logger.log(
+        `🗑️ Deleted ${deleted.deletedCount} old chapter/paragraph comments`,
       );
-      return;
     }
 
     const users = await this.userModel.find();
