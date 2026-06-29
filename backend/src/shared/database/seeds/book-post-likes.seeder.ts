@@ -55,6 +55,13 @@ export class BookPostLikesSeed {
       return;
     }
 
+    const deleted = await this.likeModel.deleteMany({
+      targetType: { $in: ['book', 'post'] },
+    });
+    if (deleted.deletedCount > 0) {
+      this.logger.log(`🗑️ Deleted ${deleted.deletedCount} old book/post likes`);
+    }
+
     const likes: LikeSeedData[] = [];
     const pairs = new Set<string>();
 
