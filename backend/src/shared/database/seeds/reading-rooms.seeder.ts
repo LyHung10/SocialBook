@@ -6,7 +6,6 @@ import {
   ReadingRoomDocument,
   RoomMemberSchema,
   RoomHighlight,
-  ChatMessage,
 } from '@/infrastructure/database/schemas/reading-room.schema';
 import {
   RoomCommentSchema,
@@ -151,19 +150,6 @@ export class ReadingRoomsSeed {
       (c: string) => `Câu văn hay nhất chương: "${c.substring(0, 100)}..."`,
     ];
 
-    const chatTemplates = [
-      'Đoạn này hay quá mọi người nhỉ!',
-      'Mình thích cách tác giả dùng từ ở đây.',
-      'Có ai hiểu ý đồ tác giả không?',
-      'Mình nghĩ nhân vật chính sắp có bước ngoặt lớn.',
-      'Đọc đến đây mình mới thấm cái hay của truyện.',
-      'Phần này viết sâu sắc thật sự.',
-      'Mọi người đọc xong chưa, mình chờ cả nhà!',
-      'Chương này dễ thương quá trời!',
-      'Không biết diễn biến tiếp theo sẽ thế nào nhỉ?',
-      'Tuyệt vời! Mình đọc đi đọc lại đoạn này mấy lần.',
-    ];
-
     const reactionTypes = [
       'cry',
       'angry',
@@ -213,21 +199,6 @@ export class ReadingRoomsSeed {
         });
       }
 
-      const chatMessages: ChatMessage[] = [];
-      const chatCount = rc.mode === 'sync' ? 8 : 4;
-      for (let i = 0; i < chatCount; i++) {
-        chatMessages.push({
-          userId: allUserIds[Math.floor(Math.random() * allUserIds.length)],
-          role: 'user',
-          content:
-            chatTemplates[Math.floor(Math.random() * chatTemplates.length)],
-          createdAt: new Date(
-            Date.now() -
-              (chatCount - i) * Math.random() * 2 * 24 * 60 * 60 * 1000,
-          ),
-        } as ChatMessage);
-      }
-
       await this.roomModel.create({
         _id: roomId,
         bookId: rc.book._id.toString(),
@@ -238,7 +209,6 @@ export class ReadingRoomsSeed {
         maxMembers: 10,
         members,
         highlights,
-        chatMessages,
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(),
       });
