@@ -61,6 +61,7 @@ import { ProgressSeed } from './progress.seeder';
 import { PostsSeed } from './posts.seeder';
 import { NotificationSeed } from './notifications.seeder';
 import { ToxicWordsSeed } from './toxic-words.seeder';
+import { ChapterDiscussionsSeed } from './chapter-discussions.seeder';
 
 @Module({
   imports: [
@@ -105,6 +106,7 @@ import { ToxicWordsSeed } from './toxic-words.seeder';
     PostsSeed,
     NotificationSeed,
     ToxicWordsSeed,
+    ChapterDiscussionsSeed,
   ],
   exports: [SeederService],
 })
