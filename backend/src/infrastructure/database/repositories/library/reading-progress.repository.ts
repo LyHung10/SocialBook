@@ -54,15 +54,9 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
   }
 
   private static toChapterStatus(status: string): ChapterStatus {
-    if (Object.values(ChapterStatus).includes(status as ChapterStatus)) {
-      return status as ChapterStatus;
-    }
-    switch (status) {
-      case 'READING':
-        return ChapterStatus.IN_PROGRESS;
-      default:
-        return ChapterStatus.NOT_STARTED;
-    }
+    return Object.values(ChapterStatus).includes(status as ChapterStatus)
+      ? (status as ChapterStatus)
+      : ChapterStatus.READING;
   }
 
   async save(readingProgress: ReadingProgress): Promise<void> {

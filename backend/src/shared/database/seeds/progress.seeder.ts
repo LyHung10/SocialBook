@@ -96,9 +96,7 @@ export class ProgressSeed {
           chapterId: ch._id,
           progress: Math.min(progress, 100),
           timeSpent: Math.floor(Math.random() * 1800) + 60,
-          status: isCompleted
-            ? ChapterStatus.COMPLETED
-            : ChapterStatus.IN_PROGRESS,
+          status: isCompleted ? ChapterStatus.COMPLETED : ChapterStatus.READING,
           xpEarned: Math.floor(Math.random() * 100),
           pagesRead: Math.floor(Math.random() * 20) + 1,
           wordsRead: Math.floor(Math.random() * 5000) + 500,

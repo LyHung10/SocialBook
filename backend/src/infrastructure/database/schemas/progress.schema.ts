@@ -26,7 +26,7 @@ export class Progress extends BaseSchema {
   @Prop({
     type: String,
     enum: ChapterStatus,
-    default: ChapterStatus.NOT_STARTED,
+    default: ChapterStatus.READING,
   })
   status: string;
 
