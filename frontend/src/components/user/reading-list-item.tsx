@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/common/SafeImage";
 import { BookOpen, Globe, Lock } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useGetCollectionDetailNoAuthQuery } from "@/features/library/api/libraryApi";
@@ -44,7 +44,7 @@ export function ReadingListItem(props: ReadingListItemProps) {
                                 key={book.id}
                                 className="relative aspect-[3/4] rounded-md overflow-hidden bg-muted"
                             >
-                                <Image
+                                <SafeImage
                                     src={book.bookId.coverUrl}
                                     alt={book.bookId.title}
                                     fill

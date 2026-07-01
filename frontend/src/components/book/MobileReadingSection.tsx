@@ -1,8 +1,8 @@
 'use client';
 
 import { ChevronRight, LogIn } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { SafeImage } from '@/components/common/SafeImage';
 import { LibraryItem } from '@/features/library/types/library.interface';
 
 interface MobileReadingSectionProps {
@@ -126,7 +126,7 @@ export function MobileReadingSection({ books = EMPTY_BOOKS, isLoading, isGuest }
                 href={`/books/${item.bookId.slug}`}
                 className="block relative aspect-[2/3] rounded-lg overflow-hidden shadow-sm mb-2 hover:shadow-md transition-shadow"
               >
-                <Image
+                <SafeImage
                   src={item.bookId.coverUrl}
                   alt={item.bookId.title}
                   fill

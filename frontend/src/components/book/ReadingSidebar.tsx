@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LibraryItem } from '@/features/library/types/library.interface';
 import { ChevronRight, LogIn } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { SafeImage } from '@/components/common/SafeImage';
 
 interface ReadingSidebarProps {
   books: LibraryItem[];
@@ -152,7 +152,7 @@ export function ReadingSidebar({ books = EMPTY_BOOKS, isLoading, isGuest }: Read
                   href={`/books/${item.bookId.slug}`}
                   className="relative w-16 h-24 rounded-lg overflow-hidden shadow-sm flex-shrink-0 hover:shadow-md transition-shadow"
                 >
-                  <Image
+                  <SafeImage
                     src={item.bookId.coverUrl}
                     alt={item.bookId.title}
                     fill

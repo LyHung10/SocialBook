@@ -13,7 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/common/SafeImage';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -307,7 +307,7 @@ export default function CollectionDetailPage() {
               >
                 {/* Book Cover */}
                 <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
-                  <Image
+                  <SafeImage
                     src={item.bookId.coverUrl}
                     alt={item.bookId.title}
                     fill
