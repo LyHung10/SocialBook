@@ -69,7 +69,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
     error,
   } = useGetChapterQuery({ bookSlug, chapterSlug });
 
-  const { data: chaptersData } = useGetChaptersQuery({ bookSlug });
+  const { data: chaptersData } = useGetChaptersQuery({ bookSlug, limit: 1000 });
   const [recordChapterView] = useRecordChapterViewMutation();
   const [createPost] = useCreatePostMutation();
 
