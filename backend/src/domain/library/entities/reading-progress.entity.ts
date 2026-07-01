@@ -4,8 +4,7 @@ import { ChapterId } from '../value-objects/chapter-id.vo';
 import { UserId } from '../value-objects/user-id.vo';
 
 export enum ChapterStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
+  READING = 'READING',
   COMPLETED = 'COMPLETED',
 }
 
@@ -46,7 +45,7 @@ export class ReadingProgress extends Entity<string> {
       bookId: BookId.create(props.bookId),
       chapterId: ChapterId.create(props.chapterId),
       progress: props.progress || 0,
-      status: props.status || ChapterStatus.NOT_STARTED,
+      status: props.status || ChapterStatus.READING,
       timeSpent: props.timeSpent || 0,
       lastReadAt: null,
     });
@@ -107,9 +106,7 @@ export class ReadingProgress extends Entity<string> {
     this._props.status =
       this._props.progress >= 100
         ? ChapterStatus.COMPLETED
-        : this._props.progress > 0
-          ? ChapterStatus.IN_PROGRESS
-          : ChapterStatus.NOT_STARTED;
+        : ChapterStatus.READING;
     this._props.lastReadAt = new Date();
     this.markAsUpdated();
   }
@@ -130,12 +127,8 @@ export class ReadingProgress extends Entity<string> {
     return this._props.status === ChapterStatus.COMPLETED;
   }
 
-  isInProgress(): boolean {
-    return this._props.status === ChapterStatus.IN_PROGRESS;
-  }
-
-  isNotStarted(): boolean {
-    return this._props.status === ChapterStatus.NOT_STARTED;
+  isReading(): boolean {
+    return this._props.status === ChapterStatus.READING;
   }
 
   getTimeSpentInMinutes(): number {

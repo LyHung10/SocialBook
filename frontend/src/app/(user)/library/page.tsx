@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { SafeImage } from '@/components/common/SafeImage';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -197,7 +198,7 @@ export default function LibraryPage() {
                       >
                         {/* Book Cover */}
                         <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted">
-                          <Image
+                          <SafeImage
                             src={item.bookId.coverUrl}
                             alt={item.bookId.title}
                             fill
@@ -395,13 +396,13 @@ function CollectionCard({ col }: { col: Collection }) {
         </div>
 
         {/* Right: Cover stack or Folder icon */}
-        <div className="relative w-20 h-24 flex items-center justify-center shrink-0 self-center">
+                <div className="relative w-20 h-24 flex items-center justify-center shrink-0 self-center">
           {covers.length > 0 ? (
             <div className="relative w-full h-full flex items-center justify-end">
               {/* Back cover (3rd book) */}
               {covers[2] && (
                 <div className="absolute w-[40px] h-[56px] right-7 top-4 -rotate-12 z-0 opacity-40 shadow-sm rounded-sm overflow-hidden border border-white/10 dark:border-black/20">
-                  <Image
+                  <SafeImage
                     src={covers[2]}
                     alt=""
                     fill
@@ -413,7 +414,7 @@ function CollectionCard({ col }: { col: Collection }) {
               {/* Middle cover (2nd book) */}
               {covers[1] && (
                 <div className="absolute w-[44px] h-[62px] right-3.5 top-2 -rotate-6 z-10 opacity-75 shadow-md rounded-sm overflow-hidden border border-white/10 dark:border-black/20">
-                  <Image
+                  <SafeImage
                     src={covers[1]}
                     alt=""
                     fill
@@ -425,7 +426,7 @@ function CollectionCard({ col }: { col: Collection }) {
               {/* Front cover (1st book) */}
               {covers[0] && (
                 <div className="absolute w-[48px] h-[68px] right-0 top-1.5 rotate-3 z-20 shadow-lg rounded-sm overflow-hidden border border-white/20 dark:border-black/40 group-hover:scale-105 group-hover:rotate-0 transition-all duration-300">
-                  <Image
+                  <SafeImage
                     src={covers[0]}
                     alt=""
                     fill

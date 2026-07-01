@@ -6,7 +6,7 @@ import { useGetLibraryBooksQuery } from '@/features/library/api/libraryApi';
 import { Book, BookOrderField } from '@/features/books/types/book.interface';
 import { BookSummary } from '@/features/library/types/library.interface';
 import { ChevronDown, Search, X, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/common/SafeImage';
 import { cn } from '@/lib/utils';
 
 interface SelectableBook {
@@ -178,15 +178,15 @@ export default function BookSelector({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {selectedBook ? (
             <>
-              <div className="relative w-8 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0 border border-border">
-                <Image
-                  src={selectedBook.coverUrl}
-                  alt={selectedBook.title}
-                  fill
-                  sizes="32px"
-                  className="object-cover"
-                />
-              </div>
+                              <div className="relative w-8 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0 border border-border">
+                                <SafeImage
+                                  src={selectedBook.coverUrl}
+                                  alt={selectedBook.title}
+                                  fill
+                                  sizes="32px"
+                                  className="object-cover"
+                                />
+                              </div>
               <div className="text-left flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-[13px] truncate">
                   {selectedBook.title}
@@ -273,7 +273,7 @@ export default function BookSelector({
                         )}
                       >
                         <div className="relative w-10 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0 border border-border/50">
-                          <Image
+                          <SafeImage
                             src={book.coverUrl}
                             alt={book.title}
                             fill

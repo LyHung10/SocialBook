@@ -27,11 +27,16 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend1
+      - backend2
       - frontend
 
   backend1:
     <<: *backend-common
     container_name: socialbook-backend1
+
+  backend2:
+    <<: *backend-common
+    container_name: socialbook-backend2
 
   frontend:
     image: daithien/socialbook-fe:dev

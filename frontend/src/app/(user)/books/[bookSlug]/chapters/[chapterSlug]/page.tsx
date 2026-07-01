@@ -4,6 +4,7 @@ import Image from "next/image";
 import { use, useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { MESSAGES } from "@/constants/messages";
 import { getErrorMessage } from "@/lib/utils";
 import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
 import {
@@ -18,6 +19,7 @@ import {
   Highlighter,
   Bot,
   Library,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -59,6 +61,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const openCreatePost = useModalStore(s => s.openCreatePost);
   const openAddToLibrary = useModalStore(s => s.openAddToLibrary);
+  const openChapterSummary = useModalStore(s => s.openChapterSummary);
 
   const {
     data: chapterData,
@@ -66,7 +69,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
     error,
   } = useGetChapterQuery({ bookSlug, chapterSlug });
 
-  const { data: chaptersData } = useGetChaptersQuery({ bookSlug });
+  const { data: chaptersData } = useGetChaptersQuery({ bookSlug, limit: 1000 });
   const [recordChapterView] = useRecordChapterViewMutation();
   const [createPost] = useCreatePostMutation();
 
@@ -377,7 +380,15 @@ ${book.description?.slice(0, 100)}...
           <DockButton
             icon={<Highlighter size={20} className="text-yellow-500" />}
             label="Highlights"
-            onClick={() => setShowHighlights(true)}
+            onClick={() => {
+              if (!isLoggedIn) {
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
+                return;
+              }
+              setShowHighlights(true);
+            }}
           />
 
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
@@ -412,6 +423,12 @@ ${book.description?.slice(0, 100)}...
           />
 
           <DockButton
+            icon={<Sparkles size={20} />}
+            label="Tóm tắt AI"
+            onClick={() => openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
+          />
+
+          <DockButton
             icon={<Bot size={20} />}
             label="Trợ lý sách"
             onClick={() => {
@@ -427,7 +444,9 @@ ${book.description?.slice(0, 100)}...
             label="Bookmarks"
             onClick={() => {
               if (!isLoggedIn) {
-                toast.error("Vui lòng đăng nhập để xem bookmark");
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
                 return;
               }
               setShowBookmarks(true);

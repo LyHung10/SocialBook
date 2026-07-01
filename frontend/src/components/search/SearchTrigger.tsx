@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, BookOpen, ArrowRight, X } from 'lucide-react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/common/SafeImage';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, startTransition } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -171,15 +171,13 @@ export function SearchTrigger() {
                       className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-brand/10 transition-colors text-left group"
                     >
                       <div className="relative w-10 h-14 shrink-0 rounded-lg overflow-hidden bg-gradient-to-b from-muted to-muted/50 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
-                        {book.coverUrl && (
-                          <Image
-                            src={book.coverUrl}
-                            alt={book.title}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                          />
-                        )}
+                        <SafeImage
+                          src={book.coverUrl}
+                          alt={book.title}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-foreground truncate group-hover:text-brand transition-colors">

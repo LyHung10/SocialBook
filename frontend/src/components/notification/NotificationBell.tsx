@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 
 export function NotificationBell() {
   const { accessToken } = useAppAuth();
@@ -48,13 +48,13 @@ export function NotificationBell() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h4 className="font-semibold text-sm">Thông báo</h4>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary-foreground/90 hover:bg-primary/20">
+            <Badge variant="default" className="rounded-full px-2 py-0.5 text-[11px] font-bold">
               {unreadCount} mới
             </Badge>
           )}
         </div>
 
-        <ScrollArea className="max-h-[400px]">
+        <div className="max-h-[400px] overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
               <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center mb-3">
@@ -115,7 +115,7 @@ export function NotificationBell() {
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );

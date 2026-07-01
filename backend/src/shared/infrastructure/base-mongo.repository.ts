@@ -18,7 +18,7 @@ import {
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 10000;
 
 interface AggregateFacetResult<TData> {
   metadata: { total: number }[];

@@ -23,7 +23,11 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | null>(null);
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+let SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+
+if (typeof window !== 'undefined' && SOCKET_URL === '/') {
+  SOCKET_URL = window.location.origin;
+}
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const managerRef = useRef<Manager | null>(null);
@@ -52,7 +56,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const manager = getManager();
     const socket = manager.socket(namespace);
     socketsRef.current[namespace] = socket;
-    
+
     return socket;
   }, [getManager]);
 
@@ -64,12 +68,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     const socket = getSocket(namespace);
-    
+
     // Dùng function để Socket.IO tự động lấy token mới nhất mỗi lần (re)connect
     socket.auth = (cb: (data: Record<string, string>) => void) => {
       cb({ token: getAccessToken() || '' });
     };
-    
+
     if (!socket.connected) {
       socket.connect();
     }

@@ -57,10 +57,10 @@ export class GetKnowledgeGraphUseCase {
 
     // 1. Fetch completed / reading reading list
     const completedItems =
-      await this.readingListRepository.findAllDetailByUserId(
-        userId,
-        [ReadingStatus.COMPLETED, ReadingStatus.READING],
-      );
+      await this.readingListRepository.findAllDetailByUserId(userId, [
+        ReadingStatus.COMPLETED,
+        ReadingStatus.READING,
+      ]);
 
     if (completedItems.length === 0) {
       return {
@@ -111,7 +111,10 @@ export class GetKnowledgeGraphUseCase {
         id: `book_${book.id.getValue()}`,
         label: book.title.getValue(),
         type: 'book',
-        val: bookStatusMap.get(book.id.getValue()) === ReadingStatus.COMPLETED ? 20 : 12,
+        val:
+          bookStatusMap.get(book.id.getValue()) === ReadingStatus.COMPLETED
+            ? 20
+            : 12,
         img: book.coverUrl,
         color: '#10b981', // emerald-500
         slug: book.slug,

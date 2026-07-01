@@ -17,7 +17,7 @@ import {
   User,
   UserDocument,
 } from '@/infrastructure/database/schemas/user.schema';
-import { ReadingStatus } from '@/domain/library/enums/reading-status.enum';
+import { ChapterStatus } from '@/domain/library/entities/reading-progress.entity';
 
 interface ProgressSeedData {
   userId: Types.ObjectId;
@@ -96,7 +96,7 @@ export class ProgressSeed {
           chapterId: ch._id,
           progress: Math.min(progress, 100),
           timeSpent: Math.floor(Math.random() * 1800) + 60,
-          status: isCompleted ? ReadingStatus.COMPLETED : ReadingStatus.READING,
+          status: isCompleted ? ChapterStatus.COMPLETED : ChapterStatus.READING,
           xpEarned: Math.floor(Math.random() * 100),
           pagesRead: Math.floor(Math.random() * 20) + 1,
           wordsRead: Math.floor(Math.random() * 5000) + 500,
@@ -131,7 +131,7 @@ export class ProgressSeed {
             chapterId: ch._id,
             progress: 100,
             timeSpent: Math.floor(Math.random() * 3600) + 600,
-            status: ReadingStatus.COMPLETED,
+            status: ChapterStatus.COMPLETED,
             xpEarned: Math.floor(Math.random() * 100) + 50,
             pagesRead: Math.floor(Math.random() * 20) + 10,
             wordsRead: Math.floor(Math.random() * 5000) + 1000,

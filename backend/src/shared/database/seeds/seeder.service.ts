@@ -9,6 +9,7 @@ import { ProgressSeed } from './progress.seeder';
 import { PostsSeed } from './posts.seeder';
 import { NotificationSeed } from './notifications.seeder';
 import { ToxicWordsSeed } from './toxic-words.seeder';
+import { ChapterDiscussionsSeed } from './chapter-discussions.seeder';
 
 @Injectable()
 export class SeederService {
@@ -25,6 +26,7 @@ export class SeederService {
     private readonly postsSeed: PostsSeed,
     private readonly notificationSeed: NotificationSeed,
     private readonly toxicWordsSeed: ToxicWordsSeed,
+    private readonly chapterDiscussionsSeed: ChapterDiscussionsSeed,
   ) {}
 
   async seed() {
@@ -41,6 +43,7 @@ export class SeederService {
       await this.progressSeed.run();
       await this.notificationSeed.run();
       await this.toxicWordsSeed.run();
+      await this.chapterDiscussionsSeed.run();
 
       this.logger.log('✅ All seeding completed successfully!');
     } catch (error) {
