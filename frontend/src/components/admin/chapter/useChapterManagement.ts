@@ -170,7 +170,7 @@ export function useChapterManagement() {
           : [{ id: uuidv4(), content: "" }];
       setEditingParagraphs(paras);
     } catch (error) {
-      console.error("Failed to fetch:", error);
+      toast.error(getErrorMessage(error));
       setEditingChapterId(null);
     }
   };
@@ -199,7 +199,7 @@ export function useChapterManagement() {
       setEditingTitle("");
       setEditingParagraphs([]);
     } catch (error) {
-      console.error("Failed to update:", error);
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -211,7 +211,7 @@ export function useChapterManagement() {
       await deleteChapter({ bookSlug: book.slug, chapterId }).unwrap();
       if (expandedChapterId === chapterId) setExpandedChapterId(null);
     } catch (error) {
-      console.error("Failed to delete:", error);
+      toast.error(getErrorMessage(error));
     }
   };
 

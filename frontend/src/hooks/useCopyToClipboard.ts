@@ -17,8 +17,7 @@ export function useCopyToClipboard() {
         toast.success(successMessage);
       }
       return true;
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch {
       toast.error('Sao chép thất bại');
       setCopiedText(null);
       return false;

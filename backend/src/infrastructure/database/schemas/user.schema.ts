@@ -23,6 +23,9 @@ export class User extends BaseSchema {
   @Prop({ default: false })
   isBanned: boolean;
 
+  @Prop({ default: 0 })
+  violationCount: number;
+
   @Prop({
     type: String,
     enum: ['local', 'google', 'facebook'],
@@ -70,6 +73,8 @@ export class User extends BaseSchema {
         default: 'justify',
       },
       marginWidth: { type: Number, default: 40, min: 0, max: 100 },
+      warmth: { type: Number, default: 0, min: 0, max: 100 },
+      brightness: { type: Number, default: 100, min: 10, max: 100 },
     },
     default: {},
   })
@@ -83,6 +88,8 @@ export class User extends BaseSchema {
     textColor: string;
     textAlign: string;
     marginWidth: number;
+    warmth: number;
+    brightness: number;
   };
 }
 

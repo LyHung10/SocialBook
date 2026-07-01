@@ -12,6 +12,7 @@ export interface FindAllOptions {
 export interface FindFlaggedOptions {
   page: number;
   limit: number;
+  reason?: string;
 }
 
 export interface PaginatedResult<T> {

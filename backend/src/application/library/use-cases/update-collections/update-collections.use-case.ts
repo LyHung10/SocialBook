@@ -4,7 +4,7 @@ import { IReadingListRepository } from '@/domain/library/repositories/reading-li
 import { BookId } from '@/domain/library/value-objects/book-id.vo';
 import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UpdateCollectionsCommand } from './update-collections.command';
 
 @Injectable()
@@ -41,7 +41,9 @@ export class UpdateCollectionsUseCase {
       bookId,
     );
     if (!result) {
-      throw new Error('Failed to retrieve updated reading list detail');
+      throw new InternalServerErrorException(
+        'Failed to retrieve updated reading list detail',
+      );
     }
     return result;
   }

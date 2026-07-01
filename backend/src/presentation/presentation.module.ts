@@ -20,6 +20,7 @@ import { SearchController } from './search/search.controller';
 import { StatisticsController } from './statistics/statistics.controller';
 import { TextToSpeechController } from './text-to-speech/text-to-speech.controller';
 import { UsersController } from './users/users.controller';
+import { AdminToxicWordsController } from './content-moderation/admin-toxic-words.controller';
 import { ReadingRoomsPresentationModule } from './reading-rooms/reading-rooms-presentation.module';
 import { UsersApplicationModule } from '@/application/users/users-application.module';
 import { BooksApplicationModule } from '@/application/books/books-application.module';
@@ -41,9 +42,12 @@ import { TextToSpeechApplicationModule } from '@/application/text-to-speech/text
 import { GeminiApplicationModule } from '@/application/gemini/gemini-application.module';
 import { RecommendationsApplicationModule } from '@/application/recommendations/recommendations-application.module';
 import { NotificationsApplicationModule } from '@/application/notifications/notifications-application.module';
+import { ContentModerationApplicationModule } from '@/application/content-moderation/content-moderation-application.module';
 import { InfrastructureModule } from '@/infrastructure/infrastructure.module';
 import { AnalyticsPresentationModule } from './analytics/analytics-presentation.module';
 import { ReadingRoomInteractionsPresentationModule } from './reading-room-interactions/reading-room-interactions-presentation.module';
+import { UserHighlightsModule } from './user-highlights/user-highlights.module';
+import { BookmarkModule } from './bookmarks/bookmark.module';
 
 @Module({
   imports: [
@@ -67,9 +71,12 @@ import { ReadingRoomInteractionsPresentationModule } from './reading-room-intera
     GeminiApplicationModule,
     RecommendationsApplicationModule,
     NotificationsApplicationModule,
+    ContentModerationApplicationModule,
     ReadingRoomsPresentationModule,
     AnalyticsPresentationModule,
     ReadingRoomInteractionsPresentationModule,
+    UserHighlightsModule,
+    BookmarkModule,
     InfrastructureModule,
   ],
   controllers: [
@@ -94,6 +101,7 @@ import { ReadingRoomInteractionsPresentationModule } from './reading-room-intera
     StatisticsController,
     TextToSpeechController,
     UsersController,
+    AdminToxicWordsController,
   ],
 })
 export class PresentationModule {}

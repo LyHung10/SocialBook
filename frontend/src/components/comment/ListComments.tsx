@@ -9,7 +9,6 @@ interface ListCommentsProps {
     isCommentOpen: boolean;
     parentId: string | null;
     targetType: string;
-    theme?: 'light' | 'dark';
     className?: string;
     depth?: number;
     onReplyAdded?: () => void;
@@ -22,7 +21,6 @@ const ListComments: React.FC<ListCommentsProps> = (props) => {
         parentId,
         targetId,
         targetType,
-        theme = 'light',
         className = '',
         depth = 1,
         onReplyAdded,
@@ -38,23 +36,16 @@ const ListComments: React.FC<ListCommentsProps> = (props) => {
         loadMore,
     } = useCommentList({ targetId, isCommentOpen, parentId });
 
-    const isDark = theme === 'dark';
-    const textClass = isDark ? 'text-neutral-400' : 'text-gray-500';
-    const errorClass = isDark ? 'text-red-400' : 'text-red-500';
-    const linkClass = isDark
-        ? 'text-blue-400 hover:text-blue-300'
-        : 'text-indigo-600 hover:text-indigo-700';
-
     return (
         <div className={`flex-1 overflow-y-auto px-2 space-y-1 ${className}`}>
             {isLoading && (
-                <p className={`text-sm ${textClass} animate-pulse`}>
+                <p className="text-sm text-muted-foreground animate-pulse">
                     Đang tải bình luận...
                 </p>
             )}
 
             {isError && (
-                <p className={`text-sm ${errorClass}`}>Có lỗi khi tải bình luận.</p>
+                <p className="text-sm text-destructive">Có lỗi khi tải bình luận.</p>
             )}
 
             {!isLoading && !isError && (
@@ -72,7 +63,7 @@ const ListComments: React.FC<ListCommentsProps> = (props) => {
                             />
                         ))
                     ) : (
-                        <p className={`text-sm ${textClass}`}>Chưa có bình luận nào.</p>
+                        <p className="text-sm text-muted-foreground">Chưa có bình luận nào.</p>
                     )}
 
                     {hasMore && (
@@ -80,7 +71,7 @@ const ListComments: React.FC<ListCommentsProps> = (props) => {
                             <button
                                 disabled={isFetching}
                                 onClick={loadMore}
-                                className={`text-xs font-semibold disabled:opacity-50 cursor-pointer transition-colors ${linkClass}`}
+                                className="text-xs font-semibold disabled:opacity-50 cursor-pointer transition-colors text-primary hover:text-primary/80"
                             >
                                 {isFetching ? 'Đang tải thêm...' : 'Xem thêm bình luận'}
                             </button>

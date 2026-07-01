@@ -178,6 +178,7 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                                         <div className="flex items-center justify-between">
                                             <button
                                                 onClick={() => handleLike(review.id)}
+                                                aria-label={review.isLiked ? 'Bỏ thích' : 'Thích'}
                                                 className={cn(
                                                     "flex items-center gap-1.5 text-[10px] font-bold transition-all uppercase tracking-widest",
                                                     review.isLiked
@@ -198,6 +199,7 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                                                         onClick={() => handleEdit(review)}
                                                         className="p-1.5 text-muted-foreground/50 hover:text-sky-600 transition-colors"
                                                         title="Chỉnh sửa"
+                                                        aria-label="Chỉnh sửa đánh giá"
                                                     >
                                                         <Pencil size={14} />
                                                     </button>
@@ -209,6 +211,7 @@ export const ReviewSection = ({ bookId, bookSlug }: { bookId: string; bookSlug: 
                                                         }}
                                                         className="p-1.5 text-muted-foreground/50 hover:text-red-600 transition-colors"
                                                         title="Xóa"
+                                                        aria-label="Xóa đánh giá"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>

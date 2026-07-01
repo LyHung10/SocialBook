@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { ReadingStatus } from '@/domain/library/enums/reading-status.enum';
+import { ChapterStatus } from '@/domain/library/entities/reading-progress.entity';
 
 import { BaseSchema } from '@/shared/schemas/base.schema';
 
@@ -23,7 +23,11 @@ export class Progress extends BaseSchema {
   @Prop({ default: 0 })
   timeSpent: number;
 
-  @Prop({ type: String, enum: ReadingStatus, default: ReadingStatus.READING })
+  @Prop({
+    type: String,
+    enum: ChapterStatus,
+    default: ChapterStatus.READING,
+  })
   status: string;
 
   @Prop({ default: 0 })

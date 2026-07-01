@@ -9,7 +9,7 @@ import { IBookRepository } from '@/domain/books/repositories/book.repository.int
 import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { CreateRoomCommand } from './create-room.command';
-import { ReadingRoomResult } from '../reading-room.interface';
+import { ReadingRoomResult } from '../../reading-room.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
 
 @Injectable()

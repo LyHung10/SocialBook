@@ -8,8 +8,8 @@ export class PostModerationService {
   constructor(private readonly checkContentUseCase: CheckContentUseCase) {}
 
   /**
-   * Kiểm duyệt nội dung bài viết và cập nhật trạng thái của Post entity.
-   * Trả về thông báo cảnh báo nếu có.
+   * Moderate post content and update Post entity status.
+   * Returns a warning message if applicable.
    */
   async moderate(post: Post, content: string): Promise<string | undefined> {
     const moderationResult = await this.checkContentUseCase.execute(content);

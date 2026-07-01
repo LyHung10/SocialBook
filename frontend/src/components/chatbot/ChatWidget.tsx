@@ -1,5 +1,6 @@
 'use client';
 
+import DOMPurify from 'isomorphic-dompurify';
 import { Bot, Send, X } from 'lucide-react';
 import { useAskChatbotMutation } from '@/features/chatbot/api/chatBotApi';
 import { useChatWidget } from '@/features/chatbot/hooks/useChatWidget';
@@ -120,7 +121,7 @@ export const ChatWidget = () => {
                     }`}
                   >
                     {msg.role === 'ai' ? (
-                      <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: msg.content }} />
+                      <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} />
                     ) : (
                       <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                     )}

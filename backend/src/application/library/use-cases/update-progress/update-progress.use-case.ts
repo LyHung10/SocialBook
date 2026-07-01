@@ -10,7 +10,7 @@ import { BookId } from '@/domain/library/value-objects/book-id.vo';
 import { ChapterId } from '@/domain/library/value-objects/chapter-id.vo';
 import { UserId } from '@/domain/library/value-objects/user-id.vo';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UpdateProgressCommand } from './update-progress.command';
 import { ReadingProgressResult } from '../../dto/library.dto';
 import { LibraryApplicationMapper } from '../../mappers/library.mapper';
@@ -71,14 +71,12 @@ export class UpdateProgressUseCase {
           rp.updateProgress(command.progress);
           return rp;
         }),
-      !readingList.isCompleted()
-        ? this.bookRepository.findById(DomainBookId.create(command.bookId))
-        : Promise.resolve(null),
+      this.bookRepository.findById(DomainBookId.create(command.bookId)),
     ]);
 
     readingList.updateLastReadChapter(command.chapterId);
 
-    if (book && book.status.toString() === 'completed') {
+    if (book) {
       const [totalChapters, allProgresses] = await Promise.all([
         this.chapterRepository.countByBook(
           ChapterBookId.create(command.bookId),
@@ -101,8 +99,6 @@ export class UpdateProgressUseCase {
       } else {
         readingList.updateStatus(ReadingStatus.READING);
       }
-    } else if (!readingList.isCompleted()) {
-      readingList.updateStatus(ReadingStatus.READING);
     }
 
     await Promise.all([
@@ -117,7 +113,9 @@ export class UpdateProgressUseCase {
       bookId,
     );
     if (!detail) {
-      throw new Error('Failed to retrieve updated reading list detail');
+      throw new InternalServerErrorException(
+        'Failed to retrieve updated reading list detail',
+      );
     }
 
     return {

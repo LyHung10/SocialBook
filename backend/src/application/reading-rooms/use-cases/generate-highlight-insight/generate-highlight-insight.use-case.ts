@@ -2,7 +2,10 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
+import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
+import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repository.interface';
 import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';
+import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
 import { GenerateHighlightInsightCommand } from './generate-highlight-insight.command';
@@ -13,6 +16,8 @@ export class GenerateHighlightInsightUseCase {
 
   constructor(
     private readonly readingRoomRepository: IReadingRoomRepository,
+    private readonly bookRepository: IBookRepository,
+    private readonly chapterRepository: IChapterRepository,
     @Inject(GEMINI_TOKENS.GEMINI_SERVICE)
     private readonly geminiService: IGeminiService,
     private readonly eventEmitter: EventEmitter2,
@@ -41,8 +46,16 @@ export class GenerateHighlightInsightUseCase {
       return room;
     }
 
+    const [book, chapter] = await Promise.all([
+      this.bookRepository.findById(BookId.create(room.bookId)),
+      this.chapterRepository.findBySlug(
+        room.currentChapterSlug,
+        BookId.create(room.bookId),
+      ),
+    ]);
+
     const prompt = `
-      Phân tích đoạn văn sau từ một cuốn sách và cung cấp một nhận xét ngắn gọn (AI Insight).
+      Phân tích đoạn văn sau từ cuốn sách "${book?.title?.getValue() || 'Unknown'}" (chương: "${chapter?.title?.getValue() || room.currentChapterSlug}").
       Nội dung có thể là một câu nói hay, một ẩn dụ, một sự kiện lịch sử hoặc một khái niệm khó hiểu.
       Hãy giải thích ý nghĩa hoặc cung cấp thêm thông tin thú vị liên quan.
       
@@ -52,7 +65,15 @@ export class GenerateHighlightInsightUseCase {
       Đoạn văn: "${highlight.content}"
     `;
 
-    const insight = await this.geminiService.generateText(prompt);
+    let insight: string;
+    try {
+      insight = await this.geminiService.generateText(prompt);
+    } catch (error) {
+      this.logger.warn(
+        `Gemini failed for highlight ${command.highlightId}, using fallback. ${error instanceof Error ? error.message : String(error)}`,
+      );
+      insight = 'Không thể tạo insight ngay lúc này. Vui lòng thử lại sau.';
+    }
 
     room.updateHighlightInsight(highlightIndex, insight);
     await this.readingRoomRepository.save(room);

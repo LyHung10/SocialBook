@@ -25,8 +25,8 @@ export const NESTJS_COMMENTS_ENDPOINTS = {
 
 export const NESTJS_LIKES_ENDPOINTS = {
     postToggleLike: '/likes/toggle',
-    getCount: 'likes/count',
-    getStatus: 'likes/status',
+    getCount: '/likes/count',
+    getStatus: '/likes/status',
 };
 
 export const NESTJS_BOOKS_ENDPOINTS = {

@@ -44,6 +44,14 @@ export default function ManageChapterModal() {
     const [title, setTitle] = useState('');
     const [paragraphs, setParagraphs] = useState<Paragraph[]>([{ id: uuidv4(), content: '' }]);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
+    const registerTextareaRef = useRef((id: string, el: HTMLTextAreaElement | null) => {
+        if (el) {
+            textareaRefs.current.set(id, el);
+        } else {
+            textareaRefs.current.delete(id);
+        }
+    });
 
     useEffect(() => {
         const loadChapterDetails = async () => {
@@ -58,8 +66,7 @@ export default function ManageChapterModal() {
                     setParagraphs(fullChapter.paragraphs && fullChapter.paragraphs.length > 0 
                         ? fullChapter.paragraphs.map(p => ({ ...p })) 
                         : [{ id: uuidv4(), content: '' }]);
-                } catch (error) {
-                    console.error('Failed to load chapter details:', error);
+                } catch {
                     toast.error('Không thể tải chi tiết chương');
                     closeManageChapter();
                 }
@@ -115,8 +122,9 @@ export default function ManageChapterModal() {
             
             // Focus next textarea after render
             setTimeout(() => {
-                const textareas = document.querySelectorAll('.chapter-paragraph-textarea');
-                (textareas[index + 1] as HTMLTextAreaElement)?.focus();
+                const ids = newParagraphs.map(p => p.id);
+                const nextId = ids[index + 1];
+                if (nextId) textareaRefs.current.get(nextId)?.focus();
             }, 0);
         } else if (e.key === 'Backspace' && paragraphs[index].content === '' && paragraphs.length > 1) {
             e.preventDefault();
@@ -124,11 +132,12 @@ export default function ManageChapterModal() {
             setParagraphs(newParagraphs);
             
             setTimeout(() => {
-                const textareas = document.querySelectorAll('.chapter-paragraph-textarea');
+                const ids = newParagraphs.map(p => p.id);
                 const prevIndex = Math.max(0, index - 1);
-                const el = textareas[prevIndex] as HTMLTextAreaElement;
-                el.focus();
-                el.setSelectionRange(el.value.length, el.value.length);
+                const prevId = ids[prevIndex];
+                const el = textareaRefs.current.get(prevId);
+                el?.focus();
+                if (el) el.setSelectionRange(el.value.length, el.value.length);
             }, 0);
         }
     };
@@ -183,7 +192,6 @@ export default function ManageChapterModal() {
             manageChapterData?.onSuccess?.();
             closeManageChapter();
         } catch (error: unknown) {
-            console.error('Failed to save chapter:', error);
             toast.error(getErrorMessage(error));
         }
     };
@@ -267,6 +275,7 @@ export default function ManageChapterModal() {
                                                         placeholder={`Nhập nội dung cho đoạn ${index + 1}...`}
                                                         className="chapter-paragraph-textarea min-h-[120px] p-4 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all text-gray-800 dark:text-gray-200 leading-relaxed"
                                                         disabled={isLoading}
+                                                        ref={(el) => registerTextareaRef.current(para.id, el)}
                                                     />
                                                     <button
                                                         type="button"

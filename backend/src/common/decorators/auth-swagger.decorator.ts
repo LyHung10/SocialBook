@@ -1,10 +1,9 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from './roles.decorator';
 
 export function RequireAuth(...roles: string[]) {
-  const decorators = [UseGuards(JwtAuthGuard)];
+  const decorators: (MethodDecorator | ClassDecorator)[] = [];
 
   if (roles.length > 0) {
     decorators.push(Roles(...roles), UseGuards(RolesGuard));

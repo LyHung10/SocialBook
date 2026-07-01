@@ -1,7 +1,7 @@
 'use client';
 
 import { getErrorMessage } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,6 +38,8 @@ export default function ForgotPasswordPage() {
   const [resendMessage, setResendMessage] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpBoxes, setOtpBoxes] = useState(['', '', '', '', '', '']);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Lấy state từ các hooks của RTK Query với tên riêng biệt
   const [
@@ -77,31 +79,53 @@ export default function ForgotPasswordPage() {
 
   const handleSendOtp = async () => {
     setResendMessage('');
-
-    // Ra lệnh cho react-hook-form chỉ validate trường 'email'
     const isEmailValid = await form.trigger('email');
-
-    // Nếu email không hợp lệ, dừng lại. Lỗi sẽ tự hiển thị.
     if (!isEmailValid) return;
-
-    // Nếu email hợp lệ, lấy giá trị và gọi API
     const email = form.getValues('email');
     try {
       await forgotPassword({ email }).unwrap();
+      setOtpBoxes(['', '', '', '', '', '']);
       setStep('otp');
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err) { }
   };
 
-  // Xử lý gửi lại OTP
   const handleResendOtp = async () => {
     setResendMessage('');
     const email = form.getValues('email');
     if (!email) return;
-
     try {
       await resendOtp({ email }).unwrap();
       setResendMessage('Đã gửi lại mã OTP mới thành công.');
+      setOtpBoxes(['', '', '', '', '', '']);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err) {}
+  };
+
+  const handleOtpBoxChange = (index: number, value: string) => {
+    if (!/^\d?$/.test(value)) return;
+    const newBoxes = [...otpBoxes];
+    newBoxes[index] = value;
+    setOtpBoxes(newBoxes);
+    form.setValue('otp', newBoxes.join(''));
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpBoxKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpBoxes[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpBoxPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      const newBoxes = pasted.split('');
+      setOtpBoxes(newBoxes);
+      form.setValue('otp', pasted);
+      otpRefs.current[5]?.focus();
+    }
   };
 
   // Các hàm điều hướng
@@ -234,17 +258,26 @@ export default function ForgotPasswordPage() {
                     <FormField
                       control={form.control}
                       name="otp"
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
-                          <FormLabel>Mã OTP</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="000000"
-                              className="h-14 text-center text-2xl tracking-widest"
-                              maxLength={6}
-                              {...field}
-                            />
-                          </FormControl>
+                          <FormLabel className="block text-sm font-medium text-center">Mã OTP</FormLabel>
+                          <div className="flex justify-center gap-2">
+                            {otpBoxes.map((digit, index) => (
+                              <input
+                                key={index}
+                                ref={(el) => { otpRefs.current[index] = el; }}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleOtpBoxChange(index, e.target.value)}
+                                onKeyDown={(e) => handleOtpBoxKeyDown(index, e)}
+                                onPaste={index === 0 ? handleOtpBoxPaste : undefined}
+                                className="w-12 h-14 text-2xl font-bold text-center border-2 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all bg-background"
+                                autoFocus={index === 0}
+                              />
+                            ))}
+                          </div>
                           <div className="text-center mt-2">
                             {resendMessage && (
                               <p className="text-green-500 text-xs mb-1">

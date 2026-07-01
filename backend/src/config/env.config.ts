@@ -19,9 +19,14 @@ export default registerAs('env', () => ({
   JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',
   JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
 
-  // Email
+  // Email (legacy SMTP — kept for reference, no longer used)
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASS: process.env.EMAIL_PASS || '',
+
+  // Resend (transactional email via HTTPS)
+  RESEND_API_KEY: process.env.RESEND_API_KEY || '',
+  RESEND_FROM_EMAIL:
+    process.env.RESEND_FROM_EMAIL || 'noreply@socialbook.io.vn',
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
@@ -30,7 +35,10 @@ export default registerAs('env', () => ({
 
   // External APIs
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
-  VOICERSS_API_KEY: process.env.VOICERSS_API_KEY || '',
+  ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY || '',
+  ELEVENLABS_VOICE_ID:
+    process.env.ELEVENLABS_VOICE_ID || 'BYtZrKUsiaR2iHNpf2uV',
+  ELEVENLABS_MODEL_ID: process.env.ELEVENLABS_MODEL_ID || 'eleven_v3',
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY || '',
 
   // Content Moderation API

@@ -1,5 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateUserDto {
   username: string;
@@ -30,6 +36,7 @@ export class UpdateUserOverviewDto {
   location?: string;
 
   @IsOptional()
+  @ValidateIf((o: UpdateUserOverviewDto) => o.website !== '')
   @IsUrl({}, { message: 'Website must be a valid URL' })
   website?: string;
 

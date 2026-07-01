@@ -10,7 +10,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Progress, ProgressDocument } from '../../schemas/progress.schema';
-import { ReadingStatus } from '../../schemas/reading-list.schema';
 import { ReadingProgressPersistence } from './reading-progress.mapper';
 
 @Injectable()
@@ -21,7 +20,7 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
   ) {}
 
   private toDomain(doc: ProgressDocument): ReadingProgress {
-    const status = this.mapStatusToChapterStatus(doc.status);
+    const status = ReadingProgressRepository.toChapterStatus(doc.status);
 
     return ReadingProgress.reconstitute({
       id: doc._id.toString(),
@@ -46,7 +45,7 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
       bookId: new Types.ObjectId(readingProgress.bookId.toString()),
       chapterId: new Types.ObjectId(readingProgress.chapterId.toString()),
       progress: readingProgress.progress,
-      status: this.mapChapterStatusToStatus(readingProgress.status),
+      status: readingProgress.status,
       timeSpent: readingProgress.timeSpent,
       lastReadAt: readingProgress.lastReadAt || new Date(),
       createdAt: readingProgress.createdAt,
@@ -54,35 +53,20 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
     };
   }
 
-  private mapStatusToChapterStatus(status: string): ChapterStatus {
-    switch (status) {
-      case ReadingStatus.COMPLETED as string:
-        return ChapterStatus.COMPLETED;
-      case ReadingStatus.READING as string:
-        return ChapterStatus.IN_PROGRESS;
-      default:
-        return ChapterStatus.NOT_STARTED;
-    }
-  }
-
-  private mapChapterStatusToStatus(status: ChapterStatus): string {
-    switch (status) {
-      case ChapterStatus.COMPLETED:
-        return ReadingStatus.COMPLETED as string;
-      case ChapterStatus.IN_PROGRESS:
-        return ReadingStatus.READING as string;
-      default:
-        return ReadingStatus.READING as string; // Default to READING for NOT_STARTED
-    }
+  private static toChapterStatus(status: string): ChapterStatus {
+    return Object.values(ChapterStatus).includes(status as ChapterStatus)
+      ? (status as ChapterStatus)
+      : ChapterStatus.READING;
   }
 
   async save(readingProgress: ReadingProgress): Promise<void> {
     const persistenceData = this.toPersistence(readingProgress);
+    const { _id, ...updateData } = persistenceData;
 
     await this.progressModel
       .findOneAndUpdate(
-        { _id: persistenceData._id },
-        { $set: persistenceData },
+        { _id },
+        { $set: updateData },
         { upsert: true, new: true },
       )
       .exec();
@@ -127,6 +111,31 @@ export class ReadingProgressRepository implements IReadingProgressRepository {
       .exec();
 
     return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async countCompletedByBookIds(
+    userId: UserId,
+    bookIds: BookId[],
+  ): Promise<Map<string, number>> {
+    const objectIds = bookIds.map((id) => new Types.ObjectId(id.toString()));
+    const results = await this.progressModel
+      .aggregate<{ _id: Types.ObjectId; count: number }>([
+        {
+          $match: {
+            userId: new Types.ObjectId(userId.toString()),
+            bookId: { $in: objectIds },
+            status: ChapterStatus.COMPLETED,
+          },
+        },
+        { $group: { _id: '$bookId', count: { $sum: 1 } } },
+      ])
+      .exec();
+
+    const map = new Map<string, number>();
+    results.forEach((item) => {
+      map.set(item._id.toString(), item.count);
+    });
+    return map;
   }
 
   async remove(userId: UserId, chapterId: ChapterId): Promise<void> {

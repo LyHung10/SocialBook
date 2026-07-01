@@ -1,6 +1,5 @@
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import {
   BadRequestException,
@@ -77,7 +76,6 @@ export class ChaptersController {
   ) {}
 
   @Get(':chapterId/knowledge')
-  @UseGuards(JwtAuthGuard)
   async getKnowledge(
     @Param('chapterId') chapterId: string,
     @Query('force') force?: string,
@@ -91,7 +89,6 @@ export class ChaptersController {
   }
 
   @Post(':chapterId/ask-ai')
-  @UseGuards(JwtAuthGuard)
   async askAI(
     @Param('bookSlug') bookSlug: string,
     @Param('chapterId') chapterId: string,
@@ -110,7 +107,7 @@ export class ChaptersController {
 
   @Post('import/preview')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 20 * 1024 * 1024 },
@@ -146,7 +143,7 @@ export class ChaptersController {
 
   @Post('import/start')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async startImport(@Body() dto: StartChaptersImportDto) {
     const command = new StartChaptersImportCommand(dto.bookId, dto.chapters);
     const result = await this.startChaptersImportUseCase.execute(command);
@@ -158,7 +155,7 @@ export class ChaptersController {
 
   @Get('import/status/:jobId')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async getImportStatus(@Param('jobId') jobId: string) {
     const query = new GetChaptersImportStatusQuery(jobId);
     const result = await this.getChaptersImportStatusUseCase.execute(query);
@@ -204,7 +201,7 @@ export class ChaptersController {
   }
 
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Get('admin/list')
   async getAllChaptersAdmin(@Query() filter: FilterChapterDto) {
     const query = new GetChaptersQuery(
@@ -243,7 +240,7 @@ export class ChaptersController {
 
   @Get('id/:chapterId')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async getChapterByIdWithPrefix(@Param('chapterId') chapterId: string) {
     const query = new GetChapterByIdQuery(chapterId);
     const chapter = await this.getChapterByIdUseCase.execute(query);
@@ -290,7 +287,7 @@ export class ChaptersController {
 
   @Post()
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async create(@Body() createChapterDto: CreateChapterDto) {
     const command = new CreateChapterCommand(
       createChapterDto.title,
@@ -309,7 +306,7 @@ export class ChaptersController {
 
   @Put(':chapterId')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async update(
     @Param('chapterId') chapterId: string,
     @Body() updateChapterDto: UpdateChapterDto,
@@ -332,7 +329,7 @@ export class ChaptersController {
 
   @Delete(':chapterId')
   @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   async remove(@Param('chapterId') chapterId: string) {
     const command = new DeleteChapterCommand(chapterId);
     await this.deleteChapterUseCase.execute(command);

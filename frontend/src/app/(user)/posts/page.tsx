@@ -9,7 +9,6 @@ import { useModalStore } from '@/store/useModalStore';
 import PostList from '@/components/post/PostList';
 import TrendingBooksWidget from '@/components/post/TrendingBooksWidget';
 import TopActiveReadersWidget from '@/components/post/TopActiveReadersWidget';
-import LoginWall from '@/components/auth/LoginWall';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Compass } from 'lucide-react';
@@ -64,17 +63,6 @@ export default function Post() {
         );
     }
 
-    if (!isAuthenticated) {
-        return (
-            <LoginWall
-                title="Dòng sự kiện"
-                description="Đăng nhập để đọc và đăng bài chia sẻ về những cuốn sách bạn yêu thích với cộng đồng."
-                secondaryLabel="Khám phá sách trước"
-                secondaryHref="/books"
-            />
-        );
-    }
-
     return (
         <div className="w-full min-h-[calc(100vh-4rem)] bg-background relative">
             <div className="fixed inset-0 z-0 pointer-events-none">
@@ -107,27 +95,28 @@ export default function Post() {
                     <div className="min-h-0 space-y-4">
 
                         {/* CREATE POST BOX */}
-                        <div
-                            className="bg-card rounded-2xl shadow-md border border-border p-4">
-                            <div className="flex items-center gap-3">
-                                <Image
-                                    src={currentUserImage}
-                                    alt={currentUserName}
-                                    width={36}
-                                    height={36}
-                                    onClick={() => {
-                                        router.push(`/users/${currentUserId}`)
-                                    }}
-                                    className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700 hover:opacity-80 transition"
-                                />
-                                <button
-                                    onClick={() => openCreatePost()}
-                                    className="flex-1 text-left text-sm text-muted-foreground bg-muted hover:bg-accent hover:shadow-inner rounded-full px-4 py-2.5 transition-all duration-200 cursor-text"
-                                >
-                                    {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
-                                </button>
+                        {isAuthenticated && (
+                            <div className="bg-card rounded-2xl shadow-md border border-border p-4">
+                                <div className="flex items-center gap-3">
+                                    <Image
+                                        src={currentUserImage}
+                                        alt={currentUserName}
+                                        width={36}
+                                        height={36}
+                                        onClick={() => {
+                                            router.push(`/users/${currentUserId}`)
+                                        }}
+                                        className="h-9 w-9 cursor-pointer rounded-full border border-slate-200 object-cover dark:border-gray-700 hover:opacity-80 transition"
+                                    />
+                                    <button
+                                        onClick={() => openCreatePost()}
+                                        className="flex-1 text-left text-sm text-muted-foreground bg-muted hover:bg-accent hover:shadow-inner rounded-full px-4 py-2.5 transition-all duration-200 cursor-text"
+                                    >
+                                        {currentUserName}, bạn đang nghĩ gì về cuốn sách hôm nay?
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* MOBILE WIDGETS TRIGGER */}
                         <div className="lg:hidden">

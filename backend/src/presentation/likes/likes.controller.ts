@@ -6,7 +6,6 @@ import {
   HttpStatus,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 
 import { GetLikeCountUseCase } from '@/application/likes/use-cases/get-like-count/get-like-count.use-case';
@@ -16,7 +15,6 @@ import { RequireAuth } from '@/common/decorators/auth-swagger.decorator';
 import { Public } from '@/common/decorators/custom.decorator';
 import { TargetType } from '@/domain/likes/value-objects/target-type.vo';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @Controller('likes')
 export class LikesController {
@@ -28,7 +26,6 @@ export class LikesController {
 
   @Post('toggle')
   @RequireAuth()
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async toggle(
     @CurrentUser('id') userId: string,
@@ -62,7 +59,6 @@ export class LikesController {
 
   @Get('status')
   @RequireAuth()
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async getStatus(
     @CurrentUser('id') userId: string,

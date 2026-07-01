@@ -55,7 +55,7 @@ export function ReadingTimeTracker({ bookId, chapterId }: ReadingTimeTrackerProp
                 chapterId,
                 durationInSeconds: secondsToRecord
              })
-             .catch(console.error);
+             .catch(() => {});
 
              // Record for analytics/scoring
              trackEvent({

@@ -14,7 +14,6 @@ import {
   KnowledgeGraphData,
   GetBookLibraryInfoResult,
 } from '../types/library.interface';
-
 import { recommendationsApi } from '../../recommendations/api/recommendationsApi';
 
 export const libraryApi = createApi({
@@ -40,7 +39,7 @@ export const libraryApi = createApi({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['Library'],
+      invalidatesTags: ['Library', 'KnowledgeGraph'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         await queryFulfilled;
         dispatch(recommendationsApi.util.resetApiState());
@@ -72,6 +71,7 @@ export const libraryApi = createApi({
         invalidatesTags: [
           { type: 'Library', id: `LIST_${LibraryStatus.READING}` },
           { type: 'Library', id: 'LIST_ALL' },
+          'KnowledgeGraph',
         ],
       }
     ),

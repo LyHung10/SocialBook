@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IReadingRoomRepository } from '@/domain/reading-rooms/repositories/reading-room.repository.interface';
 import { ReadingRoomApplicationMapper } from '../../mappers/reading-room.mapper';
-import { ReadingRoomResult } from '../reading-room.interface';
+import { ReadingRoomResult } from '../../reading-room.interface';
 import { GetMyHistoryQuery } from './get-my-history.query';
 
 @Injectable()

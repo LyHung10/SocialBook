@@ -17,9 +17,9 @@ export class CreateRoomDto {
   @IsNotEmpty()
   currentChapterSlug: string;
 
-  @IsEnum(['sync', 'free', 'discussion'])
+  @IsEnum(['sync', 'free'])
   @IsNotEmpty()
-  mode: 'sync' | 'free' | 'discussion';
+  mode: 'sync' | 'free';
 
   @IsInt()
   @Min(2)

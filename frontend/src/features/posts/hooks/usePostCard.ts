@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import { usePostActions } from '@/features/posts/hooks/usePostActions';
 import { Post } from '@/features/posts/types/post.interface';
 import { useAppAuth } from '@/features/auth/hooks';
@@ -12,7 +15,8 @@ interface UsePostCardOptions {
 
 export function usePostCard({ post }: UsePostCardOptions) {
     const { openEditPost, openSharePost, openPostComment, openConfirm } = useModalStore();
-    const { user } = useAppAuth();
+    const { user, isAuthenticated } = useAppAuth();
+    const router = useRouter();
 
     const { likeCount, isLiked, isDeleting, toggleLike, deletePost } = usePostActions({
         postId: post.id,
@@ -26,6 +30,16 @@ export function usePostCard({ post }: UsePostCardOptions) {
     const isOwner = post.user?.id === user?.id;
     const displayedCommentCount = post.totalComments ?? 0;
 
+    const handleLike = useCallback(async () => {
+        if (!isAuthenticated) {
+            toast.info(MESSAGES.REQUIRE_LOGIN, {
+                action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+            });
+            return;
+        }
+        await toggleLike();
+    }, [isAuthenticated, toggleLike, router]);
+
     const handleOpenShare = useCallback(() => {
         openSharePost({ postUrl, shareTitle, shareMedia });
     }, [openSharePost, postUrl, shareTitle, shareMedia]);
@@ -33,12 +47,12 @@ export function usePostCard({ post }: UsePostCardOptions) {
     const handleOpenComment = useCallback(() => {
         openPostComment({
             post,
-            handleLike: toggleLike,
+            handleLike,
             commentCount: displayedCommentCount,
             likeStatus: isLiked,
             likeCount,
         });
-    }, [openPostComment, post, toggleLike, displayedCommentCount, isLiked, likeCount]);
+    }, [openPostComment, post, handleLike, displayedCommentCount, isLiked, likeCount]);
 
     const handleOpenEdit = useCallback(() => openEditPost({ post }), [openEditPost, post]);
     
@@ -61,7 +75,7 @@ export function usePostCard({ post }: UsePostCardOptions) {
         likeCount,
         isDeleting,
         actions: {
-            toggleLike,
+            toggleLike: handleLike,
             handleOpenShare,
             handleOpenComment,
             handleOpenEdit,

@@ -12,7 +12,6 @@ import {
   Put,
   Query,
   UploadedFile,
-  UseGuards,
 } from '@nestjs/common';
 
 import { BookDetailResponseDto } from '@/presentation/books/dto/book-detail.response.dto';
@@ -45,7 +44,6 @@ import { GetTopReadBooksUseCase } from '@/application/books/use-cases/get-top-re
 import { GetTopReadBooksQuery } from '@/application/books/use-cases/get-top-read-books/get-top-read-books.query';
 import { IMediaService } from '@/domain/cloudinary/interfaces/media.service.interface';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @Controller('books')
 @SkipThrottle({ global: true })
@@ -183,7 +181,6 @@ export class BooksController {
 
   @Patch(':slug/like')
   @RequireAuth()
-  @UseGuards(JwtAuthGuard)
   @SkipThrottle({ global: false })
   async toggleLike(
     @Param('slug') slug: string,

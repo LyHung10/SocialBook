@@ -120,7 +120,7 @@ export default function LibraryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {[1, 2, 3, 4].map((i) => (
                   <Card
-                    key={i}
+                    key={`skeleton-collection-${i}`}
                     className="h-32 border-border/80 animate-pulse bg-card"
                   >
                     <CardContent className="p-5 flex flex-col justify-between h-full">
@@ -246,6 +246,28 @@ export default function LibraryPage() {
                                   Đọc tiếp
                                 </Link>
                               </div>
+                            ) : activeTab === LibraryStatus.COMPLETED &&
+                              item.totalChapters !== undefined &&
+                              item.completedChapters !== undefined &&
+                              item.totalChapters > item.completedChapters ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-red-500 font-semibold flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                    Có chương mới
+                                  </span>
+                                  <span className="font-semibold text-foreground">
+                                    {item.completedChapters} / {item.totalChapters} chương
+                                  </span>
+                                </div>
+                                <Link
+                                  href={`/books/${item.bookId.slug}`}
+                                  className="w-full flex items-center justify-center gap-1.5 bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 text-xs font-bold py-2 rounded-full transition-all duration-300"
+                                >
+                                  <BookOpen size={13} />
+                                  Đọc tiếp
+                                </Link>
+                              </div>
                             ) : (
                               <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
                                 <span>Cập nhật</span>
@@ -296,7 +318,7 @@ function LibrarySkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
       {[...Array(10)].map((_, i) => (
-        <Card key={i} className="flex flex-col h-full overflow-hidden border-border/80">
+        <Card key={`skeleton-book-${i}`} className="flex flex-col h-full overflow-hidden border-border/80">
           <Skeleton className="aspect-[2/3] w-full rounded-none" />
           <CardContent className="p-4 space-y-3 flex-1 flex flex-col justify-between">
             <div className="space-y-2">

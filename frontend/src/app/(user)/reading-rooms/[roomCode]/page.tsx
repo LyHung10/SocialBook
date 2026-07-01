@@ -8,10 +8,12 @@ import { useAppAuth } from '@/features/auth/hooks';
 import { useRoomPresence } from '@/features/reading-rooms/hooks/useRoomPresence';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useGetBookByIdQuery } from '@/features/books/api/bookApi';
-import { useGetChapterQuery } from '@/features/chapters/api/chaptersApi';
+import { useGetChapterQuery, useGetChaptersQuery } from '@/features/chapters/api/chaptersApi';
 import { ChapterContent } from '@/components/chapter/ChapterContent';
+import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
+import ChapterListDrawer from '@/components/book/ChapterListDrawer';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
-import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion } from 'lucide-react';
+import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Library, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion, List, Sparkles } from 'lucide-react';
 import { useReadingView } from '@/features/books/hooks';
 import { useGetChapterProgressQuery } from '@/features/library/api/libraryApi';
 import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
@@ -25,6 +27,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { store } from '@/store/store';
 import { readingRoomsApi } from '@/features/reading-rooms/api/readingRoomsApi';
 import { toast } from 'sonner';
+import { MESSAGES } from '@/constants/messages';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -72,7 +75,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const searchParams = useSearchParams();
   const { copy, copiedText } = useCopyToClipboard();
   const copied = !!copiedText;
-  const { openConfirm, openAddToLibrary, openCreatePost } = useModalStore();
+  const { openConfirm, openAddToLibrary, openCreatePost, openChapterSummary } = useModalStore();
   
   const handleCopyCode = () => {
     copy(roomCode, 'Đã sao chép mã phòng!');
@@ -104,7 +107,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   const chapter = chapterData?.chapter;
   const navigation = chapterData?.navigation;
-  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room || isEnded });
+  const { data: chaptersData } = useGetChaptersQuery({ bookSlug: bookData?.slug || '' }, { skip: !bookData?.slug });
+  const { data: quotesData } = useGetRoomQuotesQuery({ code: roomCode }, { skip: !room });
 
   useEffect(() => {
     if (quotesData) {
@@ -152,6 +156,8 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   const [transferHostOpen, setTransferHostOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const [showTOC, setShowTOC] = useState(false);
   const { isControlsVisible, showSettings, setShowSettings } = useReadingView();
   const [createPost] = useCreatePostMutation();
 
@@ -253,17 +259,19 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 onClick={() => router.push('/reading-rooms')}
                 className="w-8 h-8 rounded-full hover:bg-muted text-muted-foreground shrink-0"
                 title="Quay lại danh sách phòng"
+                aria-label="Quay lại danh sách phòng"
               >
                 <ChevronLeft size={18} />
               </Button>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h1 className="text-base font-bold tracking-tight truncate">Phòng: {roomCode}</h1>
-                  <button 
-                    onClick={handleCopyCode}
-                    className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary shrink-0"
-                    title="Sao chép mã phòng"
-                  >
+              <button 
+                onClick={handleCopyCode}
+                className="p-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-primary shrink-0"
+                title="Sao chép mã phòng"
+                aria-label="Sao chép mã phòng"
+              >
                     {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                   </button>
                   <Badge variant="outline" className="text-[9px] uppercase font-black px-1.5 py-0 bg-primary/5 text-primary border-primary/20 shrink-0 hidden min-[350px]:inline-flex">
@@ -607,6 +615,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     <ChapterContent
                       paragraphs={chapter.paragraphs}
                       chapterId={chapter.id}
+                      chapterSlug={currentChapterSlug}
                       bookId={bookData.id}
                       bookSlug={bookData.slug}
                       bookCoverImage={bookData.coverUrl}
@@ -883,10 +892,28 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             label="Cài đặt đọc"
             onClick={() => setShowSettings(true)}
           />
+          <DockButton
+            icon={<List size={20} />}
+            label="Mục lục"
+            onClick={() => setShowTOC(true)}
+          />
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
           <DockButton
             icon={<Bookmark size={20} />}
-            label="Lưu vào thư viện"
+            label="Bookmarks"
+            onClick={() => {
+              if (!user) {
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
+                return;
+              }
+              setShowBookmarks(true);
+            }}
+          />
+          <DockButton
+            icon={<Library size={20} />}
+            label="Lưu"
             disabled={!bookData}
             onClick={() => bookData && openAddToLibrary({ bookId: bookData.id })}
           />
@@ -895,6 +922,12 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             label="Chia sẻ"
             disabled={!chapter}
             onClick={handleShareRoom}
+          />
+          <DockButton
+            icon={<Sparkles size={20} />}
+            label="Tóm tắt AI"
+            disabled={!chapter}
+            onClick={() => chapter && openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
           />
           <DockButton
             icon={<MessageCircleQuestion size={20} />}
@@ -910,6 +943,31 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
           />
         </div>
       </div>
+
+      <BookmarksDrawer
+        open={showBookmarks}
+        onOpenChange={setShowBookmarks}
+        bookId={bookData?.id || ''}
+        bookSlug={bookData?.slug || ''}
+        currentChapterSlug={currentChapterSlug}
+      />
+
+      <ChapterListDrawer
+        isOpen={showTOC}
+        onClose={() => setShowTOC(false)}
+        chapters={chaptersData?.chapters || []}
+        bookSlug={bookData?.slug || ''}
+        currentChapterSlug={currentChapterSlug}
+        totalChapters={chaptersData?.total}
+        onNavigate={(slug) => {
+          if (!isEnded && room?.mode === 'sync' && isHost) {
+            changeChapter(slug, bookData?.id);
+          } else {
+            router.push(`/reading-rooms/${roomCode}?chapter=${slug}`);
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
 
       <ReadingSettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
 

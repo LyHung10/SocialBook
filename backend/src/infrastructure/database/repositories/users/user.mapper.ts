@@ -11,6 +11,7 @@ export interface UserPersistence {
   password?: string;
   isVerified: boolean;
   isBanned: boolean;
+  violationCount: number;
   provider: string;
   providerId?: string;
   image?: string;
@@ -34,6 +35,7 @@ export class UserMapper {
       password: doc.password,
       isVerified: doc.isVerified,
       isBanned: doc.isBanned,
+      violationCount: doc.violationCount,
       provider: doc.provider,
       providerId: doc.providerId,
       image: doc.image,
@@ -44,7 +46,13 @@ export class UserMapper {
       favoriteGenres: (doc.favoriteGenres || []).map((g: Types.ObjectId) =>
         g.toString(),
       ),
-      readingPreferences: doc.readingPreferences,
+      readingPreferences: doc.readingPreferences
+        ? {
+            ...doc.readingPreferences,
+            warmth: doc.readingPreferences.warmth ?? 0,
+            brightness: doc.readingPreferences.brightness ?? 100,
+          }
+        : undefined,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     });
@@ -59,6 +67,7 @@ export class UserMapper {
       password: entity.password,
       isVerified: entity.isVerified,
       isBanned: entity.isBanned,
+      violationCount: entity.violationCount,
       provider: entity.provider,
       providerId: entity.providerId,
       image: entity.image,

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import {
   NotFoundDomainException,
   ConflictDomainException,
@@ -47,11 +47,11 @@ export class UpdateBookUseCase {
 
     if (command.genres !== undefined) {
       if (command.genres.length === 0) {
-        throw new Error('Book must have at least one genre');
+        throw new BadRequestException('Book must have at least one genre');
       }
 
       if (command.genres.length > 5) {
-        throw new Error('Book cannot have more than 5 genres');
+        throw new BadRequestException('Book cannot have more than 5 genres');
       }
 
       book.updateGenres(command.genres);

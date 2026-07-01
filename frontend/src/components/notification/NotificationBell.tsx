@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useNotifications } from './useNotifications';
 
-import { UserAvatar } from '@/components/common/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,7 +48,7 @@ export function NotificationBell() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h4 className="font-semibold text-sm">Thông báo</h4>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary-foreground/90 hover:bg-primary/20">
+            <Badge variant="default" className="rounded-full px-2 py-0.5 text-[11px] font-bold">
               {unreadCount} mới
             </Badge>
           )}
@@ -82,26 +81,11 @@ export function NotificationBell() {
                     }}
                     className="w-full text-left flex items-start gap-3 p-4 transition-colors border-b border-slate-50 dark:border-gray-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-800/20 cursor-pointer"
                   >
-                    <div
-                      className="relative shrink-0 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (notif.meta?.actorId) {
-                          router.push(`/users/${notif.meta.actorId}`);
-                          setOpen(false);
-                        }
-                      }}
-                    >
-                      <UserAvatar
-                        src={notif.meta?.image}
-                        name={notif.meta?.username}
-                        size="md"
-                      />
+                    <div className="shrink-0 mt-1.5 w-2">
                       {isUnread && (
-                        <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary border-2 border-white dark:border-[#1a1a1a]" />
+                        <span className="block h-2 w-2 rounded-full bg-primary" />
                       )}
                     </div>
-
                     <div className="flex-1 space-y-1 min-w-0">
                       <p className={`text-sm leading-snug ${isUnread ? 'font-semibold text-foreground' : 'text-foreground'}`}>
                         {notif.title}

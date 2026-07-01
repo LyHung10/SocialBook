@@ -33,7 +33,7 @@ export class IntelligentSearchUseCase {
   private static readonly SEMANTIC_WEIGHT = 1.0;
   private static readonly KEYWORD_WEIGHT = 0.4;
   private static readonly EXACT_MATCH_BONUS = 50;
-  private static readonly MIN_FINAL_SCORE = 65;
+  private static readonly MIN_FINAL_SCORE = 40;
 
   constructor(
     private readonly bookRepository: IBookRepository,
@@ -111,11 +111,19 @@ export class IntelligentSearchUseCase {
       }
 
       // 2. Nếu không phải tìm tác giả chính xác, mới kích hoạt các hệ thống nặng
-      const [keywordResults, analysis, semanticResults] = await Promise.all([
+      // Bước 2a: Chạy song song keyword search + Gemini expansion (không phụ thuộc nhau)
+      const [keywordResults, analysis] = await Promise.all([
         this.getKeywordCandidates(query),
         this.queryExpansionService.expand(query),
-        this.rankingService.search(query, query),
       ]);
+
+      // Bước 2b: Dùng expandedQuery (đã được Gemini làm giàu) để embed — quan trọng!
+
+      const expandedQuery = analysis?.expandedQuery ?? query;
+      const semanticResults = await this.rankingService.search(
+        expandedQuery,
+        query,
+      );
 
       const hybridMap = this.calculateHybridScores(
         semanticResults,

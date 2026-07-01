@@ -12,10 +12,10 @@ export const useBookParams = () => {
     const genres = useMemo(() => searchParams.get('genres')?.split(',').filter(Boolean) || [], [searchParams]);
     const tags = useMemo(() => searchParams.get('tags')?.split(',').filter(Boolean) || [], [searchParams]);
     const searchQuery = searchParams.get('search') || '';
-    // When searching, default to 'score' for relevance; when browsing, default to 'createdAt'
     const defaultSort = searchQuery ? 'score' : 'createdAt';
     const sortBy = (searchParams.get('sortBy') as BookOrderField) || defaultSort;
     const order = (searchParams.get('order') as 'asc' | 'desc') || 'desc';
+    const status = searchParams.get('status') || 'all';
 
     const updateParams = useCallback((updates: Record<string, string | null>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -43,6 +43,10 @@ export const useBookParams = () => {
         updateParams({ search: term.trim() || null });
     }, [updateParams]);
 
+    const setStatus = useCallback((s: string) => {
+        updateParams({ status: s === 'all' ? null : s });
+    }, [updateParams]);
+
     const clearFilters = useCallback(() => updateParams({ genres: null, tags: null }), [updateParams]);
     const clearGenres = useCallback(() => updateParams({ genres: null }), [updateParams]);
     const clearTags = useCallback(() => updateParams({ tags: null }), [updateParams]);
@@ -55,9 +59,11 @@ export const useBookParams = () => {
         searchQuery,
         sortBy,
         order,
+        status,
         toggleFilter,
         setSort,
         setSearch,
+        setStatus,
         clearFilters,
         clearGenres,
         clearTags,

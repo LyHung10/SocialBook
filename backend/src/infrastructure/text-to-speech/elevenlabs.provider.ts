@@ -8,7 +8,7 @@ import {
 } from '@/domain/text-to-speech/interfaces/text-to-speech.provider.interface';
 
 @Injectable()
-export class VoiceRSSProvider implements ITextToSpeechProvider {
+export class ElevenLabsProvider implements ITextToSpeechProvider {
   constructor(
     private readonly configService: ConfigService,
     private readonly mediaService: IMediaService,
@@ -18,51 +18,59 @@ export class VoiceRSSProvider implements ITextToSpeechProvider {
     text: string,
     options: AudioGenerationOptions,
   ): Promise<{ audioUrl: string; format: string; duration?: number }> {
-    const { voice, speed, format = 'mp3' } = options;
-    const apiKey = this.configService.get<string>('env.VOICERSS_API_KEY');
+    const { format = 'mp3' } = options;
+    const apiKey = this.configService.get<string>('env.ELEVENLABS_API_KEY');
+
+    // Use the voice from config, or a default known Voice ID (e.g. Rachel)
+    const voiceId =
+      this.configService.get<string>('env.ELEVENLABS_VOICE_ID') ||
+      'BYtZrKUsiaR2iHNpf2uV';
+
+    const modelId =
+      this.configService.get<string>('env.ELEVENLABS_MODEL_ID') || 'eleven_v3';
 
     if (!apiKey) {
-      throw new InternalServerErrorException('VoiceRSS API key not found');
+      throw new InternalServerErrorException(
+        'ElevenLabs API key not found in configuration',
+      );
     }
 
-    const url = 'https://api.voicerss.org/';
-    const formData = new URLSearchParams();
-    formData.append('key', apiKey);
-    formData.append('src', text);
-    formData.append('hl', voice); // VoiceRSS uses 'hl' for language/voice
-    formData.append('c', format);
-    formData.append('f', '44khz_16bit_stereo');
-    if (speed) formData.append('r', speed.toString());
+    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
 
     try {
       const response = await fetch(url, {
         method: 'POST',
-        body: formData,
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json',
+          Accept: 'audio/mpeg',
         },
+        body: JSON.stringify({
+          text,
+          model_id: modelId,
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+          },
+        }),
       });
 
       if (!response.ok) {
         const err = await response.text();
-        throw new Error(`VoiceRSS error: ${err}`);
+        throw new Error(`ElevenLabs API error: ${err}`);
       }
 
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
       if (buffer.length < 100) {
-        const errText = buffer.toString('utf-8');
-        if (errText.includes('ERROR:')) {
-          throw new Error(`VoiceRSS Error: ${errText}`);
-        }
-        throw new Error('VoiceRSS returned invalid audio data');
+        throw new Error('ElevenLabs returned invalid audio data');
       }
 
       const fakeAudioFile: Express.Multer.File = {
         buffer,
         originalname: `tts-${Date.now()}.${format}`,
-        mimetype: `audio/${format}`,
+        mimetype: `audio/${format === 'mp3' ? 'mpeg' : format}`,
         fieldname: 'audio',
         encoding: '7bit',
         size: buffer.length,
@@ -74,11 +82,11 @@ export class VoiceRSSProvider implements ITextToSpeechProvider {
 
       const audioUrl = await this.mediaService.uploadAudio(fakeAudioFile);
 
-      return { audioUrl, format, duration: 0 }; // Duration estimation might require metadata parsing (e.g. music-metadata)
+      return { audioUrl, format, duration: 0 };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new InternalServerErrorException(
-        `Failed to generate audio: ${message}`,
+        `Failed to generate audio via ElevenLabs: ${message}`,
       );
     }
   }

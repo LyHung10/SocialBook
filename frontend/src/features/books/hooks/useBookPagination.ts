@@ -11,6 +11,7 @@ interface UseBookPaginationProps {
     tags: string[];
     sortBy: string;
     order: string;
+    status?: string;
 }
 
 export const useBookPagination = (params: UseBookPaginationProps) => {
@@ -29,6 +30,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             tags: params.tags.join(','),
             sortBy: params.sortBy as BookOrderField,
             order: params.order as 'asc' | 'desc',
+            status: params.status && params.status !== 'all' ? (params.status as 'draft' | 'published' | 'completed') : undefined,
         }
     );
 

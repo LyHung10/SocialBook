@@ -18,9 +18,9 @@ import {
     EditCommentResponse,
     DeleteCommentRequest
 } from '../types/comment.interface';
+import type { RootState } from '@/store/store';
 import { postApi } from '../../posts/api/postApi';
 import type { PaginatedPostsResponse, Post } from '../../posts/types/post.interface';
-import type { RootState } from '@/store/store';
 
 type RawCommentsResponse = {
     comments?: GetCommentsResponse['comments'];

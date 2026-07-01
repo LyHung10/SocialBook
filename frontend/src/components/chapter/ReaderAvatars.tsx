@@ -11,11 +11,6 @@ interface ReaderAvatarsProps {
   currentUserId?: string;
 }
 
-/**
- * Renders floating reader avatars next to a paragraph.
- * Appears for any user whose presence.paragraphId matches this paragraph,
- * excluding the current user (they see their own position locally).
- */
 export const ReaderAvatars = memo(function ReaderAvatars({
   paragraphId,
   presences,

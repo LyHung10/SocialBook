@@ -143,8 +143,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ data }) => {
             setTooltip((prev) => ({ ...prev, show: false }));
           });
       })
-      .catch((error) => {
-        console.error('Error loading map:', error);
+      .catch(() => {
         g.append('text')
           .attr('x', width / 2)
           .attr('y', height / 2)

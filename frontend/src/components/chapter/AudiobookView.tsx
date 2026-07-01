@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Volume2, Play, Pause, SkipForward, SkipBack, Loader2 } from 'lucide-react';
+import { Volume2, Play, Pause, SkipForward, SkipBack, Rewind, FastForward, Loader2 } from 'lucide-react';
 import { useGetChapterAudioQuery, useIncrementPlayCountMutation } from '@/features/tts/api/ttsApi';
 
 interface Paragraph {
@@ -15,6 +15,10 @@ interface AudiobookViewProps {
     paragraphs: Paragraph[];
     bookTitle?: string;
     bookCoverImage?: string;
+    onPrevious?: () => void;
+    onNext?: () => void;
+    hasPrevious?: boolean;
+    hasNext?: boolean;
 }
 
 export default function AudiobookView({
@@ -22,6 +26,10 @@ export default function AudiobookView({
     chapterTitle,
     paragraphs,
     bookTitle,
+    onPrevious,
+    onNext,
+    hasPrevious,
+    hasNext,
 }: AudiobookViewProps) {
     const { data: ttsData, isLoading } = useGetChapterAudioQuery(chapterId);
     const [incrementPlayCount] = useIncrementPlayCountMutation();
@@ -279,11 +287,20 @@ export default function AudiobookView({
                     {/* Main Controls */}
                     <div className="flex items-center gap-6">
                         <button
+                            onClick={onPrevious}
+                            disabled={!hasPrevious}
+                            className="p-2 text-[#666666] hover:text-[#1A1A1A] transition-colors disabled:opacity-30 disabled:hover:text-[#666666] disabled:cursor-not-allowed"
+                            title="Chương trước"
+                        >
+                            <SkipBack className="w-6 h-6" />
+                        </button>
+
+                        <button
                             onClick={() => skip(-10)}
                             className="p-2 text-[#666666] hover:text-[#1A1A1A] transition-colors"
                             title="Lùi 10s"
                         >
-                            <SkipBack className="w-6 h-6" />
+                            <Rewind className="w-6 h-6" />
                         </button>
 
                         <button
@@ -301,6 +318,15 @@ export default function AudiobookView({
                             onClick={() => skip(10)}
                             className="p-2 text-[#666666] hover:text-[#1A1A1A] transition-colors"
                             title="Tua 10s"
+                        >
+                            <FastForward className="w-6 h-6" />
+                        </button>
+
+                        <button
+                            onClick={onNext}
+                            disabled={!hasNext}
+                            className="p-2 text-[#666666] hover:text-[#1A1A1A] transition-colors disabled:opacity-30 disabled:hover:text-[#666666] disabled:cursor-not-allowed"
+                            title="Chương sau"
                         >
                             <SkipForward className="w-6 h-6" />
                         </button>

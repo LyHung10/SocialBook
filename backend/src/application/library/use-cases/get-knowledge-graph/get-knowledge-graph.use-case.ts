@@ -55,12 +55,12 @@ export class GetKnowledgeGraphUseCase {
       throw new NotFoundException('User not found');
     }
 
-    // 1. Fetch completed reading list
+    // 1. Fetch completed / reading reading list
     const completedItems =
-      await this.readingListRepository.findAllDetailByUserId(
-        userId,
+      await this.readingListRepository.findAllDetailByUserId(userId, [
         ReadingStatus.COMPLETED,
-      );
+        ReadingStatus.READING,
+      ]);
 
     if (completedItems.length === 0) {
       return {
@@ -100,13 +100,21 @@ export class GetKnowledgeGraphUseCase {
 
     const userGenres: string[] = [];
 
+    const bookStatusMap = new Map<string, ReadingStatus>();
+    completedItems.forEach((item) => {
+      bookStatusMap.set(item.bookId.id, item.status);
+    });
+
     books.forEach((book) => {
       // Book Node
       nodes.push({
         id: `book_${book.id.getValue()}`,
         label: book.title.getValue(),
         type: 'book',
-        val: 15,
+        val:
+          bookStatusMap.get(book.id.getValue()) === ReadingStatus.COMPLETED
+            ? 20
+            : 12,
         img: book.coverUrl,
         color: '#10b981', // emerald-500
         slug: book.slug,

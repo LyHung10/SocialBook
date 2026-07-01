@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { VoiceRSSProvider } from './voice-rss.provider';
+import { ElevenLabsProvider } from './elevenlabs.provider';
 import { ITextToSpeechProvider } from '@/domain/text-to-speech/interfaces/text-to-speech.provider.interface';
 import { MediaInfrastructureModule } from '../media/media-infrastructure.module';
 
@@ -8,7 +8,7 @@ import { MediaInfrastructureModule } from '../media/media-infrastructure.module'
   providers: [
     {
       provide: ITextToSpeechProvider,
-      useClass: VoiceRSSProvider,
+      useClass: ElevenLabsProvider,
     },
   ],
   exports: [ITextToSpeechProvider],

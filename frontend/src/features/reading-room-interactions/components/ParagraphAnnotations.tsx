@@ -48,14 +48,16 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
     <div className="w-full min-w-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer leading-none"
+        className="inline-flex items-center transition-colors cursor-pointer leading-none"
       >
-        <MessageCircle size={14} className="text-xs leading-none translate-y-[0.5px]" />
-        {commentCount > 0 && (
-          <span className="text-[10px] font-medium tabular-nums text-foreground">
-            {commentCount}
-          </span>
-        )}
+        <span className="inline-flex items-center gap-0.5 rounded-md bg-muted border px-1.5 py-0.5 text-foreground hover:bg-muted/80 transition-colors">
+          <MessageCircle size={14} className="text-xs leading-none translate-y-[0.5px]" />
+          {commentCount > 0 && (
+            <span className="text-xs font-medium tabular-nums">
+              {commentCount}
+            </span>
+          )}
+        </span>
       </button>
 
       <AnimatePresence initial={false}>
@@ -68,7 +70,7 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 border border-border/60 rounded-xl bg-card/95 dark:bg-black/60 backdrop-blur-xl shadow-md w-full min-w-0 overflow-hidden ring-1 ring-border/50">
+            <div className="mt-2 border border-border rounded-xl bg-card/95 dark:bg-muted backdrop-blur-xl shadow-md w-full min-w-0 overflow-hidden ring-1 ring-border">
               <div ref={listRef} className="max-h-56 overflow-y-auto overflow-x-hidden p-3 space-y-3 custom-scrollbar">
                 {comments.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-6 text-muted-foreground space-y-2">
@@ -92,12 +94,12 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
                 ))}
               </div>
 
-              <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2.5 border-t border-border/60 bg-muted/40 dark:bg-white/5">
+              <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2.5 border-t border-border bg-muted/40 dark:bg-muted/30">
                 <Input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Viết bình luận..."
-                  className="h-9 text-xs rounded-xl bg-background border-border/50 focus-visible:ring-primary/30 shadow-sm"
+                  className="h-9 text-xs rounded-xl bg-background text-foreground border-border focus-visible:ring-primary/30 shadow-sm"
                 />
                 <Button type="submit" size="icon" className="h-9 w-9 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm" disabled={!text.trim()}>
                   <Send className="w-4 h-4" />

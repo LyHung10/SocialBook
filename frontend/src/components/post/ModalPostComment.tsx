@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import ListComments from '@/components/comment/ListComments';
 import { usePostCreateMutation } from '@/features/comments/api/commentApi';
 import { cn } from '@/lib/utils';
 import { ShieldAlert, Info } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useModalStore } from '@/store/useModalStore';
 import { usePostComments } from '@/features/posts/hooks/usePostComments';
 import { usePostActions } from '@/features/posts/hooks/usePostActions';
+import { useAppAuth } from '@/features/auth/hooks';
 
 import { UserAvatarWithInfo } from "@/components/common/UserAvatar";
 import { PostActions } from '@/components/post/PostActions';
@@ -32,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 export default function ModalPostComment() {
     const { isPostCommentOpen, closePostComment, postCommentData, openSharePost } = useModalStore();
     const router = useRouter();
-    const { theme } = useTheme();
+    const { isAuthenticated } = useAppAuth();
     const [createComment] = usePostCreateMutation();
 
     const post = postCommentData?.post;
@@ -236,7 +237,6 @@ export default function ModalPostComment() {
                                     isCommentOpen={isPostCommentOpen}
                                     parentId={null}
                                     targetType={'post'}
-                                    theme={theme as 'light' | 'dark' | undefined}
                                 />
                             </div>
                         </ScrollArea>
@@ -253,27 +253,35 @@ export default function ModalPostComment() {
                             onShare={handleShareClick}
                         />
                         <div className="px-4 pb-3 pt-2">
-                            <div className="flex gap-3 items-center">
-                                <div className="flex-1 flex gap-2">
-                                    <Input
-                                        ref={commentInputRef}
-                                        value={commentText}
-                                        onChange={(e) => setCommentText(e.target.value)}
-                                        placeholder="Để lại cảm nghĩ của bạn..."
-                                        className="flex-1 bg-slate-50 dark:bg-gray-900/50 border-none focus-visible:ring-1 focus-visible:ring-sky-500/30 rounded-full px-4 h-9 text-sm"
-                                        onKeyDown={handleKeyDown}
-                                    />
-                                    <Button
-                                        disabled={!commentText.trim() || isSubmitting}
-                                        onClick={handleSubmitComment}
-                                        size="sm"
-                                        variant="ghost"
-                                        className="font-bold text-sky-600 hover:text-sky-700 hover:bg-transparent px-2"
-                                    >
-                                        {isSubmitting ? <span className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : 'Đăng'}
-                                    </Button>
+                            {isAuthenticated ? (
+                                <div className="flex gap-3 items-center">
+                                    <div className="flex-1 flex gap-2">
+                                        <Input
+                                            ref={commentInputRef}
+                                            value={commentText}
+                                            onChange={(e) => setCommentText(e.target.value)}
+                                            placeholder="Để lại cảm nghĩ của bạn..."
+                                            className="flex-1 bg-slate-50 dark:bg-gray-900/50 border-none focus-visible:ring-1 focus-visible:ring-sky-500/30 rounded-full px-4 h-9 text-sm"
+                                            onKeyDown={handleKeyDown}
+                                        />
+                                        <Button
+                                            disabled={!commentText.trim() || isSubmitting}
+                                            onClick={handleSubmitComment}
+                                            size="sm"
+                                            variant="ghost"
+                                            className="font-bold text-sky-600 hover:text-sky-700 hover:bg-transparent px-2"
+                                        >
+                                            {isSubmitting ? <span className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : 'Đăng'}
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="text-center py-2">
+                                    <Link href="/login" className="text-sm text-sky-600 hover:text-sky-700 font-medium">
+                                        Đăng nhập để bình luận
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,9 @@ import Image from "next/image";
 import { use, useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { MESSAGES } from "@/constants/messages";
 import { getErrorMessage } from "@/lib/utils";
+import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
 import {
   Bookmark,
   ChevronLeft,
@@ -14,8 +16,10 @@ import {
   BookOpen,
   Settings,
   Share2,
+  Highlighter,
   Bot,
-  MessageCircleQuestion,
+  Library,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -29,8 +33,10 @@ import ChapterNavigation from "@/components/chapter/ChapterNavigation";
 import CommentSection from "@/components/chapter/CommentSection";
 import ChapterHeader from "@/components/chapter/ChapterHeader";
 import { ChapterContent } from "@/components/chapter/ChapterContent";
+import { PersonalHighlightsDrawer } from "@/components/chapter/PersonalHighlightsDrawer";
 import ContentProtection from "@/components/chapter/ContentProtection";
 import { useReadingProgress, useReadingView } from "@/features/books/hooks";
+import { useReadingSettings } from "@/store/useReadingSettings";
 import { useAppAuth } from "@/features/auth/hooks";
 import { ReadingTimeTracker } from "@/features/books/components/ReadingTimeTracker";
 import AudiobookView from "@/components/chapter/AudiobookView";
@@ -55,6 +61,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const openCreatePost = useModalStore(s => s.openCreatePost);
   const openAddToLibrary = useModalStore(s => s.openAddToLibrary);
+  const openChapterSummary = useModalStore(s => s.openChapterSummary);
 
   const {
     data: chapterData,
@@ -91,6 +98,9 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   } = useReadingView();
 
   const [showAISidebar, setShowAISidebar] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const { settings, updateSettings } = useReadingSettings();
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -228,13 +238,17 @@ ${book.description?.slice(0, 100)}...
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          <ContentProtection>
+          <ContentProtection className="h-full w-full">
             <AudiobookView
               chapterId={chapter.id}
               chapterTitle={chapter.title}
               paragraphs={chapter.paragraphs}
               bookTitle={book.title}
               bookCoverImage={book.coverUrl}
+              onPrevious={goToPreviousChapter}
+              onNext={goToNextChapter}
+              hasPrevious={!!navigation?.previous}
+              hasNext={!!navigation?.next}
             />
           </ContentProtection>
         </div>
@@ -294,6 +308,7 @@ ${book.description?.slice(0, 100)}...
                 <ChapterContent
                   paragraphs={paragraphs}
                   chapterId={chapter.id}
+                  chapterSlug={chapterSlug}
                   bookId={book.id}
                   bookSlug={bookSlug}
                   bookCoverImage={book.coverUrl}
@@ -362,6 +377,20 @@ ${book.description?.slice(0, 100)}...
             onClick={() => setShowTOC(true)}
           />
 
+          <DockButton
+            icon={<Highlighter size={20} className="text-yellow-500" />}
+            label="Highlights"
+            onClick={() => {
+              if (!isLoggedIn) {
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
+                return;
+              }
+              setShowHighlights(true);
+            }}
+          />
+
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <div className="flex bg-muted rounded-xl p-1 shrink-0">
@@ -382,7 +411,7 @@ ${book.description?.slice(0, 100)}...
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
-            icon={<Bookmark size={20} />}
+            icon={<Library size={20} />}
             label="Lưu"
             onClick={() => openAddToLibrary({ bookId: book.id })}
           />
@@ -394,33 +423,58 @@ ${book.description?.slice(0, 100)}...
           />
 
           <DockButton
-            icon={
-              <Bot
-                size={20}
-                className={showAISidebar ? "text-primary" : ""}
-              />
-            }
-            label="Phân tích nội dung"
+            icon={<Sparkles size={20} />}
+            label="Tóm tắt AI"
+            onClick={() => openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
+          />
+
+          <DockButton
+            icon={<Bot size={20} />}
+            label="Trợ lý sách"
             onClick={() => {
-              if (!isLoggedIn) {
-                toast.info('Vui lòng đăng nhập để sử dụng tính năng này', {
-                  action: {
-                    label: 'Đăng nhập',
-                    onClick: () => router.push('/login'),
-                  },
-                });
-                return;
+              if (window.innerWidth < 1024) {
+                window.dispatchEvent(new CustomEvent('toggle-global-chat'));
               }
               setShowAISidebar(!showAISidebar);
             }}
           />
 
           <DockButton
-            icon={<MessageCircleQuestion size={20} />}
-            label="Trợ lý sách"
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-global-chat'))}
-            className="sm:hidden"
+            icon={<Bookmark size={20} />}
+            label="Bookmarks"
+            onClick={() => {
+              if (!isLoggedIn) {
+                toast.info(MESSAGES.REQUIRE_LOGIN, {
+                  action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+                });
+                return;
+              }
+              setShowBookmarks(true);
+            }}
           />
+
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
+
+          {/* Quick: Font size A-/A+ */}
+          <div className="flex items-center bg-muted rounded-xl p-1 shrink-0 gap-0.5">
+            <button
+              onClick={() => updateSettings({ fontSize: Math.max(13, settings.fontSize - 1) })}
+              className="w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/50 transition-all flex items-center justify-center text-sm font-bold"
+              title="Giảm cỡ chữ"
+            >
+              A-
+            </button>
+            <span className="text-[10px] text-muted-foreground px-1 tabular-nums">{settings.fontSize}</span>
+            <button
+              onClick={() => updateSettings({ fontSize: Math.min(26, settings.fontSize + 1) })}
+              className="w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/50 transition-all flex items-center justify-center text-sm font-bold"
+              title="Tăng cỡ chữ"
+            >
+              A+
+            </button>
+          </div>
+
+          <div className="w-px h-6 bg-border mx-1 shrink-0" />
 
           <DockButton
             icon={<Settings size={20} />}
@@ -437,6 +491,21 @@ ${book.description?.slice(0, 100)}...
         bookSlug={bookSlug}
         currentChapterSlug={chapterSlug}
         totalChapters={totalChapters}
+      />
+
+      <PersonalHighlightsDrawer
+        open={showHighlights}
+        onOpenChange={setShowHighlights}
+        bookId={book.id}
+        bookSlug={bookSlug}
+        currentChapterId={chapter.id}
+        chapters={chapters.map(c => ({ id: c.id, slug: c.slug }))}
+      />
+
+      <BookmarksDrawer
+        open={showBookmarks}
+        onOpenChange={setShowBookmarks}
+        bookId={book.id}
       />
 
       <ReadingSettingsPanel

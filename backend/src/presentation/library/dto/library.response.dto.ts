@@ -182,6 +182,8 @@ export class LibraryItemResponseDto {
     orderIndex: number;
   } | null;
   collectionIds: string[];
+  totalChapters?: number;
+  completedChapters?: number;
   createdAt: Date;
   updatedAt: Date;
 
@@ -192,6 +194,8 @@ export class LibraryItemResponseDto {
     this.status = readModel.status;
     this.lastReadChapterId = readModel.lastReadChapterId;
     this.collectionIds = readModel.collectionIds;
+    this.totalChapters = readModel.totalChapters;
+    this.completedChapters = readModel.completedChapters;
     this.createdAt = readModel.createdAt;
     this.updatedAt = readModel.updatedAt;
   }

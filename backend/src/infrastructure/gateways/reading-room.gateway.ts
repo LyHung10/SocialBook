@@ -604,7 +604,7 @@ export class ReadingRoomGateway
       if (body.bookId && body.chapterId && body.progress !== undefined) {
         const cacheKey = `${userId}:${body.chapterSlug}`;
         const lastSaved = this.lastSavedProgress.get(cacheKey) ?? -1;
-        if (body.progress - lastSaved >= 10 || body.progress === 100) {
+        if (body.progress - lastSaved > 5 || body.progress === 100) {
           this.lastSavedProgress.set(cacheKey, body.progress);
           await this.saveReadingProgress(
             userId,

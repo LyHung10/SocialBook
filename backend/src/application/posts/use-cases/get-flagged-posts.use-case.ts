@@ -14,6 +14,7 @@ export class GetFlaggedPostsUseCase {
     return this.postRepository.findFlagged({
       page: query.page,
       limit: query.limit,
+      reason: query.reason,
     });
   }
 }

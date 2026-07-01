@@ -69,7 +69,7 @@ export class GetChapterKnowledgeUseCase {
       - Ngôn ngữ: Tiếng Việt.
 
       Nội dung:
-      ${content.substring(0, 5000)}
+      ${content.substring(0, 20000)}
     `;
 
     this.logger.log(`Extracting knowledge for chapter ${query.chapterId}...`);
@@ -93,8 +93,28 @@ export class GetChapterKnowledgeUseCase {
       summary: string;
     }
 
-    const result =
-      await this.geminiService.generateJSON<KnowledgeResult>(prompt);
+    const maxRetries = 2;
+    let lastError: Error | null = null;
+    let result: KnowledgeResult | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        result = await this.geminiService.generateJSON<KnowledgeResult>(prompt);
+        break;
+      } catch (error) {
+        lastError = error as Error;
+        if (attempt < maxRetries) {
+          this.logger.warn(
+            `Knowledge extraction attempt ${attempt} failed, retrying... ${lastError.message}`,
+          );
+          await new Promise((r) => setTimeout(r, 1000 * attempt));
+        }
+      }
+    }
+
+    if (!result) {
+      throw lastError || new Error('Knowledge extraction failed');
+    }
 
     const knowledge = ChapterKnowledge.create({
       id: existing ? existing.id : this.idGenerator.generate(),
