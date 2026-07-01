@@ -3,7 +3,6 @@ import {
   ChapterStatus,
 } from '@/domain/library/entities/reading-progress.entity';
 import { ProgressDocument } from '@/infrastructure/database/schemas/progress.schema';
-import { ReadingStatus } from '@/infrastructure/database/schemas/reading-list.schema';
 import { Types } from 'mongoose';
 export interface ReadingProgressPersistence {
   _id: Types.ObjectId;
@@ -20,7 +19,7 @@ export interface ReadingProgressPersistence {
 
 export class ReadingProgressMapper {
   static toDomain(doc: ProgressDocument): ReadingProgress {
-    const status = ReadingProgressMapper.mapStatusToChapterStatus(doc.status);
+    const status = ReadingProgressMapper.toChapterStatus(doc.status);
 
     return ReadingProgress.reconstitute({
       id: doc._id.toString(),
@@ -45,9 +44,7 @@ export class ReadingProgressMapper {
       bookId: new Types.ObjectId(readingProgress.bookId.toString()),
       chapterId: new Types.ObjectId(readingProgress.chapterId.toString()),
       progress: readingProgress.progress,
-      status: ReadingProgressMapper.mapChapterStatusToStatus(
-        readingProgress.status,
-      ),
+      status: readingProgress.status,
       timeSpent: readingProgress.timeSpent,
       lastReadAt: readingProgress.lastReadAt || new Date(),
       createdAt: readingProgress.createdAt,
@@ -55,25 +52,15 @@ export class ReadingProgressMapper {
     };
   }
 
-  private static mapStatusToChapterStatus(status: string): ChapterStatus {
+  private static toChapterStatus(status: string): ChapterStatus {
+    if (Object.values(ChapterStatus).includes(status as ChapterStatus)) {
+      return status as ChapterStatus;
+    }
     switch (status) {
-      case ReadingStatus.COMPLETED as string:
-        return ChapterStatus.COMPLETED;
-      case ReadingStatus.READING as string:
+      case 'READING':
         return ChapterStatus.IN_PROGRESS;
       default:
         return ChapterStatus.NOT_STARTED;
-    }
-  }
-
-  private static mapChapterStatusToStatus(status: ChapterStatus): string {
-    switch (status) {
-      case ChapterStatus.COMPLETED:
-        return ReadingStatus.COMPLETED as string;
-      case ChapterStatus.IN_PROGRESS:
-        return ReadingStatus.READING as string;
-      default:
-        return ReadingStatus.READING as string;
     }
   }
 }
