@@ -59,7 +59,7 @@ export class IntelligentSearchUseCase {
 
     // 1. Kiểm tra cache trong Redis
     const cacheKey = `search:${mode}:${encodeURIComponent(normalizedQuery)}:page:${page}:limit:${limit}:genres:${genres?.join(',') || 'all'}:order:${order}`;
-    
+
     try {
       const cachedResult = await this.redis.get(cacheKey);
       if (cachedResult) {
@@ -67,11 +67,13 @@ export class IntelligentSearchUseCase {
         return JSON.parse(cachedResult) as PaginatedSearchResult;
       }
     } catch (err) {
-      this.logger.warn(`Failed to get search cache from Redis for key: ${cacheKey}`, err);
+      this.logger.warn(
+        `Failed to get search cache from Redis for key: ${cacheKey}`,
+        err,
+      );
     }
 
     try {
-
       // 1. KIỂM TRA TÁC GIẢ & TÊN SÁCH (Local DB)
       const [authors, exactBook] = await Promise.all([
         this.authorRepository.searchByName(query, 1),
@@ -83,31 +85,35 @@ export class IntelligentSearchUseCase {
       );
 
       // 2. Chạy tìm kiếm tuỳ theo mode
-      let keywordResults = new Map<string, number>();
-      let semanticResults: Array<{ id: string; finalScore: number }> = [];
-      let analysis: any = null;
-
-      const promises: Promise<void>[] = [];
+      let keywordPromise: Promise<Map<string, number>> = Promise.resolve(
+        new Map<string, number>(),
+      );
+      let semanticPromise: Promise<{
+        analysis: QueryAnalysis | null;
+        semanticResults: Array<{ id: string; finalScore: number }>;
+      }> = Promise.resolve({ analysis: null, semanticResults: [] });
 
       if (mode === 'keyword' || mode === 'hybrid') {
-        promises.push(
-          this.getKeywordCandidates(query, exactAuthor, exactBook ?? undefined).then((res) => {
-            keywordResults = res;
-          }),
+        keywordPromise = this.getKeywordCandidates(
+          query,
+          exactAuthor,
+          exactBook ?? undefined,
         );
       }
 
       if (mode === 'semantic' || mode === 'hybrid') {
-        promises.push(
-          this.queryExpansionService.expand(query).then(async (res) => {
-            analysis = res;
-            const expandedQuery = analysis?.expandedQuery ?? query;
-            semanticResults = await this.rankingService.search(expandedQuery, query);
-          }),
-        );
+        semanticPromise = this.queryExpansionService
+          .expand(query)
+          .then(async (res) => {
+            const expandedQuery = res?.expandedQuery ?? query;
+            const sRes = await this.rankingService.search(expandedQuery, query);
+            return { analysis: res, semanticResults: sRes };
+          });
       }
 
-      await Promise.all(promises);
+      const [keywordResults, { analysis, semanticResults }] = await Promise.all(
+        [keywordPromise, semanticPromise],
+      );
 
       const hybridMap = this.calculateHybridScores(
         semanticResults,
@@ -162,9 +168,14 @@ export class IntelligentSearchUseCase {
       };
 
       // 4. Lưu cache vào Redis (TTL 24 giờ)
-      this.redis.setex(cacheKey, 86400, JSON.stringify(resultToReturn)).catch(err => {
-        this.logger.warn(`Failed to set search cache to Redis for key: ${cacheKey}`, err);
-      });
+      this.redis
+        .setex(cacheKey, 86400, JSON.stringify(resultToReturn))
+        .catch((err) => {
+          this.logger.warn(
+            `Failed to set search cache to Redis for key: ${cacheKey}`,
+            err,
+          );
+        });
 
       return resultToReturn;
     } catch (e: unknown) {
@@ -254,7 +265,7 @@ export class IntelligentSearchUseCase {
   private calculateHybridScores(
     semantic: Array<{ id: string; finalScore: number }>,
     keyword: Map<string, number>,
-    mode: 'keyword' | 'semantic' | 'hybrid'
+    mode: 'keyword' | 'semantic' | 'hybrid',
   ): Map<string, HybridScore> {
     const hybridMap = new Map<string, HybridScore>();
 
@@ -266,7 +277,8 @@ export class IntelligentSearchUseCase {
       });
     }
 
-    const keywordWeight = mode === 'keyword' ? 1.0 : IntelligentSearchUseCase.KEYWORD_WEIGHT;
+    const keywordWeight =
+      mode === 'keyword' ? 1.0 : IntelligentSearchUseCase.KEYWORD_WEIGHT;
 
     for (const [id, kScore] of keyword) {
       const existing = hybridMap.get(id);
