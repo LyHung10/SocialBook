@@ -16,7 +16,7 @@ export interface RankedCandidate {
 export class SearchRankingService {
   private readonly logger = new Logger(SearchRankingService.name);
 
-  private static readonly SEMANTIC_THRESHOLD = 0.5;
+  private static readonly SEMANTIC_THRESHOLD = 0.65;
   private static readonly SEMANTIC_SEARCH_LIMIT = 50;
   private static readonly TITLE_NGRAM_BOOST = 0.3;
   private static readonly CONTENT_NGRAM_BOOST = 0.15;
