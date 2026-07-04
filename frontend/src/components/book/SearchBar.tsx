@@ -101,8 +101,8 @@ export const SearchBar = ({
         placeholder="Tìm kiếm tên truyện, tác giả..."
         className={
           compact
-            ? 'block w-full pl-4 pr-10 py-2.5 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500'
-            : 'block w-full pl-5 pr-12 py-4 rounded-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-lg backdrop-blur-sm transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500'
+            ? 'block w-full pl-4 pr-10 py-2.5 rounded-full bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm placeholder:text-muted-foreground'
+            : 'block w-full pl-5 pr-12 py-4 rounded-full bg-transparent border-none text-foreground focus:outline-none focus:ring-0 transition-all placeholder:text-muted-foreground'
         }
       />
       {input && (

@@ -1,4 +1,5 @@
 import { getErrorMessage } from '@/common/utils/error.util';
+import { calculateFuzzyScore } from '@/common/utils/string.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { IntelligentSearchQuery } from './intelligent-search.query';
 import {
@@ -10,6 +11,7 @@ import { IChapterRepository } from '@/domain/chapters/repositories/chapter.repos
 import { IReviewRepository } from '@/domain/reviews/repositories/review.repository.interface';
 import { IGenreRepository } from '@/domain/genres/repositories/genre.repository.interface';
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
+import { Author } from '@/domain/authors/entities/author.entity';
 import { Book } from '@/domain/books/entities/book.entity';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { BookTitle } from '@/domain/books/value-objects/book-title.vo';
@@ -31,9 +33,9 @@ export class IntelligentSearchUseCase {
   private readonly logger = new Logger(IntelligentSearchUseCase.name);
 
   private static readonly SEMANTIC_WEIGHT = 1.0;
-  private static readonly KEYWORD_WEIGHT = 0.4;
-  private static readonly EXACT_MATCH_BONUS = 50;
-  private static readonly MIN_FINAL_SCORE = 40;
+  private static readonly KEYWORD_WEIGHT = 0.7;
+  private static readonly EXACT_MATCH_BONUS = 80;
+  private static readonly MIN_FINAL_SCORE = 35;
 
   constructor(
     private readonly bookRepository: IBookRepository,
@@ -52,12 +54,25 @@ export class IntelligentSearchUseCase {
     const start = performance.now();
     const { query, page = 1, limit = 10, genres, order = 'desc' } = queryDto;
 
+    const normalizedQuery = query.toLowerCase().trim();
+    const mode = queryDto.mode ?? 'hybrid';
+
+    // 1. Kiểm tra cache trong Redis
+    const cacheKey = `search:${mode}:${encodeURIComponent(normalizedQuery)}:page:${page}:limit:${limit}:genres:${genres?.join(',') || 'all'}:order:${order}`;
+    
     try {
-      const normalizedQuery = query.toLowerCase().trim();
+      const cachedResult = await this.redis.get(cacheKey);
+      if (cachedResult) {
+        this.logger.debug(`[Search Cache Hit] ${cacheKey}`);
+        return JSON.parse(cachedResult) as PaginatedSearchResult;
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to get search cache from Redis for key: ${cacheKey}`, err);
+    }
 
-      // Track trending searches is now handled explicitly via POST /search/record
+    try {
 
-      // 1. KIỂM TRA TÁC GIẢ & TÊN SÁCH TRƯỚC (Cực nhanh, local DB)
+      // 1. KIỂM TRA TÁC GIẢ & TÊN SÁCH (Local DB)
       const [authors, exactBook] = await Promise.all([
         this.authorRepository.searchByName(query, 1),
         this.bookRepository.findByTitle(BookTitle.create(query)),
@@ -67,67 +82,37 @@ export class IntelligentSearchUseCase {
         (a) => a.name.toString().toLowerCase() === normalizedQuery,
       );
 
-      // Nếu khớp chính xác Tác giả HOẶC Tên Sách
-      if (exactAuthor || (exactBook && page === 1)) {
-        this.logger.debug(
-          `Exact match found (Author: ${!!exactAuthor}, Book: ${!!exactBook}). Breaking early.`,
+      // 2. Chạy tìm kiếm tuỳ theo mode
+      let keywordResults = new Map<string, number>();
+      let semanticResults: Array<{ id: string; finalScore: number }> = [];
+      let analysis: any = null;
+
+      const promises: Promise<void>[] = [];
+
+      if (mode === 'keyword' || mode === 'hybrid') {
+        promises.push(
+          this.getKeywordCandidates(query, exactAuthor, exactBook ?? undefined).then((res) => {
+            keywordResults = res;
+          }),
         );
-
-        let fullBooks: Book[] = [];
-        let total = 0;
-
-        if (exactAuthor) {
-          const paginatedBooks = await this.bookRepository.findByAuthor(
-            exactAuthor.id,
-            { page, limit },
-            { sortBy: 'createdAt', order: 'desc' },
-          );
-          fullBooks = paginatedBooks.data;
-          total = paginatedBooks.meta.total;
-        } else if (exactBook && exactBook.status.toString() === 'published') {
-          fullBooks = [exactBook];
-          total = 1;
-        }
-
-        if (fullBooks.length > 0) {
-          const mockScoreMap = new Map(
-            fullBooks.map((b) => [
-              b.id.toString(),
-              { finalScore: 100, matchType: 'keyword' as const },
-            ]),
-          );
-          const data = await this.enrichAndMap(fullBooks, mockScoreMap);
-
-          return {
-            data,
-            meta: {
-              current: page,
-              pageSize: limit,
-              total,
-              totalPages: Math.ceil(total / limit),
-            },
-          };
-        }
       }
 
-      // 2. Nếu không phải tìm tác giả chính xác, mới kích hoạt các hệ thống nặng
-      // Bước 2a: Chạy song song keyword search + Gemini expansion (không phụ thuộc nhau)
-      const [keywordResults, analysis] = await Promise.all([
-        this.getKeywordCandidates(query),
-        this.queryExpansionService.expand(query),
-      ]);
+      if (mode === 'semantic' || mode === 'hybrid') {
+        promises.push(
+          this.queryExpansionService.expand(query).then(async (res) => {
+            analysis = res;
+            const expandedQuery = analysis?.expandedQuery ?? query;
+            semanticResults = await this.rankingService.search(expandedQuery, query);
+          }),
+        );
+      }
 
-      // Bước 2b: Dùng expandedQuery (đã được Gemini làm giàu) để embed — quan trọng!
-
-      const expandedQuery = analysis?.expandedQuery ?? query;
-      const semanticResults = await this.rankingService.search(
-        expandedQuery,
-        query,
-      );
+      await Promise.all(promises);
 
       const hybridMap = this.calculateHybridScores(
         semanticResults,
         keywordResults,
+        mode,
       );
 
       let candidateIds = Array.from(hybridMap.keys());
@@ -166,7 +151,7 @@ export class IntelligentSearchUseCase {
         `[IntelligentSearch] "${query}" -> ${total} results in ${Math.round(end - start)}ms`,
       );
 
-      return {
+      const resultToReturn = {
         data: finalResult,
         meta: {
           current: page,
@@ -175,6 +160,13 @@ export class IntelligentSearchUseCase {
           totalPages: Math.ceil(total / (limit || 1)),
         },
       };
+
+      // 4. Lưu cache vào Redis (TTL 24 giờ)
+      this.redis.setex(cacheKey, 86400, JSON.stringify(resultToReturn)).catch(err => {
+        this.logger.warn(`Failed to set search cache to Redis for key: ${cacheKey}`, err);
+      });
+
+      return resultToReturn;
     } catch (e: unknown) {
       this.logger.error(`Search process failed: ${getErrorMessage(e)}`);
       throw e;
@@ -183,18 +175,18 @@ export class IntelligentSearchUseCase {
 
   private async getKeywordCandidates(
     query: string,
+    exactAuthor?: Author,
+    exactBook?: Book,
   ): Promise<Map<string, number>> {
     const results = new Map<string, number>();
-    const normalizedQuery = query.toLowerCase().trim();
 
     // 1. Tìm tác giả theo tên
     const authors = await this.authorRepository.searchByName(query, 5);
     const authorIds = authors.map((a) => a.id.toString());
 
-    // Kiểm tra xem có tác giả nào khớp 100% tên không
-    const exactAuthor = authors.find(
-      (a) => a.name.toString().toLowerCase() === normalizedQuery,
-    );
+    if (exactAuthor && !authorIds.includes(exactAuthor.id.toString())) {
+      authorIds.push(exactAuthor.id.toString());
+    }
 
     let allBooks: Array<{
       id: string;
@@ -203,101 +195,52 @@ export class IntelligentSearchUseCase {
       description?: string;
     }> = [];
 
-    if (exactAuthor) {
-      // BREAK: Nếu khớp 100% tên tác giả, ưu tiên lấy sách của họ TRƯỚC và dừng tìm kiếm tiêu đề lan man
-      this.logger.debug(
-        `Exact author match found: ${exactAuthor.name.toString()}. Breaking early.`,
-      );
-      allBooks = await this.bookRepository.findSearchCandidates(
-        {
-          authorIds: [exactAuthor.id.toString()],
-          status: 'published',
-        },
+    // Tìm kiếm song song
+    const [booksByTitle, booksByAuthor] = await Promise.all([
+      this.bookRepository.findSearchCandidates(
+        { search: query, status: 'published' },
         50,
-      );
-    } else {
-      // Nếu không khớp chính xác tác giả, tìm kiếm song song như bình thường nhưng dùng "Lean" method
-      const [booksByTitle, booksByAuthor] = await Promise.all([
-        this.bookRepository.findSearchCandidates(
-          { search: query, status: 'published' },
-          50,
-        ),
-        authorIds.length > 0
-          ? this.bookRepository.findSearchCandidates(
-              { authorIds: authorIds, status: 'published' },
-              50,
-            )
-          : Promise.resolve([]),
-      ]);
-      allBooks = [...booksByTitle, ...booksByAuthor];
-    }
-
-    const stopWords = new Set([
-      'có',
-      'là',
-      'và',
-      'của',
-      'những',
-      'người',
-      'trong',
-      'một',
-      'các',
-      'cho',
-      'với',
-      'này',
-      'được',
-      'đã',
-      'đang',
-      'không',
-      'thì',
-      'cũng',
-      'như',
-      'khi',
-      'đến',
-      'từ',
-      'hay',
-      'nhưng',
-      'rất',
-      'nên',
-      'bạn',
-      'thân',
-      'nào',
-      'còn',
-      'tôi',
-      'anh',
+      ),
+      authorIds.length > 0
+        ? this.bookRepository.findSearchCandidates(
+            { authorIds: authorIds, status: 'published' },
+            50,
+          )
+        : Promise.resolve([]),
     ]);
-    const significantTokens = normalizedQuery
-      .split(/\s+/)
-      .filter((t) => t.length > 2 && !stopWords.has(t));
+
+    allBooks = [...booksByTitle, ...booksByAuthor];
+
+    if (exactBook && exactBook.status.toString() === 'published') {
+      allBooks.push({
+        id: exactBook.id.toString(),
+        title: exactBook.title.toString(),
+        authorName: exactBook.authorName || exactBook.author?.name,
+        description: exactBook.description,
+      });
+    }
 
     allBooks.forEach((book) => {
       const bid = book.id;
       if (results.has(bid)) return;
 
-      const title = (book.title || '').toLowerCase();
-      const author = (book.authorName || '').toLowerCase();
-      const desc = (book.description || '').toLowerCase();
-      let score = 0;
+      const title = book.title || '';
+      const author = book.authorName || '';
 
-      if (title === normalizedQuery || author === normalizedQuery) {
+      let score = Math.max(
+        calculateFuzzyScore(query, title),
+        calculateFuzzyScore(query, author),
+      );
+
+      // Nếu search trúng đích danh tác giả hoặc đích danh sách, cộng kịch trần
+      if (
+        exactAuthor &&
+        calculateFuzzyScore(exactAuthor.name.toString(), author) >= 90
+      ) {
+        score = Math.max(score, 100);
+      }
+      if (exactBook && bid === exactBook.id.toString()) {
         score = 100;
-      } else if (
-        title.startsWith(normalizedQuery) ||
-        author.startsWith(normalizedQuery)
-      ) {
-        score = 80;
-      } else if (
-        title.includes(normalizedQuery) ||
-        author.includes(normalizedQuery)
-      ) {
-        score = 60;
-      } else if (significantTokens.length > 0) {
-        const matchedTokens = significantTokens.filter(
-          (t) => title.includes(t) || author.includes(t) || desc.includes(t),
-        );
-        if (matchedTokens.length > 0) {
-          score = 20 + (matchedTokens.length / significantTokens.length) * 20;
-        }
       }
 
       if (score > 0) {
@@ -311,6 +254,7 @@ export class IntelligentSearchUseCase {
   private calculateHybridScores(
     semantic: Array<{ id: string; finalScore: number }>,
     keyword: Map<string, number>,
+    mode: 'keyword' | 'semantic' | 'hybrid'
   ): Map<string, HybridScore> {
     const hybridMap = new Map<string, HybridScore>();
 
@@ -322,9 +266,11 @@ export class IntelligentSearchUseCase {
       });
     }
 
+    const keywordWeight = mode === 'keyword' ? 1.0 : IntelligentSearchUseCase.KEYWORD_WEIGHT;
+
     for (const [id, kScore] of keyword) {
       const existing = hybridMap.get(id);
-      const weightedKScore = kScore * IntelligentSearchUseCase.KEYWORD_WEIGHT;
+      const weightedKScore = kScore * keywordWeight;
       const bonus =
         kScore === 100 ? IntelligentSearchUseCase.EXACT_MATCH_BONUS : 0;
 

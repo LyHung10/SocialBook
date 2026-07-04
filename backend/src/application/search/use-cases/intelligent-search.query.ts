@@ -3,6 +3,7 @@ export class IntelligentSearchQuery {
   public readonly page: number;
   public readonly limit: number;
   public readonly genres?: string[];
+  public readonly mode: 'keyword' | 'semantic' | 'hybrid';
   public readonly sortBy:
     | 'views'
     | 'likes'
@@ -20,6 +21,7 @@ export class IntelligentSearchQuery {
     page?: number;
     limit?: number;
     genres?: string[];
+    mode?: 'keyword' | 'semantic' | 'hybrid';
     sortBy?: string;
     order?: 'asc' | 'desc';
   }) {
@@ -27,6 +29,7 @@ export class IntelligentSearchQuery {
     this.page = props.page ?? 1;
     this.limit = props.limit ?? 10;
     this.genres = props.genres;
+    this.mode = props.mode ?? 'hybrid';
     this.order = props.order ?? 'desc';
 
     // Type-safe adaptation for search-specific sortBy

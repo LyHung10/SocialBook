@@ -140,6 +140,7 @@ export class BooksController {
     if (filter.search) {
       const query = new IntelligentSearchQuery({
         query: filter.search,
+        mode: filter.mode,
         ...filter,
       });
 
