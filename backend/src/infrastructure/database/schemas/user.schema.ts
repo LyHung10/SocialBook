@@ -58,7 +58,7 @@ export class User extends BaseSchema {
     type: {
       theme: {
         type: String,
-        enum: ['light', 'dark', 'sepia'],
+        enum: ['light', 'dark', 'sepia', 'paper'],
         default: 'dark',
       },
       fontSize: { type: Number, default: 18, min: 12, max: 32 },

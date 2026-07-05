@@ -4,11 +4,6 @@ export abstract class IGeminiService {
   abstract embedText(text: string): Promise<number[]>;
   abstract summarizeChapter(content: string, title?: string): Promise<string>;
   abstract generateBookRecommendations(preferences: string): Promise<string[]>;
-  abstract analyzeReadingProgress(
-    chaptersRead: number,
-    totalChapters: number,
-    readingSpeed: number,
-  ): Promise<string>;
   abstract generateChapterTitle(content: string): Promise<string>;
   abstract extractKeywords(text: string): Promise<string[]>;
 }

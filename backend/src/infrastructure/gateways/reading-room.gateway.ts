@@ -44,6 +44,8 @@ import { DeleteCommentUseCase } from '@/application/reading-room-interactions/us
 import { DeleteCommentCommand } from '@/application/reading-room-interactions/use-cases/delete-comment/delete-comment.command';
 import { AddReactionUseCase } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.use-case';
 import { AddReactionCommand } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.command';
+import { RemoveReactionUseCase } from '@/application/reading-room-interactions/use-cases/remove-reaction/remove-reaction.use-case';
+import { RemoveReactionCommand } from '@/application/reading-room-interactions/use-cases/remove-reaction/remove-reaction.command';
 import { AddQuoteUseCase } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.use-case';
 import { AddQuoteCommand } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.command';
 import { VoteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.use-case';
@@ -86,6 +88,7 @@ export class ReadingRoomGateway
     private readonly addCommentUseCase: AddCommentUseCase,
     private readonly deleteCommentUseCase: DeleteCommentUseCase,
     private readonly addReactionUseCase: AddReactionUseCase,
+    private readonly removeReactionUseCase: RemoveReactionUseCase,
     private readonly addQuoteUseCase: AddQuoteUseCase,
     private readonly voteQuoteUseCase: VoteQuoteUseCase,
     private readonly generateHighlightInsightUseCase: GenerateHighlightInsightUseCase,
@@ -791,21 +794,70 @@ export class ReadingRoomGateway
         body.paragraphId,
         body.reactionType,
       );
-      const reaction = await this.addReactionUseCase.execute(command);
+      const { action, reaction } =
+        await this.addReactionUseCase.execute(command);
       const displayName = sd.displayName || 'User';
+
+      if (action === 'deleted') {
+        this.server
+          .to(`room:${body.roomId}`)
+          .emit(ReadingRoomServerEvent.REACTION_REMOVED, {
+            paragraphId: reaction.paragraphId,
+            reactionType: reaction.reactionType,
+            userId,
+          });
+      } else {
+        this.server
+          .to(`room:${body.roomId}`)
+          .emit(ReadingRoomServerEvent.REACTION_ADDED, {
+            id: reaction.id,
+            paragraphId: reaction.paragraphId,
+            reactionType: reaction.reactionType,
+            userId,
+            displayName,
+            createdAt: reaction.createdAt,
+          });
+      }
+    } catch (error: unknown) {
+      this.emitError(socket, 'REACTION_FAILED', 'Add reaction failed', error);
+    }
+  }
+
+  @SubscribeMessage(ReadingRoomClientEvent.REMOVE_REACTION)
+  async handleRemoveReaction(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody()
+    body: {
+      roomId: string;
+      paragraphId: string;
+      reactionType: string;
+    },
+  ) {
+    const sd = socket.data as SocketData;
+    const userId = sd.userId ?? '';
+    try {
+      const command = new RemoveReactionCommand(
+        userId,
+        body.roomId,
+        body.paragraphId,
+        body.reactionType,
+      );
+      await this.removeReactionUseCase.execute(command);
 
       this.server
         .to(`room:${body.roomId}`)
-        .emit(ReadingRoomServerEvent.REACTION_ADDED, {
-          id: reaction.id,
-          paragraphId: reaction.paragraphId,
-          reactionType: reaction.reactionType,
+        .emit(ReadingRoomServerEvent.REACTION_REMOVED, {
+          paragraphId: body.paragraphId,
+          reactionType: body.reactionType,
           userId,
-          displayName,
-          createdAt: reaction.createdAt,
         });
     } catch (error: unknown) {
-      this.emitError(socket, 'REACTION_FAILED', 'Add reaction failed', error);
+      this.emitError(
+        socket,
+        'REACTION_FAILED',
+        'Remove reaction failed',
+        error,
+      );
     }
   }
 

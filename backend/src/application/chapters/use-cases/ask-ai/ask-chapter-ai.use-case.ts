@@ -42,7 +42,10 @@ export class AskChapterAIUseCase {
     if (totalContent.length <= 5000) {
       selectedContent = totalContent;
     } else {
-      selectedContent = this.selectRelevantContent(paragraphs, questionKeywords);
+      selectedContent = this.selectRelevantContent(
+        paragraphs,
+        questionKeywords,
+      );
     }
 
     const prompt = `
@@ -74,7 +77,7 @@ export class AskChapterAIUseCase {
   private extractKeywords(text: string): Set<string> {
     const words = text
       .toLowerCase()
-      .replace(/[.,!?;:'"()\[\]{}<>\/\\@#$%^&*\-_=+~`|]/g, ' ')
+      .replace(/[.,!?;:'"()[\]{}<>/\\@#$%^&*\-_=+~`|]/g, ' ')
       .split(/\s+/)
       .filter((w) => w.length > 1);
 

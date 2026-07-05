@@ -236,6 +236,8 @@ export class UsersController {
       dto.textColor,
       dto.textAlign,
       dto.marginWidth,
+      dto.warmth,
+      dto.brightness,
       dto.preferredGenres,
       dto.dailyReadingGoal,
     );

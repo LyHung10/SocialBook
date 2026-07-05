@@ -307,6 +307,10 @@ export const useReadingRoomSocket = (roomId?: string) => {
       });
     });
 
+    socket.on(ReadingRoomServerEvent.REACTION_REMOVED, (data) => {
+      useReadingRoomStore.getState().updateReaction(data.paragraphId, data.reactionType, data.userId, false);
+    });
+
     socket.on(ReadingRoomServerEvent.QUOTE_ADDED, (data) => {
       const store = useReadingRoomStore.getState();
       store.addQuote({

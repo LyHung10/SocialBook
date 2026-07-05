@@ -122,26 +122,6 @@ export class GeminiService implements IGeminiService {
       .filter((title) => title.length > 0);
   }
 
-  async analyzeReadingProgress(
-    chaptersRead: number,
-    totalChapters: number,
-    readingSpeed: number,
-  ): Promise<string> {
-    const progressPercentage = Math.round((chaptersRead / totalChapters) * 100);
-    const remainingChapters = totalChapters - chaptersRead;
-    const estimatedTime = Math.round(remainingChapters / readingSpeed);
-
-    const prompt = `Analyze this reading progress and provide motivational feedback:
-        - Progress: ${progressPercentage}% complete (${chaptersRead}/${totalChapters} chapters)
-        - Reading speed: ${readingSpeed} chapters per session
-        - Estimated chapters remaining: ${remainingChapters}
-        - Estimated time to finish: ${estimatedTime} sessions
-        
-        Provide a brief, encouraging analysis of their progress and reading habits.`;
-
-    return this.generateText(prompt);
-  }
-
   async generateChapterTitle(content: string): Promise<string> {
     const prompt = `Based on this chapter content, generate a compelling and appropriate chapter title:
         

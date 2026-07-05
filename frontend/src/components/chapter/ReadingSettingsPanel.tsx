@@ -79,8 +79,10 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
         if (!isAuthenticated || !isInitialized) return;
 
         const timer = setTimeout(() => {
-            updatePrefs(settings);
-        }, 1000); // 1s debounce
+            updatePrefs(settings).catch(() => {
+                toast.error('Đồng bộ cài đặt thất bại');
+            });
+        }, 1000);
 
         return () => clearTimeout(timer);
     }, [settings, updatePrefs, isAuthenticated, isInitialized]);

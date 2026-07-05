@@ -10,6 +10,8 @@ export class UpdateReadingPreferencesCommand {
     public readonly textColor?: string,
     public readonly textAlign?: string,
     public readonly marginWidth?: number,
+    public readonly warmth?: number,
+    public readonly brightness?: number,
     public readonly preferredGenres?: string[],
     public readonly dailyReadingGoal?: number,
   ) {}
