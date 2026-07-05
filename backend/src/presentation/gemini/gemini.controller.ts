@@ -32,6 +32,7 @@ export class GeminiController {
   }
 
   @Public()
+  @UseGuards(GeminiThrottleGuard)
   @Post('summarize-chapter/:chapterId')
   async summarizeChapter(
     @Param('chapterId') chapterId: string,

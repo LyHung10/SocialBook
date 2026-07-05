@@ -1,38 +1,35 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_SERVICE } from '@/domain/shared/interfaces/cache.service.interface';
+import type { ICacheService } from '@/domain/shared/interfaces/cache.service.interface';
 import { RecommendationCachePort } from '@/domain/recommendations/interfaces/recommendation-cache.port';
 import { RecommendationResponse } from '@/domain/recommendations/interfaces/recommendation.interface';
 
-const TTL_MS = 2 * 60 * 60 * 1000;
-
-interface CacheEntry {
-  data: RecommendationResponse;
-  timestamp: number;
-}
+const TTL_SECONDS = 2 * 60 * 60;
 
 @Injectable()
 export class RecommendationCacheService extends RecommendationCachePort {
-  private readonly logger = new Logger(RecommendationCacheService.name);
-  private readonly cache = new Map<string, CacheEntry>();
+  private readonly keyPrefix = 'recommendation:user:';
 
-  get(userId: string): Promise<RecommendationResponse | null> {
-    const entry = this.cache.get(userId);
-    if (!entry) {
-      return Promise.resolve(null);
-    }
-    if (Date.now() - entry.timestamp > TTL_MS) {
-      this.cache.delete(userId);
-      return Promise.resolve(null);
-    }
-    return Promise.resolve(entry.data);
+  constructor(
+    @Inject(CACHE_SERVICE)
+    private readonly cache: ICacheService,
+  ) {
+    super();
   }
 
-  set(userId: string, data: RecommendationResponse): Promise<void> {
-    this.cache.set(userId, { data, timestamp: Date.now() });
-    return Promise.resolve();
+  async get(userId: string): Promise<RecommendationResponse | null> {
+    return this.cache.get<RecommendationResponse>(this.key(userId));
   }
 
-  clear(userId: string): Promise<void> {
-    this.cache.delete(userId);
-    return Promise.resolve();
+  async set(userId: string, data: RecommendationResponse): Promise<void> {
+    await this.cache.set(this.key(userId), data, TTL_SECONDS);
+  }
+
+  async clear(userId: string): Promise<void> {
+    await this.cache.del(this.key(userId));
+  }
+
+  private key(userId: string): string {
+    return `${this.keyPrefix}${userId}`;
   }
 }

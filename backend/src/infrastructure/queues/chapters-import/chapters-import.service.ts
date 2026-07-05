@@ -1,10 +1,6 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import type { Job, Queue } from 'bullmq';
-import { promises as fs } from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   CHAPTERS_IMPORT_JOB_NAME,
@@ -52,17 +48,11 @@ export class ChaptersImportService {
   async startImport(
     params: StartChaptersImportParams,
   ): Promise<StartChaptersImportResult> {
-    const tempJsonPath = path.join(
-      os.tmpdir(),
-      `chapters-import-${uuidv4()}.json`,
-    );
-    await fs.writeFile(tempJsonPath, JSON.stringify(params.chapters), 'utf8');
-
     const job = await this.queue.add(
       CHAPTERS_IMPORT_JOB_NAME,
       {
         bookId: params.bookId,
-        tempJsonPath,
+        chapters: params.chapters,
       },
       {
         removeOnComplete: {

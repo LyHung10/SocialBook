@@ -8,6 +8,8 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
 import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -86,13 +88,19 @@ import { PresentationModule } from './presentation/presentation.module';
         },
       }),
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'global',
-        ttl: 60_000,
-        limit: 100,
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      inject: ['default'],
+      useFactory: (redis: Redis) => ({
+        throttlers: [
+          {
+            name: 'global',
+            ttl: 60_000,
+            limit: 100,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(redis),
+      }),
+    }),
     EventEmitterModule.forRoot(),
     CacheModule,
     LoggerModule,

@@ -3,8 +3,6 @@ import { CreateChapterCommand } from '@/application/chapters/use-cases/create-ch
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, BadRequestException } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { promises as fs } from 'fs';
-import { unlink } from 'fs/promises';
 
 import type {
   ImportChaptersChapterInput,
@@ -36,22 +34,10 @@ export class ChaptersImportProcessor extends WorkerHost {
       };
     }
 
-    const { bookId, tempJsonPath } = job.data;
+    const { bookId, chapters } = job.data;
 
-    let chapters: ImportChaptersChapterInput[];
-    try {
-      const raw = await fs.readFile(tempJsonPath, 'utf8');
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
-        throw new BadRequestException('Invalid import payload: expected array');
-      }
-      chapters = parsed as ImportChaptersChapterInput[];
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to read import payload: ${message}`);
-      throw error;
-    } finally {
-      await unlink(tempJsonPath).catch(() => null);
+    if (!Array.isArray(chapters)) {
+      throw new BadRequestException('Invalid import payload: expected array');
     }
 
     const total = chapters.length;
