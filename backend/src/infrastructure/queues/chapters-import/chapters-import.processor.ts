@@ -5,7 +5,6 @@ import { Logger, BadRequestException } from '@nestjs/common';
 import type { Job } from 'bullmq';
 
 import type {
-  ImportChaptersChapterInput,
   ImportChaptersJobData,
   ImportChaptersJobProgress,
   ImportChaptersJobResult,
