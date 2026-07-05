@@ -422,11 +422,13 @@ ${book.description?.slice(0, 100)}...
             onClick={handleOpenShareModal}
           />
 
-          <DockButton
-            icon={<Sparkles size={20} />}
-            label="Tóm tắt AI"
-            onClick={() => openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
-          />
+          {!isLoggedIn && (
+            <DockButton
+              icon={<Sparkles size={20} />}
+              label="Tóm tắt AI"
+              onClick={() => openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
+            />
+          )}
 
           <DockButton
             icon={<Bot size={20} />}

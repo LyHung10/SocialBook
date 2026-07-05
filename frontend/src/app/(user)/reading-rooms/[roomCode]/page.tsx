@@ -75,7 +75,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
   const searchParams = useSearchParams();
   const { copy, copiedText } = useCopyToClipboard();
   const copied = !!copiedText;
-  const { openConfirm, openAddToLibrary, openCreatePost, openChapterSummary } = useModalStore();
+  const { openConfirm, openAddToLibrary, openCreatePost } = useModalStore();
   
   const handleCopyCode = () => {
     copy(roomCode, 'Đã sao chép mã phòng!');
@@ -922,12 +922,6 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
             label="Chia sẻ"
             disabled={!chapter}
             onClick={handleShareRoom}
-          />
-          <DockButton
-            icon={<Sparkles size={20} />}
-            label="Tóm tắt AI"
-            disabled={!chapter}
-            onClick={() => chapter && openChapterSummary({ chapterId: chapter.id, chapterTitle: chapter.title })}
           />
           <DockButton
             icon={<MessageCircleQuestion size={20} />}
