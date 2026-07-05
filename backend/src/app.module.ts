@@ -1,7 +1,7 @@
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CacheModule } from '@/shared/cache/redis.module';
 import { LoggerModule } from '@/shared/logger/logger.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { getRedisConnectionToken, RedisModule } from '@nestjs-modules/ioredis';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -89,7 +89,7 @@ import { PresentationModule } from './presentation/presentation.module';
       }),
     }),
     ThrottlerModule.forRootAsync({
-      inject: ['default'],
+      inject: [getRedisConnectionToken()],
       useFactory: (redis: Redis) => ({
         throttlers: [
           {
