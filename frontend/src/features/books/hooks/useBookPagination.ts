@@ -26,6 +26,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             page,
             limit: 20,
             search: params.search,
+            mode: 'keyword',
             genres: params.genres.join(','),
             tags: params.tags.join(','),
             sortBy: params.sortBy as BookOrderField,
@@ -34,6 +35,19 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
         }
     );
 
+    const { data: semanticData, isLoading: isSemanticLoading, isFetching: isSemanticFetching } = useGetBooksQuery(
+        {
+            page: 1,
+            limit: 5,
+            search: params.search,
+            mode: 'semantic',
+        },
+        {
+            skip: !params.search || params.search.trim().length < 2,
+        }
+    );
+
+    // Xử lý logic gộp danh sách Keyword và Semantic
     useEffect(() => {
         const isReset = queryKey !== queryKeyRef.current;
         if (isReset) {
@@ -44,16 +58,34 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
         if (currentData?.data) {
             startTransition(() => {
                 setAllBooks((prev) => {
-                    if (isReset || page === 1) return currentData.data;
+                    const aiBooks = (semanticData?.data || []).map((b: Book) => ({ ...b, isSemantic: true }));
+                    const aiBookIds = new Set(aiBooks.map((b) => b.id));
+
+                    const keywordBooks = currentData.data.map((b: Book) => ({
+                        ...b,
+                        // Sách đã tìm thấy bằng Keyword thì không cần gắn mác AI nữa
+                        isSemantic: b.isSemantic
+                    }));
+                    const keywordBookIds = new Set(keywordBooks.map((b: Book) => b.id));
+                    
+                    const uniqueAiBooks = aiBooks.filter((b: Book) => !keywordBookIds.has(b.id));
+
+                    if (isReset || page === 1) {
+                        return [...keywordBooks, ...uniqueAiBooks];
+                    }
+
+                    // Cuộn trang: Thêm vào cuối, tránh trùng lặp
                     const existingIds = new Set(prev.map((b) => b.id));
-                    const uniqueNewBooks = currentData.data.filter((b: Book) => !existingIds.has(b.id));
-                    return [...prev, ...uniqueNewBooks];
+                    const uniqueNewKeywordBooks = keywordBooks.filter((b: Book) => !existingIds.has(b.id));
+                    const uniqueNewAiBooks = uniqueAiBooks.filter((b: Book) => !existingIds.has(b.id));
+                    
+                    return [...prev, ...uniqueNewKeywordBooks, ...uniqueNewAiBooks];
                 });
             });
         } else if (isReset) {
             startTransition(() => setAllBooks([]));
         }
-    }, [queryKey, currentData, page]);
+    }, [queryKey, currentData, page, semanticData]);
 
     const hasMore = data ? data.meta.current < data.meta.totalPages : true;
 
@@ -68,8 +100,12 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
         books: allBooks,
         isLoading: ((isLoading || isFetching) && page === 1) || hasDataGap,
         isFetchingMore: isFetching && page > 1,
+        isSemanticLoading: isSemanticLoading || isSemanticFetching,
         hasMore,
         lastBookRef,
-        metaData: data?.meta
+        metaData: data?.meta ? {
+            ...data.meta,
+            total: Math.max(data.meta.total, allBooks.length)
+        } : undefined
     };
 };

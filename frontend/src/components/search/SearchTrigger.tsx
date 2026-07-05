@@ -24,7 +24,7 @@ export function SearchTrigger() {
     if (isComposing.current) return;
     const trimmed = debouncedQuery.trim();
     if (trimmed.length >= 1) {
-      triggerSearch({ search: trimmed, page: 1, limit: 5 });
+      triggerSearch({ search: trimmed, page: 1, limit: 5, mode: 'keyword' });
       startTransition(() => setIsOpen(true));
     } else {
       startTransition(() => setIsOpen(false));
@@ -72,6 +72,8 @@ export function SearchTrigger() {
     const trimmed = query.trim();
     if (trimmed) {
       setIsOpen(false);
+      setQuery('');
+      inputRef.current?.blur();
       recordSearchKeyword(trimmed);
       router.push(`/books?search=${encodeURIComponent(trimmed)}`);
     }
@@ -79,6 +81,7 @@ export function SearchTrigger() {
 
   const handleResultClick = (slug: string) => {
     setIsOpen(false);
+    setQuery('');
     router.push(`/books/${slug}`);
   };
 
@@ -86,6 +89,8 @@ export function SearchTrigger() {
     const trimmed = query.trim();
     if (trimmed) {
       setIsOpen(false);
+      setQuery('');
+      inputRef.current?.blur();
       recordSearchKeyword(trimmed);
       router.push(`/books?search=${encodeURIComponent(trimmed)}`);
     }
@@ -207,11 +212,15 @@ export function SearchTrigger() {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                Không tìm thấy kết quả
+                Không tìm thấy tên sách khớp xác
               </p>
-              <p className="text-xs text-muted-foreground/60">
-                Thử thay đổi từ khóa tìm kiếm
-              </p>
+              <button
+                type="button"
+                onClick={handleViewAll}
+                className="mt-2 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand/10 text-brand hover:bg-brand/20 transition-colors font-medium cursor-pointer"
+              >
+                ✨ Nhờ AI phân tích câu này
+              </button>
             </div>
           )}
  

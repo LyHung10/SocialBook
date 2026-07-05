@@ -28,6 +28,7 @@ export interface Book {
     views: number;
     likes: number;
   };
+  isSemantic?: boolean;
 }
 
 import type { Author } from '@/features/authors/types/author.interface';
@@ -103,6 +104,7 @@ export interface GetBooksParams {
   search?: string;
   genres?: string;
   tags?: string;
+  mode?: 'keyword' | 'semantic' | 'hybrid';
   sortBy?: BookOrderField;
   order?: 'asc' | 'desc';
   status?: BookStatus | 'all';

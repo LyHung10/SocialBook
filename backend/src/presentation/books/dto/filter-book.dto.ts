@@ -57,6 +57,10 @@ export class FilterBookDto extends PaginationQueryDto {
   search?: string;
 
   @IsOptional()
+  @IsEnum(['keyword', 'semantic', 'hybrid'])
+  mode?: 'keyword' | 'semantic' | 'hybrid';
+
+  @IsOptional()
   @IsString()
   publishedYear?: string;
 

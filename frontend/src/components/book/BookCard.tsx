@@ -1,4 +1,4 @@
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 import { SafeImage } from '../common/SafeImage';
 import React, { memo, useCallback } from 'react';
@@ -55,6 +55,15 @@ function BookCover({ book, priority }: { book: Book, priority?: boolean }) {
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-80" />
+            
+            {book.isSemantic && (
+                <div 
+                    className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-background/60 text-foreground/80 rounded-full backdrop-blur-md border border-border/50 shadow-sm"
+                    title="Kết quả mở rộng dựa trên ngữ nghĩa"
+                >
+                    <Lightbulb className="w-3.5 h-3.5" />
+                </div>
+            )}
         </div>
     );
 }
