@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Share2, Bookmark as BookmarkIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -162,6 +163,13 @@ export const ChapterContent = memo(function ChapterContent({
 
     const [askAI] = useAskChapterAIMutation();
     const menuRef = useRef<HTMLDivElement>(null);
+
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+        return () => setIsMounted(false);
+    }, []);
 
     useEffect(() => {
         if (paragraphs.length > 0 && typeof window !== 'undefined' && window.location.hash) {
@@ -588,8 +596,8 @@ export const ChapterContent = memo(function ChapterContent({
                     })}
                 </article>
 
-                <AnimatePresence>
-                    {selection && (
+                {isMounted && document.body?.isConnected && selection && createPortal(
+                    <AnimatePresence>
                         <div
                             ref={menuRef}
                             className="fixed z-50 pointer-events-none"
@@ -703,8 +711,8 @@ export const ChapterContent = memo(function ChapterContent({
                                 )}
                             </AnimatePresence>
                         </div>
-                    )}
-                </AnimatePresence>
+                    </AnimatePresence>
+                , document.body)}
 
             </main>
 
