@@ -5,10 +5,12 @@ import { useState } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
 import { Users, BookOpen, FileText, MessageSquare, BarChart2, Download, ShieldAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { toast } from 'sonner';
 import { StatCard } from '@/components/admin/dashboard/StatCard';
 import { TimeRangeSelector } from '@/components/admin/dashboard/TimeRangeSelector';
 import { ViewTypeSelector, ViewType } from '@/components/admin/dashboard/ViewTypeSelector';
 import { useDashboardData, useExportStatistics } from '@/features/admin/hooks/dashboard/useDashboard';
+import { useReindexAllMutation } from '@/features/admin/api/analyticsApi';
 import { PopularBooksTable } from '@/components/admin/dashboard/PopularBooksTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +37,7 @@ export default function AdminPage() {
 
   const { stats, growthData, bookStats, loading, error, refetch } = useDashboardData(timeRange, viewType);
   const { exportCSV, exporting } = useExportStatistics(timeRange);
+  const [reindexAll, { isLoading: isReindexing }] = useReindexAllMutation();
 
   const handleViewTypeChange = (newViewType: ViewType) => {
     setViewType(newViewType);
@@ -42,6 +45,16 @@ export default function AdminPage() {
       case 'day':  setTimeRange('30');   break;
       case 'month': setTimeRange('180'); break;
       case 'year':  setTimeRange('1095'); break;
+    }
+  };
+
+  const handleReindex = async () => {
+    try {
+      await reindexAll().unwrap();
+      toast.success('Đã gửi yêu cầu đồng bộ dữ liệu tìm kiếm thành công!');
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi đồng bộ dữ liệu tìm kiếm.');
+      console.error(error);
     }
   };
 
@@ -236,6 +249,19 @@ export default function AdminPage() {
                   <span className="text-slate-500">Cơ sở dữ liệu</span>
                   <span className="text-emerald-600 font-bold">KẾT NỐI</span>
                 </div>
+              </div>
+              <div className="mt-5 pt-5 border-t border-slate-100">
+                <Button 
+                  onClick={handleReindex} 
+                  disabled={isReindexing}
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white shadow-sm"
+                >
+                  {isReindexing ? (
+                    <><LoadingSpinner className="w-4 h-4 mr-2" /> Đang đồng bộ...</>
+                  ) : (
+                    'Đồng bộ hóa dữ liệu tìm kiếm'
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>

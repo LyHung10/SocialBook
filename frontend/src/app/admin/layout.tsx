@@ -16,8 +16,6 @@ const navItems = [
   { name: 'Genres', icon: Shapes, href: '/admin/genres' },
   { name: 'Moderation', icon: AlertTriangle, href: '/admin/moderation-queue' },
   { name: 'Toxic Dictionary', icon: ShieldAlert, href: '/admin/toxic-words' },
-  { name: 'Posts', icon: FileText, href: '/admin/posts' },
-  { name: 'Comments', icon: MessageSquare, href: '/admin/comments' },
   { name: 'Reports', icon: BarChart2, href: '/admin/reports' },
 ];
 
