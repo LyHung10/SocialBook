@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { use, useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { MESSAGES } from "@/constants/messages";
 import { getErrorMessage } from "@/lib/utils";
@@ -56,6 +56,8 @@ interface ChapterPageProps {
 export default function ChapterPage({ params }: ChapterPageProps) {
   const { bookSlug, chapterSlug } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const autoplay = searchParams.get('autoplay') === 'true';
 
   const { isAuthenticated: isLoggedIn } = useAppAuth();
 
@@ -134,10 +136,10 @@ export default function ChapterPage({ params }: ChapterPageProps) {
     }
   }, [navigation, bookSlug, router]);
 
-  const goToNextChapter = useCallback(() => {
+  const goToNextChapter = useCallback((autoplayNext = false) => {
     if (navigation?.next) {
       router.push(
-        `/books/${bookSlug}/chapters/${navigation.next.slug}`,
+        `/books/${bookSlug}/chapters/${navigation.next.slug}${autoplayNext === true ? '?autoplay=true' : ''}`,
       );
     }
   }, [navigation, bookSlug, router]);
@@ -245,10 +247,11 @@ ${book.description?.slice(0, 100)}...
               paragraphs={chapter.paragraphs}
               bookTitle={book.title}
               bookCoverImage={book.coverUrl}
-              onPrevious={goToPreviousChapter}
-              onNext={goToNextChapter}
+              onPrevious={() => goToPreviousChapter()}
+              onNext={(shouldAutoPlay) => goToNextChapter(shouldAutoPlay)}
               hasPrevious={!!navigation?.previous}
               hasNext={!!navigation?.next}
+              autoPlay={autoplay}
             />
           </ContentProtection>
         </div>
