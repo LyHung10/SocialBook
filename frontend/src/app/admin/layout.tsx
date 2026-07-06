@@ -4,7 +4,7 @@ import { useAppAuth } from '@/features/auth/hooks';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { X, Home, Users, BookOpen, FileText, MessageSquare, BarChart2, LogOut, PenLine, Shapes, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { X, Home, Users, BookOpen, BarChart2, LogOut, PenLine, Shapes, AlertTriangle, ShieldAlert } from 'lucide-react';
 import LoginWall from '@/components/auth/LoginWall';
 
 const navItems = [
@@ -20,7 +20,7 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAppAuth();
+  const { isAuthenticated } = useAppAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (!isAuthenticated) {
