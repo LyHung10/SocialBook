@@ -226,11 +226,15 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           // 2. Draw base circle
           ctx.beginPath();
           ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI, false);
-          ctx.fillStyle = node.img ? (isDark ? '#09090b' : '#ffffff') : (node.color || primaryColor);
+          ctx.fillStyle = node.isGap
+            ? 'transparent'
+            : node.img
+            ? (isDark ? '#09090b' : '#ffffff')
+            : (node.color || primaryColor);
           ctx.fill();
 
-          // 3. Draw image if available
-          if (node.img) {
+          // 3. Draw image if available (skip for gap nodes)
+          if (node.img && !node.isGap) {
             let img = imgCache.current[node.img];
             if (!img) {
               img = new window.Image();
@@ -258,13 +262,11 @@ export function KnowledgeGraph({ data, isLoading }: KnowledgeGraphProps) {
           
           if (node.isGap) {
             ctx.setLineDash([2, 2]);
-            ctx.globalAlpha = 0.6;
           }
           
           ctx.lineWidth = (selectedNode?.id === node.id ? 3 : 1.5) / safeScale;
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.globalAlpha = 1.0;
           ctx.shadowBlur = 0;
 
           // 5. Draw label (always show for user, otherwise show if zoomed in enough)
