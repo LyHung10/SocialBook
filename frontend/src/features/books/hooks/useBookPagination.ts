@@ -59,7 +59,6 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
             startTransition(() => {
                 setAllBooks((prev) => {
                     const aiBooks = (semanticData?.data || []).map((b: Book) => ({ ...b, isSemantic: true }));
-                    const aiBookIds = new Set(aiBooks.map((b) => b.id));
 
                     const keywordBooks = currentData.data.map((b: Book) => ({
                         ...b,

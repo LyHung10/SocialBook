@@ -97,6 +97,12 @@ export class NotificationsGateway
     return this.notificationsService.markRead(userId, body.id);
   }
 
+  @SubscribeMessage('notification:markAllRead')
+  async markAllRead(@ConnectedSocket() socket: Socket) {
+    const userId = (socket.data as SocketData).userId;
+    return this.notificationsService.markAllRead(userId);
+  }
+
   // (tuỳ chọn) cho phép backend khác emit qua gateway — hoặc gọi thẳng service.create()
   @SubscribeMessage('createNotification')
   async createFromClient(

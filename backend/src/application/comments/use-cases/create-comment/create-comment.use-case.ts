@@ -36,7 +36,7 @@ export class CreateCommentUseCase {
       const quickCheck = containsVietnameseToxicWords(command.content);
       if (quickCheck) {
         throw new BadRequestDomainException(
-          'Nội dung chứa từ ngữ thô tục không phù hợp với tiêu chuẩn cộng đồng.',
+          `Nội dung chứa từ ngữ thô tục không phù hợp: "${quickCheck.matchedWord}" (nhóm: ${quickCheck.group}).`,
         );
       }
 

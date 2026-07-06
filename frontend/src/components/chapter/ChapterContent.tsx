@@ -371,7 +371,7 @@ export const ChapterContent = memo(function ChapterContent({
         } catch {
             toast.error('Có lỗi xảy ra, vui lòng thử lại');
         }
-    }, [user, bookmarks, bookId, chapterId, chapterSlug, createBookmark, deleteBookmark]);
+    }, [user, bookmarks, bookId, chapterId, chapterSlug, createBookmark, deleteBookmark, router]);
 
     const getSelectionPerParagraph = useCallback((): { paraId: string; text: string }[] | null => {
         const sel = window.getSelection();

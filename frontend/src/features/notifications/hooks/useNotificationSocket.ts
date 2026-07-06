@@ -36,6 +36,7 @@ interface UseNotificationSocketOptions {
     onNotificationList: SocketEventHandler;
     onNewNotification: (notification: NotificationItem) => void;
     onReadNotification: (data: { id: string }) => void;
+    onReadNotificationAll?: () => void;
 }
 
 export function useNotificationSocket(
@@ -59,6 +60,11 @@ export function useNotificationSocket(
         },
         'notification:read': (data: unknown) => {
             onReadNotification(data as { id: string });
+        },
+        'notification:readAll': () => {
+            if (options.onReadNotificationAll) {
+                options.onReadNotificationAll();
+            }
         },
         'connect_error': () => {
             // Connection failure - socket will auto-retry
@@ -86,6 +92,12 @@ export function useNotificationSocket(
         socket.emit('notification:markRead', { id });
     }, [socket]);
 
+    const markAllAsRead = useCallback(() => {
+        if (!socket?.connected) return;
+
+        socket.emit('notification:markAllRead');
+    }, [socket]);
+
     const refetch = useCallback(() => {
         if (!socket?.connected) return;
 
@@ -102,6 +114,7 @@ export function useNotificationSocket(
 
     return {
         markAsRead,
+        markAllAsRead,
         refetch,
         createNotification,
         isConnected: !!socket?.connected,

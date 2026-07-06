@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 
 export function NotificationBell() {
@@ -21,7 +22,7 @@ export function NotificationBell() {
   const token = accessToken;
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { notifications, unreadCount, markAsRead } = useNotifications(token);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(token);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -46,11 +47,23 @@ export function NotificationBell() {
         align="end"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h4 className="font-semibold text-sm">Thông báo</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-semibold text-sm">Thông báo</h4>
+            {unreadCount > 0 && (
+              <Badge variant="default" className="rounded-full px-2 py-0.5 text-[11px] font-bold">
+                {unreadCount} mới
+              </Badge>
+            )}
+          </div>
           {unreadCount > 0 && (
-            <Badge variant="default" className="rounded-full px-2 py-0.5 text-[11px] font-bold">
-              {unreadCount} mới
-            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAllAsRead()}
+              className="text-xs h-7 px-2 hover:bg-slate-100 dark:hover:bg-gray-800 text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              Đã đọc tất cả
+            </Button>
           )}
         </div>
 
@@ -81,10 +94,20 @@ export function NotificationBell() {
                     }}
                     className="w-full text-left flex items-start gap-3 p-4 transition-colors border-b border-slate-50 dark:border-gray-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-800/20 cursor-pointer"
                   >
-                    <div className="shrink-0 mt-1.5 w-2">
+                    <div className="shrink-0 mt-1.5 w-2 flex items-center justify-center">
                       {isUnread && (
                         <span className="block h-2 w-2 rounded-full bg-primary" />
                       )}
+                    </div>
+                    <div className="shrink-0 mt-0.5">
+                      <Avatar className="h-8 w-8">
+                        {notif.meta?.image ? (
+                          <AvatarImage src={notif.meta.image} alt={notif.meta.name || 'Avatar'} />
+                        ) : null}
+                        <AvatarFallback className="bg-slate-100 dark:bg-gray-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                          {notif.meta?.name ? notif.meta.name.charAt(0).toUpperCase() : "SB"}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                     <div className="flex-1 space-y-1 min-w-0">
                       <p className={`text-sm leading-snug ${isUnread ? 'font-semibold text-foreground' : 'text-foreground'}`}>

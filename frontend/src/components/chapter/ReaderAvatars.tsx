@@ -47,7 +47,8 @@ export const ReaderAvatars = memo(function ReaderAvatars({
                   className="relative"
                 >
                   {reader.avatarUrl ? (
-                    <img
+                    <>
+                      <img
                       src={reader.avatarUrl}
                       alt={reader.displayName}
                       width={22}
@@ -55,6 +56,7 @@ export const ReaderAvatars = memo(function ReaderAvatars({
                       loading="lazy"
                       className="w-[22px] h-[22px] rounded-full border-2 border-background ring-1 ring-primary/30 object-cover"
                     />
+                    </>
                   ) : (
                     <div className="w-[22px] h-[22px] rounded-full border-2 border-background ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center text-[9px] font-black text-primary">
                       {reader.displayName.charAt(0).toUpperCase()}
