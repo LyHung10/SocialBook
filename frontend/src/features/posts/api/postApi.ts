@@ -138,7 +138,6 @@ export const postApi = createApi({
           message: undefined,
         };
       },
-      invalidatesTags: [{ type: 'Post', id: 'LIST' }],
     }),
 
     updatePost: builder.mutation<NormalizedPostWithModerationResponse, { id: string; data: UpdatePostRequest }>(
