@@ -13,6 +13,7 @@ import { ChapterContent } from '@/components/chapter/ChapterContent';
 import { BookmarksDrawer } from '@/components/chapter/BookmarksDrawer';
 import ChapterListDrawer from '@/components/book/ChapterListDrawer';
 import ChapterNavigation from '@/components/chapter/ChapterNavigation';
+import ChapterHeader from '@/components/chapter/ChapterHeader';
 import { Loader2, Users, LogOut, Info, Copy, Check, BrainCircuit, Lock, LockOpen, Trash2, AlertTriangle, ChevronLeft, DoorOpen, User, BookOpen, Library, Crown, Settings, ChevronLeftIcon, ChevronRightIcon, Bookmark, Share2, MoreVertical, MessageCircleQuestion, List } from 'lucide-react';
 import { useReadingView } from '@/features/books/hooks';
 import { useGetChapterProgressQuery } from '@/features/library/api/libraryApi';
@@ -54,12 +55,12 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 
 
 
-function DockButton({ icon, label, onClick, disabled, className }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; className?: string; }) {
+function DockButton({ icon, label, onClick, disabled, isActive, className }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean; isActive?: boolean; className?: string; }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group disabled:opacity-30 disabled:cursor-not-allowed shrink-0 ${className || ''}`}
+      className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all group disabled:opacity-30 disabled:cursor-not-allowed shrink-0 ${isActive ? 'bg-muted text-foreground' : ''} ${className || ''}`}
     >
       {icon}
       <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded shadow-sm whitespace-nowrap pointer-events-none border border-border z-50">
@@ -586,10 +587,14 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="mb-8 pb-8 border-b border-border">
                     <ChapterNavigation
-                      hasPrevious={!!navigation?.previous && (isEnded || room?.mode === 'free' || isHost)}
-                      hasNext={!!navigation?.next && (isEnded || room?.mode === 'free' || isHost)}
+                      hasPrevious={!!navigation?.previous}
+                      hasNext={!!navigation?.next}
                       onPrevious={() => {
                         if (navigation?.previous) {
+                          if (!isEnded && room?.mode === 'sync' && !isHost) {
+                            toast.warning('Phòng đang ở chế độ đồng bộ, chỉ chủ phòng mới có thể chuyển chương');
+                            return;
+                          }
                           if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.previous.slug, bookData?.id);
                           } else {
@@ -600,6 +605,10 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       }}
                       onNext={() => {
                         if (navigation?.next) {
+                          if (!isEnded && room?.mode === 'sync' && !isHost) {
+                            toast.warning('Phòng đang ở chế độ đồng bộ, chỉ chủ phòng mới có thể chuyển chương');
+                            return;
+                          }
                           if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.next.slug, bookData?.id);
                           } else {
@@ -610,7 +619,16 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       }}
                     />
                   </div>
-                  
+
+                  <ChapterHeader
+                    bookTitle={bookData.title}
+                    bookSlug={bookData.slug}
+                    chapterTitle={chapter.title}
+                    chapterOrder={chapter.orderIndex}
+                    viewsCount={chapter.viewsCount ?? 0}
+                    showBookLink={true}
+                  />
+
                   <div ref={contentRef}>
                     <ChapterContent
                       paragraphs={chapter.paragraphs}
@@ -627,10 +645,14 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                   
                   <div className="mt-12 pt-12 border-t border-border pb-20">
                     <ChapterNavigation
-                      hasPrevious={!!navigation?.previous && (isEnded || room?.mode === 'free' || isHost)}
-                      hasNext={!!navigation?.next && (isEnded || room?.mode === 'free' || isHost)}
+                      hasPrevious={!!navigation?.previous}
+                      hasNext={!!navigation?.next}
                       onPrevious={() => {
                         if (navigation?.previous) {
+                          if (!isEnded && room?.mode === 'sync' && !isHost) {
+                            toast.warning('Phòng đang ở chế độ đồng bộ, chỉ chủ phòng mới có thể chuyển chương');
+                            return;
+                          }
                           if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.previous.slug, bookData?.id);
                           } else {
@@ -641,6 +663,10 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                       }}
                       onNext={() => {
                         if (navigation?.next) {
+                          if (!isEnded && room?.mode === 'sync' && !isHost) {
+                            toast.warning('Phòng đang ở chế độ đồng bộ, chỉ chủ phòng mới có thể chuyển chương');
+                            return;
+                          }
                           if (!isEnded && room?.mode === 'sync' && isHost) {
                             changeChapter(navigation.next.slug, bookData?.id);
                           } else {
@@ -890,17 +916,20 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
           <DockButton
             icon={<Settings size={20} />}
             label="Cài đặt đọc"
+            isActive={showSettings}
             onClick={() => setShowSettings(true)}
           />
           <DockButton
             icon={<List size={20} />}
             label="Mục lục"
+            isActive={showTOC}
             onClick={() => setShowTOC(true)}
           />
           <div className="w-px h-6 bg-border mx-1 shrink-0" />
           <DockButton
             icon={<Bookmark size={20} />}
             label="Bookmarks"
+            isActive={showBookmarks}
             onClick={() => {
               if (!user) {
                 toast.info(MESSAGES.REQUIRE_LOGIN, {
@@ -932,6 +961,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
           <DockButton
             icon={<Users size={20} />}
             label="Hoạt động phòng"
+            isActive={showMobileSidebar}
             onClick={() => setShowMobileSidebar(true)}
             className="sm:hidden"
           />
@@ -954,6 +984,10 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
         currentChapterSlug={currentChapterSlug}
         totalChapters={chaptersData?.total}
         onNavigate={(slug) => {
+          if (!isEnded && room?.mode === 'sync' && !isHost) {
+            toast.warning('Phòng đang ở chế độ đồng bộ, chỉ chủ phòng mới có thể chuyển chương');
+            return;
+          }
           if (!isEnded && room?.mode === 'sync' && isHost) {
             changeChapter(slug, bookData?.id);
           } else {
