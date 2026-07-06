@@ -1,6 +1,7 @@
 export interface ToxicMatch {
   pattern: string;
   group: string;
+  matchedWord: string;
   input: 'original' | 'normalized';
 }
 
@@ -42,8 +43,14 @@ export function containsVietnameseToxicWords(text: string): ToxicMatch | null {
 
   for (const { group, raw } of EXTREME_PROFANITY) {
     for (const pattern of raw ?? []) {
-      if (pattern.test(text)) {
-        return { pattern: pattern.source, group, input: 'original' };
+      const match = pattern.exec(text);
+      if (match) {
+        return {
+          pattern: pattern.source,
+          group,
+          matchedWord: match[0],
+          input: 'original',
+        };
       }
     }
   }

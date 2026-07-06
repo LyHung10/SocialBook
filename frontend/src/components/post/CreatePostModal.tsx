@@ -72,7 +72,6 @@ export default function CreatePostModal() {
         closeCreatePost();
         form.reset();
       } catch (error) {
-        toast.error(getErrorMessage(error));
         throw error;
       }
     },
