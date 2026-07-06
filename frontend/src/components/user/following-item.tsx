@@ -60,7 +60,7 @@ const FollowingItem = memo(function FollowingItem(props: FollowingUser) {
                         variant="outline"
                         onClick={() => {
                             closeFollowers();
-                            router.push(`/users/${props.userId}`);
+                            router.push(`/users/${props.targetId}`);
                         }}
                         className="w-full rounded-md text-xs font-medium tracking-wide border-border hover:bg-secondary"
                     >
