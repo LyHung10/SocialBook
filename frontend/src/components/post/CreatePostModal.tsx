@@ -23,7 +23,6 @@ import { useCreatePost } from '@/features/posts/hooks/useCreatePost';
 import { AppButton } from '../common/AppButton';
 import { useCreatePostMutation } from '@/features/posts/api/postApi';
 import BookSelector from './BookSelector';
-import { getErrorMessage } from '@/lib/utils';
 
 export default function CreatePostModal() {
   const { isCreatePostOpen, closeCreatePost, createPostData } = useModalStore();
