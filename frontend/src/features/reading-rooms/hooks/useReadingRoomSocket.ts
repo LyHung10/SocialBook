@@ -345,6 +345,14 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
 
     return () => {
+      if (socket.connected) {
+        const store = useReadingRoomStore.getState();
+        const currentRoomId = store.room?.roomId || roomId;
+        if (currentRoomId) {
+          socket.emit(ReadingRoomClientEvent.LEAVE_ROOM, { roomId: currentRoomId });
+        }
+        socket.disconnect();
+      }
       socket.off('connect');
       socket.off(ReadingRoomServerEvent.ROOM_SNAPSHOT);
       socket.off(ReadingRoomServerEvent.MEMBER_JOINED);
@@ -368,6 +376,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.REACTION_ADDED);
       socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
       socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
+      useReadingRoomStore.getState().clearRoom();
     };
   }, [roomId, socket, user, connectSocket, router]);
 

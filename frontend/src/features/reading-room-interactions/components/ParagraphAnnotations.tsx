@@ -3,10 +3,12 @@ import { memo, useState, useRef, useEffect } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useRoomAnnotations } from '../hooks/useRoomAnnotations';
+import { useAppAuth } from '@/features/auth/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, MessageSquare, Send } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface ParagraphAnnotationsProps {
   roomId: string;
@@ -19,6 +21,7 @@ interface ParagraphAnnotationsProps {
 export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId, chapterSlug, paragraphId, isOpen: controlledOpen, onToggle }: ParagraphAnnotationsProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const { user } = useAppAuth();
   const setIsOpen = (value: boolean) => {
     setInternalOpen(value);
     onToggle?.(value);
@@ -82,16 +85,24 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
                     </p>
                   </div>
                 )}
-                {comments.map((c) => (
-                  <div key={c.id} className="w-full">
-                    <div className="flex items-baseline gap-1.5 mb-1 ml-1">
-                      <span className="font-bold text-[10px] text-primary/80 uppercase tracking-wider">{c.displayName || c.userId.slice(0, 6)}</span>
+                {comments.map((c) => {
+                  const isMe = c.userId === user?.id;
+                  return (
+                    <div key={c.id} className={cn('w-full', isMe && 'flex flex-col items-end')}>
+                      <div className={cn('flex items-baseline gap-1.5 mb-1', isMe ? 'mr-1' : 'ml-1')}>
+                        <span className={cn('font-bold text-[10px] uppercase tracking-wider', isMe ? 'text-foreground/60' : 'text-primary/80')}>{c.displayName || c.userId.slice(0, 6)}</span>
+                      </div>
+                      <div className={cn(
+                        'px-3 py-2.5 rounded-2xl border w-fit max-w-[95%]',
+                        isMe
+                          ? 'bg-primary text-primary-foreground border-primary/30 rounded-br-sm'
+                          : 'bg-primary/10 dark:bg-primary/10 border-primary/20 rounded-tl-sm'
+                      )}>
+                        <p className={cn('text-xs break-words whitespace-pre-wrap leading-relaxed', isMe ? 'text-primary-foreground' : 'text-foreground')}>{c.content}</p>
+                      </div>
                     </div>
-                    <div className="px-3 py-2.5 rounded-2xl bg-primary/10 dark:bg-primary/10 border border-primary/20 rounded-tl-sm w-fit max-w-[95%]">
-                      <p className="text-xs break-words whitespace-pre-wrap leading-relaxed text-foreground">{c.content}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2.5 border-t border-border bg-muted/40 dark:bg-muted/30">
