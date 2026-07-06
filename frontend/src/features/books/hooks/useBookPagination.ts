@@ -67,7 +67,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
                         isSemantic: b.isSemantic
                     }));
                     const keywordBookIds = new Set(keywordBooks.map((b: Book) => b.id));
-                    
+
                     const uniqueAiBooks = aiBooks.filter((b: Book) => !keywordBookIds.has(b.id));
 
                     if (isReset || page === 1) {
@@ -78,7 +78,7 @@ export const useBookPagination = (params: UseBookPaginationProps) => {
                     const existingIds = new Set(prev.map((b) => b.id));
                     const uniqueNewKeywordBooks = keywordBooks.filter((b: Book) => !existingIds.has(b.id));
                     const uniqueNewAiBooks = uniqueAiBooks.filter((b: Book) => !existingIds.has(b.id));
-                    
+
                     return [...prev, ...uniqueNewKeywordBooks, ...uniqueNewAiBooks];
                 });
             });

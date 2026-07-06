@@ -61,7 +61,7 @@ export default function PostModalOverlay() {
                     <div className="text-4xl">😕</div>
                     <h2 className="text-xl font-bold">Không tìm thấy bài viết</h2>
                     <p className="text-muted-foreground">Bài viết này có thể đã bị xóa hoặc không tồn tại.</p>
-                    <button 
+                    <button
                         onClick={() => router.push('/posts')}
                         className="w-full py-2 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-colors"
                     >
@@ -74,7 +74,7 @@ export default function PostModalOverlay() {
 
     return (
         <div className="fixed inset-0 z-[9999] pointer-events-none">
-             <ModalPostComment />
+            <ModalPostComment />
         </div>
     );
 }

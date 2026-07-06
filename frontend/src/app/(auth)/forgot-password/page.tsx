@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
       setResendMessage('Đã gửi lại mã OTP mới thành công.');
       setOtpBoxes(['', '', '', '', '', '']);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const handleOtpBoxChange = (index: number, value: string) => {
@@ -182,7 +182,7 @@ export default function ForgotPasswordPage() {
                 Quay lại
               </Button>
             </div>
-            
+
             {step === 'email' && (
               <div className="flex flex-col items-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
@@ -194,7 +194,7 @@ export default function ForgotPasswordPage() {
                 </CardDescription>
               </div>
             )}
-            
+
             {step === 'otp' && (
               <div className="flex flex-col items-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
@@ -208,7 +208,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {currentError && (
               <div className="rounded-lg bg-destructive/10 p-4 border border-destructive/20 text-destructive text-sm font-medium animate-in fade-in slide-in-from-top-1">

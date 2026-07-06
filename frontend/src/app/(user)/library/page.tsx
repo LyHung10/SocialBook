@@ -296,8 +296,8 @@ export default function LibraryPage() {
                     {activeTab === LibraryStatus.READING
                       ? 'Bạn chưa đọc cuốn sách nào gần đây.'
                       : activeTab === LibraryStatus.COMPLETED
-                      ? 'Bạn chưa đọc xong cuốn sách nào.'
-                      : 'Bạn chưa lưu trữ cuốn sách nào.'}
+                        ? 'Bạn chưa đọc xong cuốn sách nào.'
+                        : 'Bạn chưa lưu trữ cuốn sách nào.'}
                   </p>
                   <Link
                     href="/books"
@@ -342,7 +342,7 @@ function CollectionCard({ col }: { col: Collection }) {
   const { data: detail } = useGetCollectionDetailQuery(col.id);
   const books = detail?.books || [];
   const { openEditCollection } = useModalStore();
-  
+
   // Lấy tối đa 3 bìa sách
   const covers = books.slice(0, 3).map((b) => b.bookId.coverUrl);
 
@@ -396,7 +396,7 @@ function CollectionCard({ col }: { col: Collection }) {
         </div>
 
         {/* Right: Cover stack or Folder icon */}
-                <div className="relative w-20 h-24 flex items-center justify-center shrink-0 self-center">
+        <div className="relative w-20 h-24 flex items-center justify-center shrink-0 self-center">
           {covers.length > 0 ? (
             <div className="relative w-full h-full flex items-center justify-end">
               {/* Back cover (3rd book) */}

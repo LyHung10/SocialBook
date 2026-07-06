@@ -405,15 +405,22 @@ export class IntelligentSearchUseCase {
 
   async recordSearch(keyword: string): Promise<void> {
     const cleanKeyword = keyword.trim().toLowerCase();
-    if (cleanKeyword.length > 2) {
-      await this.redis
-        .zincrby('trending:searches', 1, cleanKeyword)
-        .catch((err) => {
-          this.logger.error(
-            `Failed to increment trending search for keyword: ${cleanKeyword}`,
-            err,
-          );
-        });
+    if (cleanKeyword.length <= 2) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const bucketKey = `trending:searches:${today}`;
+    const TTL_SECONDS = 8 * 24 * 3600;
+
+    try {
+      const pipeline = this.redis.pipeline();
+      pipeline.zincrby(bucketKey, 1, cleanKeyword);
+      pipeline.expire(bucketKey, TTL_SECONDS, 'NX');
+      await pipeline.exec();
+    } catch (err) {
+      this.logger.error(
+        `Failed to increment trending search for keyword: ${cleanKeyword}`,
+        err,
+      );
     }
   }
 }

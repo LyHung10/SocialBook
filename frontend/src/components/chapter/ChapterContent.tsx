@@ -71,7 +71,7 @@ export const ChapterContent = memo(function ChapterContent({
         handleCloseDrawer,
         handleOpenPostModal,
     } = useChapterComments({ bookId, bookTitle });
-    
+
     const { user } = useAppAuth();
     const router = useRouter();
 
@@ -165,7 +165,7 @@ export const ChapterContent = memo(function ChapterContent({
     const menuRef = useRef<HTMLDivElement>(null);
 
     const isMounted = useSyncExternalStore(
-        () => () => {},
+        () => () => { },
         () => true,
         () => false,
     );
@@ -353,7 +353,7 @@ export const ChapterContent = memo(function ChapterContent({
         }
 
         const isBookmarked = bookmarks.some(b => b.paragraphId === paraId);
-        
+
         try {
             if (isBookmarked) {
                 await deleteBookmark({ paragraphId: paraId, bookId }).unwrap();
@@ -562,9 +562,9 @@ export const ChapterContent = memo(function ChapterContent({
                                         className="h-7 w-7 rounded-md hover:scale-110 transition-transform"
                                         aria-label="Bookmark đoạn này"
                                     >
-                                        <BookmarkIcon 
-                                            size={14} 
-                                            className={bookmarks.some(b => b.paragraphId === para.id) ? "fill-primary text-primary" : ""} 
+                                        <BookmarkIcon
+                                            size={14}
+                                            className={bookmarks.some(b => b.paragraphId === para.id) ? "fill-primary text-primary" : ""}
                                         />
                                     </Button>
 
@@ -711,7 +711,7 @@ export const ChapterContent = memo(function ChapterContent({
                             </AnimatePresence>
                         </div>
                     </AnimatePresence>
-                , document.body)}
+                    , document.body)}
 
             </main>
 
@@ -894,9 +894,9 @@ const ChapterTextRenderer = ({
                 } else {
                     newParts.push(part.substring(0, index));
                     newParts.push(
-                        <PersonalHighlightPopover 
-                            key={`uh-${h.id}-${index}`} 
-                            highlight={h} 
+                        <PersonalHighlightPopover
+                            key={`uh-${h.id}-${index}`}
+                            highlight={h}
                             onRemoveUserHighlight={onRemoveUserHighlight}
                         />
                     );
@@ -910,12 +910,12 @@ const ChapterTextRenderer = ({
     return <>{parts}</>;
 };
 
-const PersonalHighlightPopover = memo(function PersonalHighlightPopover({ 
-    highlight: h, 
-    onRemoveUserHighlight 
-}: { 
-    highlight: UserHighlight, 
-    onRemoveUserHighlight?: (id: string) => void 
+const PersonalHighlightPopover = memo(function PersonalHighlightPopover({
+    highlight: h,
+    onRemoveUserHighlight
+}: {
+    highlight: UserHighlight,
+    onRemoveUserHighlight?: (id: string) => void
 }) {
     const [updateHighlight] = useUpdateHighlightMutation();
     const [isEditingNote, setIsEditingNote] = useState(false);
@@ -929,7 +929,7 @@ const PersonalHighlightPopover = memo(function PersonalHighlightPopover({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <span 
+                <span
                     className="cursor-pointer transition-all hover:opacity-80 rounded-sm px-0.5"
                     style={{ backgroundColor: `${h.color}40`, borderBottom: `2px solid ${h.color}` }}
                 >
@@ -961,10 +961,10 @@ const PersonalHighlightPopover = memo(function PersonalHighlightPopover({
                             </button>
                         )}
                     </div>
-                    
+
                     {isEditingNote ? (
                         <div className="space-y-2">
-                            <Textarea 
+                            <Textarea
                                 value={noteContent}
                                 onChange={(e) => setNoteContent(e.target.value)}
                                 placeholder="Viết ghi chú..."
@@ -978,7 +978,7 @@ const PersonalHighlightPopover = memo(function PersonalHighlightPopover({
                         </div>
                     ) : (
                         h.note ? (
-                            <div 
+                            <div
                                 className="space-y-1 bg-muted p-2.5 rounded-xl border border-border/50 cursor-text hover:border-primary/30 transition-colors"
                                 onClick={() => setIsEditingNote(true)}
                             >

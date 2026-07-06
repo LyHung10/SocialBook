@@ -46,3 +46,8 @@ export const UserEventSchema = SchemaFactory.createForClass(UserEvent);
 
 UserEventSchema.index({ userId: 1, createdAt: -1 });
 UserEventSchema.index({ bookId: 1, eventType: 1 });
+
+UserEventSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 30 * 24 * 60 * 60 },
+);

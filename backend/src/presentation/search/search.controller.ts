@@ -56,8 +56,35 @@ export class SearchController {
   @Public()
   @Get('trending-keywords')
   async getTrendingKeywords() {
-    // Get top 10 from Redis sorted set
-    const keywords = await this.redis.zrevrange('trending:searches', 0, 9);
+    const bucketKeys: string[] = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      bucketKeys.push(`trending:searches:${d.toISOString().slice(0, 10)}`);
+    }
+
+    const existingKeys = (
+      await Promise.all(
+        bucketKeys.map((k) => this.redis.exists(k).then((v) => (v ? k : null))),
+      )
+    ).filter((k): k is string => k !== null);
+
+    let keywords: string[] = [];
+
+    if (existingKeys.length > 0) {
+      const tempKey = `trending:searches:temp:${Date.now()}`;
+      try {
+        await this.redis.zunionstore(
+          tempKey,
+          existingKeys.length,
+          ...existingKeys,
+        );
+        keywords = await this.redis.zrevrange(tempKey, 0, 9);
+      } finally {
+        await this.redis.del(tempKey).catch(() => undefined);
+      }
+    }
 
     return {
       message: 'Lấy từ khóa tìm kiếm thịnh hành thành công',
