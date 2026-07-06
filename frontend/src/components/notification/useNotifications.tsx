@@ -24,12 +24,19 @@ export function useNotifications(userToken: string | undefined) {
         );
     }, []);
 
-    const { markAsRead, refetch, createNotification } = useNotificationSocket(
+    const handleReadAllNotifications = useCallback(() => {
+        setNotifications((prev) =>
+            prev.map((n) => ({ ...n, isRead: true }))
+        );
+    }, []);
+
+    const { markAsRead, markAllAsRead, refetch, createNotification } = useNotificationSocket(
         userToken,
         {
             onNotificationList: handleNotificationList,
             onNewNotification: handleNewNotification,
             onReadNotification: handleReadNotification,
+            onReadNotificationAll: handleReadAllNotifications,
         }
     );
 
@@ -40,10 +47,18 @@ export function useNotifications(userToken: string | undefined) {
         markAsRead(id);
     }, [markAsRead]);
 
+    const markAllAsReadLocal = useCallback(() => {
+        setNotifications((prev) =>
+            prev.map((n) => ({ ...n, isRead: true }))
+        );
+        markAllAsRead();
+    }, [markAllAsRead]);
+
     return {
         notifications,
         unreadCount,
         markAsRead: markAsReadLocal,
+        markAllAsRead: markAllAsReadLocal,
         refetch,
         createNotification,
     };

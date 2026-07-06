@@ -71,6 +71,18 @@ export class NotificationRepository implements INotificationRepository {
       .exec();
   }
 
+  async markAllAsRead(userId: string): Promise<void> {
+    await this.notificationModel
+      .updateMany(
+        {
+          userId: new Types.ObjectId(userId),
+          isRead: false,
+        },
+        { $set: { isRead: true } },
+      )
+      .exec();
+  }
+
   async countUnread(userId: string): Promise<number> {
     return this.notificationModel
       .countDocuments({
