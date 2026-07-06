@@ -85,7 +85,7 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
     const displayedReplyCount = hasReplyCount ? optimisticReplyCount : null;
 
     return (
-        <div className="group flex w-full animate-in fade-in items-start gap-3 duration-300">
+        <div className={cn('group flex w-full animate-in fade-in items-start gap-3 duration-300', isOwner && 'flex-row-reverse')}>
             <UserAvatar
                 src={comment.user.image}
                 name={comment.user.username}
@@ -99,15 +99,15 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
             />
 
             <div className="min-w-0 flex-1">
-                <div className="flex items-center">
-                    <div className="relative rounded-2xl bg-muted/50 px-3 py-2">
-                        <div className="pr-6">
+                <div className={cn('flex items-center', isOwner && 'flex-row-reverse')}>
+                    <div className={cn('relative rounded-2xl px-3 py-2', isOwner ? 'bg-primary text-primary-foreground' : 'bg-muted/50')}>
+                        <div className={cn(isOwner && 'pl-6', !isOwner && 'pr-6')}>
                             <span
                                 onClick={() => {
                                     closePostComment();
                                     router.push(`/users/${comment.user.id}`);
                                 }}
-                                className="mb-0.5 block text-sm font-bold text-foreground cursor-pointer hover:underline"
+                                className={cn('mb-0.5 block text-sm font-bold cursor-pointer hover:underline', isOwner ? 'text-primary-foreground/90' : 'text-foreground')}
                             >
                                 {comment.user.username}
                             </span>
@@ -148,7 +148,7 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
                                     </Button>
                                 </div>
                             ) : (
-                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                                <p className={cn('whitespace-pre-wrap text-sm leading-relaxed', isOwner ? 'text-primary-foreground/90' : 'text-foreground/90')}>
                                     {comment.content}
                                 </p>
                             )}
@@ -200,7 +200,7 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
                     )}
                 </div>
 
-                <div className="ml-3 mt-1 flex items-center gap-4">
+                <div className={cn('mt-1 flex items-center gap-4', isOwner ? 'mr-3 justify-end' : 'ml-3')}>
                     <button
                         onClick={handleLikeComment}
                         className={cn(
@@ -228,9 +228,9 @@ const CommentItemCard: React.FC<CommentItemProps> = React.memo(function CommentI
                     </button>
                 </div>
 
-                <div className="mt-2">
+                <div className={cn('mt-2', isOwner && 'flex flex-col items-end')}>
                     {showReplies && (
-                        <div className="ml-2 mb-2 mt-2 space-y-3 border-l-2 border-border pl-3">
+                        <div className={cn('mb-2 mt-2 space-y-3 border-l-2 border-border pl-3', isOwner ? 'w-fit border-l-0 border-r-2 pr-3 pl-0' : 'ml-2')}>
                             {depth < 3 && (
                                 <ListComments
                                     targetId={targetId}
