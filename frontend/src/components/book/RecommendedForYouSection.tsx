@@ -26,7 +26,7 @@ export const RecommendedForYouSection = () => {
   if (isGuest) {
     return (
       <section className="mb-0 xl:mb-12">
-        <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+        <Card className="bg-transparent border border-border/50 shadow-none relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -61,7 +61,7 @@ export const RecommendedForYouSection = () => {
   if (isLoading) {
     return (
       <section className="mb-0 xl:mb-12">
-        <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+        <Card className="bg-transparent border border-border/50 shadow-none relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -90,7 +90,7 @@ export const RecommendedForYouSection = () => {
   if (error) {
     return (
       <section className="mb-0 xl:mb-12">
-        <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+        <Card className="bg-transparent border border-border/50 shadow-none relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
           <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -119,7 +119,7 @@ export const RecommendedForYouSection = () => {
 
   return (
     <section className="mb-0 xl:mb-12">
-      <Card className="bg-transparent border border-border/50 shadow-none overflow-hidden relative">
+      <Card className="bg-transparent border border-border/50 shadow-none relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-gradient-start to-brand-gradient-end opacity-80" />
         <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0 pt-4">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
