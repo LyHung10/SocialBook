@@ -58,7 +58,8 @@ export class VietnameseRegexBuilder {
         regexStr += '[\\s\\.\\-\\_\\*]*';
       }
     }
-    return regexStr;
+    const vietBoundary = '[\\u00C0-\\u024F\\u1E00-\\u1EFFa-zA-Z]';
+    return `(?<!${vietBoundary})${regexStr}(?!${vietBoundary})`;
   }
 
   private static escapeRegExp(string: string) {

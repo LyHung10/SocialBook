@@ -1,15 +1,11 @@
 'use client';
 
 import { memo, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import type { EmotionEvent } from '@/store/useReadingRoomStore';
 import { AnimatePresence, motion } from 'framer-motion';
 
-/**
- * EmotionStream — Live Party Toasts
- * Shows a real-time feed of user reactions as floating bubbles.
- * Ephemeral: items disappear after 3 seconds.
- */
 export const EmotionStream = memo(function EmotionStream() {
   const events = useReadingRoomStore((s) => s.emotionEvents);
   const [activeToasts, setActiveToasts] = useState<EmotionEvent[]>([]);
@@ -45,7 +41,7 @@ export const EmotionStream = memo(function EmotionStream() {
           >
             <div className="shrink-0 relative">
               {event.avatarUrl ? (
-                <img src={event.avatarUrl} alt={event.displayName} className="w-8 h-8 rounded-full object-cover border border-background shadow-sm" />
+                <Image src={event.avatarUrl} alt={event.displayName} width={32} height={32} className="w-8 h-8 rounded-full object-cover border border-background shadow-sm" />
               ) : (
                 <div className="w-8 h-8 rounded-full border border-background shadow-sm bg-primary flex items-center justify-center text-[11px] font-black text-primary-foreground">
                   {event.displayName.charAt(0).toUpperCase()}
