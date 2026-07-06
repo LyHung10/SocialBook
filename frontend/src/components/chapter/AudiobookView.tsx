@@ -16,9 +16,10 @@ interface AudiobookViewProps {
     bookTitle?: string;
     bookCoverImage?: string;
     onPrevious?: () => void;
-    onNext?: () => void;
+    onNext?: (autoplay?: boolean) => void;
     hasPrevious?: boolean;
     hasNext?: boolean;
+    autoPlay?: boolean;
 }
 
 export default function AudiobookView({
@@ -30,6 +31,7 @@ export default function AudiobookView({
     onNext,
     hasPrevious,
     hasNext,
+    autoPlay,
 }: AudiobookViewProps) {
     const { data: ttsData, isLoading } = useGetChapterAudioQuery(chapterId);
     const [incrementPlayCount] = useIncrementPlayCountMutation();
@@ -39,6 +41,7 @@ export default function AudiobookView({
     const [duration, setDuration] = useState(0);
     const [playbackRate, setPlaybackRate] = useState(1);
     const [hasTrackedPlay, setHasTrackedPlay] = useState(false);
+    const [autoPlayStarted, setAutoPlayStarted] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
     const paragraphRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -88,10 +91,25 @@ export default function AudiobookView({
     }, [activeParagraphIndex]);
 
     // Audio event handlers
-    const onLoadedMetadata = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const onLoadedMetadata = async (e: React.SyntheticEvent<HTMLAudioElement>) => {
         const audio = e.currentTarget;
         if (audio.duration && !isNaN(audio.duration) && audio.duration !== Infinity) {
             setDuration(audio.duration);
+        }
+
+        // Auto-play logic
+        if (autoPlay && !autoPlayStarted) {
+            setAutoPlayStarted(true);
+            try {
+                await audio.play();
+                setIsPlaying(true);
+                if (!hasTrackedPlay && ttsData?.chapterId) {
+                    incrementPlayCount(ttsData.chapterId);
+                    setHasTrackedPlay(true);
+                }
+            } catch (err) {
+                console.error("Autoplay prevented by browser:", err);
+            }
         }
     };
 
@@ -102,6 +120,11 @@ export default function AudiobookView({
     const onEnded = () => {
         setIsPlaying(false);
         setCurrentTime(0);
+        
+        // Auto-play next chapter if available
+        if (hasNext && onNext) {
+            onNext(true);
+        }
     };
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,7 +346,7 @@ export default function AudiobookView({
                         </button>
 
                         <button
-                            onClick={onNext}
+                            onClick={() => onNext?.()}
                             disabled={!hasNext}
                             className="p-2 text-[#666666] hover:text-[#1A1A1A] transition-colors disabled:opacity-30 disabled:hover:text-[#666666] disabled:cursor-not-allowed"
                             title="Chương sau"

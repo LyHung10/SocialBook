@@ -14,16 +14,40 @@ export class ToxicWordsSeed {
 
   async run() {
     const defaultToxicWords = [
-      { pattern: 'đ[ịi]t\\s*m', group: 'thô tục mạnh' },
-      { pattern: 'l[ồổõọ]n', group: 'thô tục mạnh' },
-      { pattern: 'c[ặa]c', group: 'thô tục mạnh' },
-      { pattern: 'b[uù]ồ[iĩ]', group: 'thô tục mạnh' },
-      { pattern: 'c[ứư]t', group: 'thô tục nhẹ' },
-      { pattern: 'đ[ỹĩỉi]\\s*đ[iỉĩỹ]', group: 'xúc phạm' },
-      { pattern: 'đ[iĩỉỹ]\\s*m[eẹ]', group: 'thô tục mạnh' },
-      { pattern: 'ph[òóõỏọ]', group: 'xúc phạm' },
-      { pattern: 'đ\\s*m', group: 'thô tục nhẹ' },
-      { pattern: 'v[aãả]i\\s*l', group: 'thô tục nhẹ' },
+      { pattern: 'đ[ịi]t\\s*m', group: 'thô tục mạnh', originalWord: 'địt m' },
+      {
+        pattern: '(?<![a-zA-ZÀ-ỹ])l[ồổõọ]n(?![a-zA-ZÀ-ỹg])',
+        group: 'thô tục mạnh',
+        originalWord: 'lồn',
+      },
+      {
+        pattern: '(?<![a-zA-ZÀ-ỹ])c[ặa]c(?![a-zA-ZÀ-ỹh])',
+        group: 'thô tục mạnh',
+        originalWord: 'cặc',
+      },
+      { pattern: 'b[uù]ồ[iĩ]', group: 'thô tục mạnh', originalWord: 'buồi' },
+      {
+        pattern: '(?<![a-zA-ZÀ-ỹ])c[ứư]t(?![a-zA-ZÀ-ỹ])',
+        group: 'thô tục nhẹ',
+        originalWord: 'cứt',
+      },
+      {
+        pattern: 'đ[ỹĩỉi]\\s*đ[iỉĩỹ]',
+        group: 'xúc phạm',
+        originalWord: 'đĩ điếm',
+      },
+      {
+        pattern: 'đ[iĩỉỹ]\\s*m[eẹ]',
+        group: 'thô tục mạnh',
+        originalWord: 'đĩ mẹ',
+      },
+      {
+        pattern: '(?<![a-zA-ZÀ-ỹ])ph[òóõỏọ](?![a-zA-ZÀ-ỹng])',
+        group: 'xúc phạm',
+        originalWord: 'phò',
+      },
+      { pattern: 'đ\\s*m', group: 'thô tục nhẹ', originalWord: 'đm' },
+      { pattern: 'v[aãả]i\\s*l', group: 'thô tục nhẹ', originalWord: 'vãi l' },
     ];
 
     for (const word of defaultToxicWords) {
