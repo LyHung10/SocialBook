@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { useState, useRef, useEffect, useCallback, memo, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { Highlighter, Sparkles, User, QuoteIcon, Trash2, MessageSquarePlus, Share2, Bookmark as BookmarkIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -164,12 +164,11 @@ export const ChapterContent = memo(function ChapterContent({
     const [askAI] = useAskChapterAIMutation();
     const menuRef = useRef<HTMLDivElement>(null);
 
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-        return () => setIsMounted(false);
-    }, []);
+    const isMounted = useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false,
+    );
 
     useEffect(() => {
         if (paragraphs.length > 0 && typeof window !== 'undefined' && window.location.hash) {
