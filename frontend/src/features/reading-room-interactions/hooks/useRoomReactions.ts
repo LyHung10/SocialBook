@@ -28,7 +28,7 @@ export const useRoomReactions = () => {
 
 interface RoomReactionStore {
   getState(): {
-    updateReaction: (paragraphId: string, reactionType: string, userId: string, displayName: string, active: boolean) => void;
+    updateReaction: (paragraphId: string, reactionType: string, userId: string, add: boolean) => void;
   };
 }
 
@@ -41,8 +41,17 @@ export const setupRoomReactionListeners = (socket: RoomSocket | null | undefined
       event.paragraphId,
       event.reactionType,
       event.userId,
-      event.displayName,
       true,
+    );
+  });
+
+  socket.on(ReadingRoomServerEvent.REACTION_REMOVED, (data: unknown) => {
+    const event = data as RoomReactionEvent;
+    store.getState().updateReaction(
+      event.paragraphId,
+      event.reactionType,
+      event.userId,
+      false,
     );
   });
 };

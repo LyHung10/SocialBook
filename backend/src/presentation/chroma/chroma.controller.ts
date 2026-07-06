@@ -94,7 +94,8 @@ export class ChromaController {
     };
   }
 
-  @Public()
+  @Roles('admin')
+  @UseGuards(RolesGuard)
   @Post('reindex-all')
   async reindexAll() {
     const result = await this.reindexAllUseCase.execute();
@@ -105,7 +106,8 @@ export class ChromaController {
     };
   }
 
-  @Public()
+  @Roles('admin')
+  @UseGuards(RolesGuard)
   @Post('clear')
   async clearCollection() {
     const result = await this.clearCollectionUseCase.execute();

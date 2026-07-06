@@ -6,6 +6,11 @@ import type { ReactionTypeValue } from '@/domain/reading-room-interactions/value
 import { NotFoundDomainException } from '@/shared/domain/common-exceptions';
 import { AddReactionCommand } from './add-reaction.command';
 
+export interface AddReactionResult {
+  action: 'created' | 'deleted';
+  reaction: RoomReaction;
+}
+
 @Injectable()
 export class AddReactionUseCase {
   constructor(
@@ -13,7 +18,7 @@ export class AddReactionUseCase {
     private readonly roomRepository: IReadingRoomRepository,
   ) {}
 
-  async execute(command: AddReactionCommand): Promise<RoomReaction> {
+  async execute(command: AddReactionCommand): Promise<AddReactionResult> {
     const room = await this.roomRepository.findActiveByCode(command.roomId);
     if (!room) {
       throw new NotFoundDomainException('Phòng không tồn tại hoặc đã kết thúc');
@@ -28,7 +33,7 @@ export class AddReactionUseCase {
 
     if (existing) {
       await this.reactionRepository.delete(existing.id);
-      return existing;
+      return { action: 'deleted', reaction: existing };
     }
 
     const reaction = RoomReaction.create({
@@ -41,6 +46,6 @@ export class AddReactionUseCase {
 
     await this.reactionRepository.save(reaction);
 
-    return reaction;
+    return { action: 'created', reaction };
   }
 }

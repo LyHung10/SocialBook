@@ -20,7 +20,6 @@ describe('ContentModerationService (Unit)', () => {
       embedText: jest.fn(),
       summarizeChapter: jest.fn(),
       generateBookRecommendations: jest.fn(),
-      analyzeReadingProgress: jest.fn(),
       generateChapterTitle: jest.fn(),
       extractKeywords: jest.fn(),
     } as any;

@@ -95,12 +95,13 @@ export class GeminiService implements IGeminiService {
   }
 
   async summarizeChapter(content: string, title?: string): Promise<string> {
-    const prompt = `Please provide a concise summary for the following chapter content${title ? ` titled "${title}"` : ''}. 
-        Focus on the main events, character development, and key plot points. 
-        Keep the summary to 2-3 paragraphs.
+    const prompt = `Hãy cung cấp một bản tóm tắt ngắn gọn cho nội dung chương sau đây${title ? ` có tiêu đề "${title}"` : ''}.
+        Tập trung vào các sự kiện chính, sự phát triển của nhân vật và các điểm cốt truyện quan trọng.
+        Giữ bản tóm tắt trong 2-3 đoạn văn.
+        Hãy trả lời bằng tiếng Việt.
         
-        Chapter Content:
-        ${content.substring(0, 25000)} // Limit to roughly 25k chars
+        Nội dung chương:
+        ${content.substring(0, 25000)}
         `;
 
     return this.generateText(prompt);
@@ -120,26 +121,6 @@ export class GeminiService implements IGeminiService {
       .filter((line) => line.trim())
       .map((line) => line.replace(/^\d+\.\s*/, '').trim())
       .filter((title) => title.length > 0);
-  }
-
-  async analyzeReadingProgress(
-    chaptersRead: number,
-    totalChapters: number,
-    readingSpeed: number,
-  ): Promise<string> {
-    const progressPercentage = Math.round((chaptersRead / totalChapters) * 100);
-    const remainingChapters = totalChapters - chaptersRead;
-    const estimatedTime = Math.round(remainingChapters / readingSpeed);
-
-    const prompt = `Analyze this reading progress and provide motivational feedback:
-        - Progress: ${progressPercentage}% complete (${chaptersRead}/${totalChapters} chapters)
-        - Reading speed: ${readingSpeed} chapters per session
-        - Estimated chapters remaining: ${remainingChapters}
-        - Estimated time to finish: ${estimatedTime} sessions
-        
-        Provide a brief, encouraging analysis of their progress and reading habits.`;
-
-    return this.generateText(prompt);
   }
 
   async generateChapterTitle(content: string): Promise<string> {

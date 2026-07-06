@@ -208,11 +208,11 @@ export class ReadingRoomInteractionsController {
     );
     return {
       data: {
-        id: result.id,
-        paragraphId: result.paragraphId,
-        reactionType: result.reactionType,
-        userId: result.userId,
-        isRemoved: result.createdAt === result.updatedAt,
+        id: result.reaction.id,
+        paragraphId: result.reaction.paragraphId,
+        reactionType: result.reaction.reactionType,
+        userId: result.reaction.userId,
+        isRemoved: result.action === 'deleted',
       },
     };
   }

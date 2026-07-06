@@ -1,13 +1,15 @@
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CacheModule } from '@/shared/cache/redis.module';
 import { LoggerModule } from '@/shared/logger/logger.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { getRedisConnectionToken, RedisModule } from '@nestjs-modules/ioredis';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
 import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -86,13 +88,19 @@ import { PresentationModule } from './presentation/presentation.module';
         },
       }),
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'global',
-        ttl: 60_000,
-        limit: 100,
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      inject: [getRedisConnectionToken()],
+      useFactory: (redis: Redis) => ({
+        throttlers: [
+          {
+            name: 'global',
+            ttl: 60_000,
+            limit: 100,
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(redis),
+      }),
+    }),
     EventEmitterModule.forRoot(),
     CacheModule,
     LoggerModule,

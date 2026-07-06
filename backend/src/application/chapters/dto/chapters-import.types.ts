@@ -5,7 +5,7 @@ export interface ImportChaptersChapterInput {
 
 export interface ImportChaptersJobData {
   bookId: string;
-  tempJsonPath: string;
+  chapters: ImportChaptersChapterInput[];
 }
 
 export interface ImportChaptersJobProgress {
