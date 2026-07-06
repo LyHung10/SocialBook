@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from '@/lib/nestjs-client-api';
-import { NESTJS_ANALYTICS_ENDPOINTS, NESTJS_STATISTICS_ENDPOINTS } from '@/constants/server-endpoints';
+import { NESTJS_ANALYTICS_ENDPOINTS, NESTJS_STATISTICS_ENDPOINTS, NESTJS_CHROMA_ENDPOINTS } from '@/constants/server-endpoints';
 import { ReadingHeatmapData, ChapterEngagementData, ReadingSpeedData, GeographicData, ActiveUsersData } from '../types/admin.interface';
 import { OverviewStats, BookStats, GrowthMetric } from '../types/dashboard.types';
 
@@ -86,6 +86,13 @@ export const analyticsApi = createApi({
       }),
       providesTags: ['Statistics'],
     }),
+
+    reindexAll: builder.mutation<void, void>({
+      query: () => ({
+        url: NESTJS_CHROMA_ENDPOINTS.reindexAll,
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -99,5 +106,5 @@ export const {
   useGetOverviewStatsQuery,
   useGetGrowthStatsQuery,
   useGetBookStatsQuery,
+  useReindexAllMutation,
 } = analyticsApi;
-

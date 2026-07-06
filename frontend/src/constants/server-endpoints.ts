@@ -161,3 +161,7 @@ export const NESTJS_ANALYTICS_ENDPOINTS = {
     seedReadingHistory: '/statistics/seed-reading-history',
 };
 
+export const NESTJS_CHROMA_ENDPOINTS = {
+    reindexAll: '/chroma/reindex-all',
+};
+
