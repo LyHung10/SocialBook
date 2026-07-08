@@ -4,6 +4,7 @@ import {
   ConflictDomainException,
 } from '@/shared/domain/common-exceptions';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Book } from '@/domain/books/entities/book.entity';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { BookTitle } from '@/domain/books/value-objects/book-title.vo';
@@ -17,6 +18,7 @@ export class UpdateBookUseCase {
   constructor(
     private readonly bookRepository: IBookRepository,
     @Inject(BOOK_CACHE_SERVICE) private readonly bookCache: IBookCacheService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: UpdateBookCommand): Promise<Book> {
@@ -82,6 +84,8 @@ export class UpdateBookUseCase {
     // Sử dụng service chuyên biệt để cập nhật và xóa cache liên quan
     await this.bookCache.setDetail(book);
     await this.bookCache.invalidateDetail(book.id.toString(), book.slug);
+
+    this.eventEmitter.emit('book.updated', { bookId: book.id.toString() });
 
     return book;
   }

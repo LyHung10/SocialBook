@@ -36,14 +36,14 @@ export class SearchQueryExpansionService {
     return false;
   }
 
-  async expand(query: string): Promise<QueryAnalysis | null> {
+  expand(query: string): Promise<QueryAnalysis | null> {
     // Đã tắt gọi Gemini LLM để giảm latency. Dùng thẳng câu query của user để embedding.
     this.logger.debug(`[RAG] Skipping Gemini expansion for speed: "${query}"`);
-    return {
+    return Promise.resolve({
       expandedQuery: query,
       targetGenres: [],
       themes: [],
       intent: 'direct_search',
-    };
+    });
   }
 }
