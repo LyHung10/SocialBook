@@ -15,6 +15,7 @@ describe('CreateBookUseCase (Unit)', () => {
   let mockGenreRepo: jest.Mocked<IGenreRepository>;
   let mockIdGenerator: ReturnType<typeof createMockIdGenerator>;
   let mockBookCache: ReturnType<typeof createMockBookCacheService>;
+  let mockEventEmitter: { emit: jest.Mock };
 
   beforeEach(() => {
     mockBookRepo = createMockBookRepository();
@@ -43,6 +44,7 @@ describe('CreateBookUseCase (Unit)', () => {
     };
     mockIdGenerator = createMockIdGenerator('book-');
     mockBookCache = createMockBookCacheService();
+    mockEventEmitter = { emit: jest.fn() };
 
     useCase = new CreateBookUseCase(
       mockBookRepo,
@@ -50,6 +52,7 @@ describe('CreateBookUseCase (Unit)', () => {
       mockGenreRepo,
       mockIdGenerator,
       mockBookCache,
+      mockEventEmitter as never,
     );
   });
 
