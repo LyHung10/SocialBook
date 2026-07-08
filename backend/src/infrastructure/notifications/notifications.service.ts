@@ -8,6 +8,8 @@ import { GetUserNotificationsUseCase } from '@/application/notifications/use-cas
 import { GetUserNotificationsQuery } from '@/application/notifications/use-cases/get-user-notification/get-user-notifications.query';
 import { MarkNotificationReadUseCase } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.use-case';
 import { MarkNotificationReadCommand } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.command';
+import { MarkAllNotificationsReadUseCase } from '@/application/notifications/use-cases/mark-notification/mark-all-notifications-read.use-case';
+import { MarkAllNotificationsReadCommand } from '@/application/notifications/use-cases/mark-notification/mark-all-notifications-read.command';
 
 @Injectable()
 export class NotificationsService {
@@ -20,6 +22,7 @@ export class NotificationsService {
     private readonly createNotificationUseCase: CreateNotificationUseCase,
     private readonly getUserNotificationsUseCase: GetUserNotificationsUseCase,
     private readonly markNotificationReadUseCase: MarkNotificationReadUseCase,
+    private readonly markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
   ) {}
 
   private userRoom(userId: string) {
@@ -58,6 +61,15 @@ export class NotificationsService {
     await this.markNotificationReadUseCase.execute(command);
     if (this.server) {
       this.server.to(this.userRoom(userId)).emit('notification:read', { id });
+    }
+    return { ok: true };
+  }
+
+  async markAllRead(userId: string) {
+    const command = new MarkAllNotificationsReadCommand(userId);
+    await this.markAllNotificationsReadUseCase.execute(command);
+    if (this.server) {
+      this.server.to(this.userRoom(userId)).emit('notification:readAll');
     }
     return { ok: true };
   }

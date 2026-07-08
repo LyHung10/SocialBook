@@ -19,6 +19,8 @@ import { GetUserNotificationsQuery } from '@/application/notifications/use-cases
 import { GetUserNotificationsUseCase } from '@/application/notifications/use-cases/get-user-notification/get-user-notifications.use-case';
 import { MarkNotificationReadCommand } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.command';
 import { MarkNotificationReadUseCase } from '@/application/notifications/use-cases/mark-notification/mark-notification-read.use-case';
+import { MarkAllNotificationsReadCommand } from '@/application/notifications/use-cases/mark-notification/mark-all-notifications-read.command';
+import { MarkAllNotificationsReadUseCase } from '@/application/notifications/use-cases/mark-notification/mark-all-notifications-read.use-case';
 import { CreateNotificationDto } from '@/presentation/notification/dto/create-notification.dto';
 
 import { FilterNotificationDto } from '@/presentation/notification/dto/filter-notification.dto';
@@ -30,6 +32,7 @@ export class NotificationController {
     private readonly createNotificationUseCase: CreateNotificationUseCase,
     private readonly getUserNotificationsUseCase: GetUserNotificationsUseCase,
     private readonly markNotificationReadUseCase: MarkNotificationReadUseCase,
+    private readonly markAllNotificationsReadUseCase: MarkAllNotificationsReadUseCase,
   ) {}
 
   @Get()
@@ -51,6 +54,15 @@ export class NotificationController {
       data: result.map(
         (notification) => new NotificationResponseDto(notification),
       ),
+    };
+  }
+
+  @Patch('read-all')
+  async markAllRead(@CurrentUser('id') userId: string) {
+    const command = new MarkAllNotificationsReadCommand(userId);
+    await this.markAllNotificationsReadUseCase.execute(command);
+    return {
+      message: 'All notifications marked as read',
     };
   }
 

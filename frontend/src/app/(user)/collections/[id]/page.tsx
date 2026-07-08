@@ -272,7 +272,7 @@ export default function CollectionDetailPage() {
                   Đổi tên
                 </Button>
               )}
-              
+
               {!isEditingName && (
                 <Button
                   variant="outline"

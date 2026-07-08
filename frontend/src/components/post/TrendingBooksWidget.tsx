@@ -21,7 +21,7 @@ export default function TrendingBooksWidget() {
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-2 mb-4">
                 <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Sách Hot Trong Tuần
+                    Sách Hot Trong Tháng
                 </h2>
             </div>
 
