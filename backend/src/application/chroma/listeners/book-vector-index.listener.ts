@@ -23,22 +23,29 @@ export class BookVectorIndexListener {
   async handleBookUpserted(payload: { bookId: string }) {
     try {
       this.logger.log(`Processing vector index for book: ${payload.bookId}`);
-      
+
       const bookId = BookId.create(payload.bookId);
       const book = await this.bookRepository.findById(bookId);
 
       if (!book) {
-        this.logger.warn(`Book ${payload.bookId} not found, skipping indexing.`);
+        this.logger.warn(
+          `Book ${payload.bookId} not found, skipping indexing.`,
+        );
         return;
       }
 
       const contentType = ContentType.create('book');
 
       // 1. Delete old vectors for this book to avoid duplicates on update
-      await this.vectorRepository.deleteByContentId(payload.bookId, contentType);
+      await this.vectorRepository.deleteByContentId(
+        payload.bookId,
+        contentType,
+      );
 
       if (book.status.toString() !== 'published') {
-        this.logger.log(`Book ${payload.bookId} is not published, skipping new vectors.`);
+        this.logger.log(
+          `Book ${payload.bookId} is not published, skipping new vectors.`,
+        );
         return;
       }
 
@@ -78,9 +85,13 @@ export class BookVectorIndexListener {
       if (batchBuffer.length > 0) {
         const result = await this.vectorRepository.saveBatch(batchBuffer);
         if (result.failed > 0) {
-          this.logger.error(`Failed to index some chunks for book ${payload.bookId}`);
+          this.logger.error(
+            `Failed to index some chunks for book ${payload.bookId}`,
+          );
         } else {
-          this.logger.log(`Successfully updated vector index for book ${payload.bookId} (${chunks.length} chunks)`);
+          this.logger.log(
+            `Successfully updated vector index for book ${payload.bookId} (${chunks.length} chunks)`,
+          );
         }
       }
     } catch (error: unknown) {
@@ -93,10 +104,17 @@ export class BookVectorIndexListener {
   @OnEvent('book.deleted', { async: true })
   async handleBookDeleted(payload: { bookId: string }) {
     try {
-      this.logger.log(`Removing vector index for deleted book: ${payload.bookId}`);
+      this.logger.log(
+        `Removing vector index for deleted book: ${payload.bookId}`,
+      );
       const contentType = ContentType.create('book');
-      await this.vectorRepository.deleteByContentId(payload.bookId, contentType);
-      this.logger.log(`Successfully removed vector index for book ${payload.bookId}`);
+      await this.vectorRepository.deleteByContentId(
+        payload.bookId,
+        contentType,
+      );
+      this.logger.log(
+        `Successfully removed vector index for book ${payload.bookId}`,
+      );
     } catch (error: unknown) {
       this.logger.error(
         `Failed to remove vector index for book ${payload.bookId}: ${getErrorMessage(error)}`,
