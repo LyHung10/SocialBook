@@ -78,6 +78,12 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       this.chromaClient = new ChromaClient({ path: chromaUrl });
       this.collection = await this.chromaClient.getOrCreateCollection({
         name: collectionName,
+        metadata: {
+          'hnsw:space': 'cosine',
+          'hnsw:M': 16, // 1 vector have 16 edge in graph
+          'hnsw:search_ef': 50, // Reduce from 100 for faster search, slight recall trade-off
+          'hnsw:construction_ef': 100,
+        },
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
@@ -411,7 +417,12 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       this.collection = await this.chromaClient.createCollection({
         name: collectionName,
-        metadata: { 'hnsw:space': 'cosine' },
+        metadata: {
+          'hnsw:space': 'cosine',
+          'hnsw:M': 16,
+          'hnsw:search_ef': 50,
+          'hnsw:construction_ef': 100,
+        },
       });
 
       this.vectorStore = new Chroma(this.embeddings, {

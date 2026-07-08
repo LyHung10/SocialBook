@@ -5,6 +5,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { DeleteBookCommand } from './delete-book.command';
 import { ErrorMessages } from '@/common/constants/error-messages';
@@ -16,6 +17,7 @@ export class DeleteBookUseCase {
   constructor(
     private readonly bookRepository: IBookRepository,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: DeleteBookCommand): Promise<void> {
@@ -32,8 +34,10 @@ export class DeleteBookUseCase {
 
     await this.bookRepository.softDelete(bookId);
 
-    // Ghi DB xong m?i x�a cache � d�ng th? t?
+    // Ghi DB xong m?i xa cache  dng th? t?
     await this.cache.del(`books:detail:${command.id}`);
     await this.cache.del(`books:slug:${book.slug.toString()}`);
+
+    this.eventEmitter.emit('book.deleted', { bookId: command.id });
   }
 }
