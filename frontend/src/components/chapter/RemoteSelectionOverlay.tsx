@@ -40,8 +40,8 @@ export const RemoteSelectionOverlay = memo(function RemoteSelectionOverlay({
     let active = true;
 
     const calculate = () => {
-      // Find the paragraph container using its ID
-      const container = document.getElementById(paragraphId);
+      // Find the paragraph container using its DOM ID (prefixed as set in ChapterContent)
+      const container = document.getElementById(`paragraph-${paragraphId}`);
       if (!container || selections.length === 0) {
         if (active) setHighlights([]);
         return;
