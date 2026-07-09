@@ -26,7 +26,6 @@ import { MediaInfrastructureModule } from './media/media-infrastructure.module';
 import { ModerationInfrastructureModule } from './moderation/moderation-infrastructure.module';
 import { NotificationsInfrastructureModule } from './notifications/notifications-infrastructure.module';
 import { TtsInfrastructureModule } from './text-to-speech/tts-infrastructure.module';
-import { GatewaysModule } from './gateways/gateways.module';
 import { RecommendationsInfrastructureModule } from './recommendations/recommendations-infrastructure.module';
 import { ScraperInfrastructureModule } from './scraper/scraper-infrastructure.module';
 import { ChaptersImportModule } from './queues/chapters-import/chapters-import.module';
@@ -71,7 +70,6 @@ import { UserHighlightsRepositoryModule } from './database/repositories/user-hig
     BookmarksRepositoryModule,
     UserHighlightsRepositoryModule,
     IdGeneratorModule,
-    GatewaysModule,
     ChaptersImportModule,
     PostModerationQueueModule,
   ],
@@ -109,7 +107,6 @@ import { UserHighlightsRepositoryModule } from './database/repositories/user-hig
     BookmarksRepositoryModule,
     UserHighlightsRepositoryModule,
     IdGeneratorModule,
-    GatewaysModule,
     ChaptersImportModule,
     PostModerationQueueModule,
   ],
