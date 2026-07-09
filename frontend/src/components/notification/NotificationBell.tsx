@@ -2,7 +2,7 @@
 
 import { useAppAuth } from '@/features/auth/hooks';
 import { timeAgo } from '@/lib/utils';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useNotifications } from './useNotifications';
@@ -100,14 +100,20 @@ export function NotificationBell() {
                       )}
                     </div>
                     <div className="shrink-0 mt-0.5">
-                      <Avatar className="h-8 w-8">
-                        {notif.meta?.image ? (
-                          <AvatarImage src={notif.meta.image} alt={notif.meta.name || 'Avatar'} />
-                        ) : null}
-                        <AvatarFallback className="bg-slate-100 dark:bg-gray-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
-                          {notif.meta?.name ? notif.meta.name.charAt(0).toUpperCase() : "SB"}
-                        </AvatarFallback>
-                      </Avatar>
+                      {['system', 'warning', 'error'].includes(notif.type) ? (
+                        <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center border border-red-200 dark:border-red-800/50">
+                          <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </div>
+                      ) : (
+                        <Avatar className="h-8 w-8">
+                          {notif.meta?.image ? (
+                            <AvatarImage src={notif.meta.image} alt={notif.meta.name || 'Avatar'} />
+                          ) : null}
+                          <AvatarFallback className="bg-slate-100 dark:bg-gray-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                            {notif.meta?.name ? notif.meta.name.charAt(0).toUpperCase() : "SB"}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                     </div>
                     <div className="flex-1 space-y-1 min-w-0">
                       <p className={`text-sm leading-snug ${isUnread ? 'font-semibold text-foreground' : 'text-foreground'}`}>

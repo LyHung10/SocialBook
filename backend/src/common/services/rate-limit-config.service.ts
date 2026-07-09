@@ -33,20 +33,16 @@ export class RateLimitConfigService {
     if (cached) return cached;
 
     try {
-      const doc = (await this.connection
-        .collection('configs')
-        .findOne({ key: 'rate_limit_gemini' })) as Record<
-        string,
-        unknown
-      > | null;
+      const doc = (await this.connection.collection('configs').findOne({
+        key: 'rate_limit_gemini',
+      })) as Partial<GeminiRateLimitConfig> | null;
 
       if (doc) {
         const config: GeminiRateLimitConfig = {
-          guestLimit: (doc.guestLimit as number) ?? FALLBACK.guestLimit,
-          userLimit: (doc.userLimit as number) ?? FALLBACK.userLimit,
-          ttl: (doc.ttl as number) ?? FALLBACK.ttl,
-          blockDuration:
-            (doc.blockDuration as number) ?? FALLBACK.blockDuration,
+          guestLimit: doc.guestLimit ?? FALLBACK.guestLimit,
+          userLimit: doc.userLimit ?? FALLBACK.userLimit,
+          ttl: doc.ttl ?? FALLBACK.ttl,
+          blockDuration: doc.blockDuration ?? FALLBACK.blockDuration,
         };
         await this.cacheService.set(CACHE_KEY, config, 30);
         return config;
