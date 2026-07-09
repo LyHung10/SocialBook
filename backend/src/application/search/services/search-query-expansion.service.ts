@@ -36,68 +36,14 @@ export class SearchQueryExpansionService {
     return false;
   }
 
-  async expand(query: string): Promise<QueryAnalysis | null> {
-    const cacheKey = `rag:expansion:${query.trim().toLowerCase()}`;
-
-    const cached = await this.cacheService.get<QueryAnalysis>(cacheKey);
-    if (cached) {
-      this.logger.debug(`[RAG] Cache HIT: "${query}"`);
-      return cached;
-    }
-
-    if (this.isSimpleQuery(query)) {
-      this.logger.debug(`[RAG] Skipping Gemini for simple query: "${query}"`);
-      return {
-        expandedQuery: query,
-        targetGenres: [],
-        themes: [],
-        intent: 'simple_search',
-      };
-    }
-
-    try {
-      const prompt = `Bạn là chuyên gia tìm kiếm sách. Phân tích câu tìm kiếm theo từng bước.
-
-CÂU NGƯỜI DÙNG: "${query}"
-
-BƯỚC 1 — NHẬN DIỆN THỰC THỂ:
-- Liệt kê: tên nhân vật, địa danh, vật thể, con vật, tổ chức trong câu.
-- Các từ này BẮT BUỘC phải có trong expandedQuery.
-- Sửa lỗi chính tả nếu có (VD: "Hogwart" → "Hogwarts", "Hermony" → "Hermione").
-
-BƯỚC 2 — PHÂN TÍCH INTENT:
-- Nếu câu có thực thể cụ thể → expandedQuery PHẢI bám sát, không dùng khái niệm trừu tượng thay thế.
-
-BƯỚC 3 — MỞ RỘNG CÓ KIỂM SOÁT:
-- Thêm tên tác phẩm/nhân vật nổi tiếng nếu nhận ra được.
-- KHÔNG biến câu cụ thể thành câu trừu tượng.
-- VD SAI: "bầy nhện trong rừng" → "đối mặt nỗi sợ hãi, đấu tranh nội tâm"
-- VD ĐÚNG: "bầy nhện trong rừng" → "Harry Potter bầy nhện khổng lồ Rừng Cấm Hogwarts Aragog"
-
-Trả về JSON (chỉ JSON):
-{
-  "expandedQuery": "chuỗi đã chuẩn hóa, bắt buộc chứa thực thể gốc",
-  "targetGenres": ["thể loại nếu rõ ràng, bỏ trống nếu không chắc"],
-  "themes": ["chủ đề cụ thể từ câu gốc"],
-  "intent": "mô tả ngắn gọn người dùng muốn tìm gì"
-}`;
-
-      const result =
-        await this.geminiService.generateJSON<QueryAnalysis>(prompt);
-      if (result) {
-        await this.cacheService.set(
-          cacheKey,
-          result,
-          SearchQueryExpansionService.CACHE_TTL_SECONDS,
-        );
-        this.logger.debug(`[RAG] Cache SET: "${query}"`);
-      }
-      return result;
-    } catch (e) {
-      this.logger.warn(
-        `[RAG] Expansion failed: ${e instanceof Error ? e.message : String(e)}`,
-      );
-      return null;
-    }
+  expand(query: string): Promise<QueryAnalysis | null> {
+    // Đã tắt gọi Gemini LLM để giảm latency. Dùng thẳng câu query của user để embedding.
+    this.logger.debug(`[RAG] Skipping Gemini expansion for speed: "${query}"`);
+    return Promise.resolve({
+      expandedQuery: query,
+      targetGenres: [],
+      themes: [],
+      intent: 'direct_search',
+    });
   }
 }

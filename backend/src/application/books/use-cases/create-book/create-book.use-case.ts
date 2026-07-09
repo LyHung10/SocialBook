@@ -4,6 +4,7 @@ import { IBookRepository } from '@/domain/books/repositories/book.repository.int
 import { IAuthorRepository } from '@/domain/authors/repositories/author.repository.interface';
 import { IGenreRepository } from '@/domain/genres/repositories/genre.repository.interface';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Book } from '@/domain/books/entities/book.entity';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { BookTitle } from '@/domain/books/value-objects/book-title.vo';
@@ -25,6 +26,7 @@ export class CreateBookUseCase {
     private readonly genreRepository: IGenreRepository,
     private readonly idGenerator: IIdGenerator,
     @Inject(BOOK_CACHE_SERVICE) private readonly bookCache: IBookCacheService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: CreateBookCommand): Promise<Book> {
@@ -109,6 +111,9 @@ export class CreateBookUseCase {
 
     // cập nhật lại cache thông qua service chuyên biệt
     await this.bookCache.setDetail(book);
+
+    // Emit event để ChromaDB listener (và các listener khác) bắt và xử lý
+    this.eventEmitter.emit('book.created', { bookId: book.id.toString() });
 
     return book;
   }
