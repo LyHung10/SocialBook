@@ -1,7 +1,8 @@
 'use client';
 
 import DOMPurify from 'isomorphic-dompurify';
-import { Bot, Send, X } from 'lucide-react';
+import { Bot, BookOpen, Send, X } from 'lucide-react';
+import Link from 'next/link';
 import { useAskChatbotMutation } from '@/features/chatbot/api/chatBotApi';
 import { useChatWidget } from '@/features/chatbot/hooks/useChatWidget';
 import { useAppAuth } from '@/features/auth/hooks/useAppAuth';
@@ -106,26 +107,60 @@ export const ChatWidget = () => {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}
+                  className={`flex flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}
                 >
-                  {msg.role === 'ai' && (
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mb-0.5">
-                      <Bot className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[80%] px-3 py-2.5 text-xs leading-relaxed rounded-2xl ${
-                      msg.role === 'user'
-                        ? 'bg-primary/10 text-foreground rounded-tr-sm'
-                        : 'bg-black/[0.04] dark:bg-white/5 border border-border/50 text-foreground rounded-tl-sm'
-                    }`}
-                  >
-                    {msg.role === 'ai' ? (
-                      <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} />
-                    ) : (
-                      <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                  <div className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}>
+                    {msg.role === 'ai' && (
+                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mb-0.5">
+                        <Bot className="w-3.5 h-3.5 text-primary" />
+                      </div>
                     )}
+                    <div
+                      className={`max-w-[80%] px-3 py-2.5 text-xs leading-relaxed rounded-2xl ${
+                        msg.role === 'user'
+                          ? 'bg-primary/10 text-foreground rounded-tr-sm'
+                          : 'bg-black/[0.04] dark:bg-white/5 border border-border/50 text-foreground rounded-tl-sm'
+                      }`}
+                    >
+                      {msg.role === 'ai' ? (
+                        <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} />
+                      ) : (
+                        <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Book link chips — shown for all AI messages that have sources */}
+                  {msg.role === 'ai' && msg.sources && msg.sources.length > 0 && (() => {
+                    // Deduplicate by bookSlug (if present) or title
+                    const seen = new Set<string>();
+                    const unique = msg.sources.filter((s) => {
+                      const key = s.bookSlug ?? s.title;
+                      if (seen.has(key)) return false;
+                      seen.add(key);
+                      return true;
+                    });
+                    return (
+                      <div className="ml-8 flex flex-wrap gap-1.5 mt-0.5">
+                        {unique.map((source, idx) => {
+                          const href = source.bookSlug
+                            ? `/books/${source.bookSlug}`
+                            : `/books?search=${encodeURIComponent(source.title)}`;
+                          return (
+                            <Link
+                              key={source.bookSlug ?? `${source.title}-${idx}`}
+                              href={href}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/25 hover:border-primary/50 text-[10px] font-semibold text-primary transition-all duration-150 hover:scale-[1.03] active:scale-100"
+                            >
+                              <BookOpen className="w-3 h-3 shrink-0" />
+                              <span className="max-w-[140px] truncate">{source.title}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
                 </div>
               ))}
 

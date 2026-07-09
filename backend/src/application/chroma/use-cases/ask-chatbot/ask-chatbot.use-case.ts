@@ -4,11 +4,14 @@ import { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interf
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import { SearchQuery } from '@/domain/chroma/entities/search-query.entity';
 import { IIdGenerator } from '@/shared/domain/id-generator.interface';
+import { IBookRepository } from '@/domain/books/repositories/book.repository.interface';
+import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { AskChatbotCommand } from './ask-chatbot.command';
 
 export interface ChatbotSource {
   title: string;
   bookId?: string;
+  bookSlug?: string;
   chapterTitle?: string;
   type: 'book' | 'chapter';
 }
@@ -28,6 +31,7 @@ export class AskChatbotUseCase {
     @Inject(GEMINI_TOKENS.GEMINI_SERVICE)
     private readonly geminiService: IGeminiService,
     private readonly idGenerator: IIdGenerator,
+    private readonly bookRepository: IBookRepository,
   ) {}
 
   async execute(command: AskChatbotCommand): Promise<AskChatbotResult> {
@@ -49,14 +53,33 @@ export class AskChatbotUseCase {
       `Chatbot search: "${question}" → ${results.length} results`,
     );
 
+    // Collect unique bookIds to resolve slugs in one batch
+    const bookIds = [
+      ...new Set(
+        results
+          .map((r) => r.document.metadata?.['bookId'] as string | undefined)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    const slugMap = new Map<string, string>();
+    await Promise.all(
+      bookIds.map(async (id) => {
+        const book = await this.bookRepository.findById(BookId.create(id)).catch(() => null);
+        if (book) slugMap.set(id, book.slug);
+      }),
+    );
+
     const sources: ChatbotSource[] = results.map((r) => {
       const metadata = r.document.metadata;
+      const bookId = metadata?.['bookId'] as string | undefined;
       return {
         title:
           typeof metadata?.['title'] === 'string'
             ? metadata['title']
             : 'Không rõ tiêu đề',
-        bookId: metadata?.['bookId'] as string | undefined,
+        bookId,
+        bookSlug: bookId ? slugMap.get(bookId) : undefined,
         chapterTitle: metadata?.['chapterTitle'] as string | undefined,
         type:
           r.document.contentType?.toString() === 'chapter' ? 'chapter' : 'book',
