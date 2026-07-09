@@ -320,7 +320,10 @@ export class ReadingRoomGateway
       const otherHighlights = room.highlights
         .filter((h) => h.chapterSlug !== room.currentChapterSlug)
         .slice(0, 200 - currentChapterHighlights.length);
-      const snapshotHighlights = [...currentChapterHighlights, ...otherHighlights];
+      const snapshotHighlights = [
+        ...currentChapterHighlights,
+        ...otherHighlights,
+      ];
 
       socket.emit(ReadingRoomServerEvent.ROOM_SNAPSHOT, {
         room: {

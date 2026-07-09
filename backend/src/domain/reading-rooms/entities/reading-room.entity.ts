@@ -5,7 +5,10 @@ import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { RoomId } from '../value-objects/room-id.vo';
 import { RoomMode } from '../value-objects/room-mode.vo';
 import { RoomMember } from './room-member.entity';
-import { DEFAULT_MAX_MEMBERS, MAX_HIGHLIGHTS_PER_USER } from '../enums/constants';
+import {
+  DEFAULT_MAX_MEMBERS,
+  MAX_HIGHLIGHTS_PER_USER,
+} from '../enums/constants';
 
 export interface RoomHighlightProps {
   id?: string;

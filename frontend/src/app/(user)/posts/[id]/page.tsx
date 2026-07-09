@@ -26,7 +26,7 @@ export default function PostModalOverlay() {
                 handleLike: async (postId: string) => {
                     try {
                         await toggleLike({ targetId: postId, targetType: 'post' }).unwrap();
-                    } catch (error) {
+                    } catch {
                     }
                 },
                 likeStatus: post.likedByCurrentUser,

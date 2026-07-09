@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   useGetGeminiRateLimitQuery,
   useUpdateGeminiRateLimitMutation,
-  RateLimitConfig,
 } from '../../api/rateLimitApi';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -12,15 +11,8 @@ export function useRateLimitManagement() {
 
   const [updateRateLimit, { isLoading: isSaving }] = useUpdateGeminiRateLimitMutation();
 
-  const [guestLimit, setGuestLimit] = useState(2);
-  const [userLimit, setUserLimit] = useState(10);
-
-  useEffect(() => {
-    if (config) {
-      setGuestLimit(config.guestLimit);
-      setUserLimit(config.userLimit);
-    }
-  }, [config]);
+  const [guestLimit, setGuestLimit] = useState(config?.guestLimit ?? 2);
+  const [userLimit, setUserLimit] = useState(config?.userLimit ?? 10);
 
   const handleSave = async () => {
     try {

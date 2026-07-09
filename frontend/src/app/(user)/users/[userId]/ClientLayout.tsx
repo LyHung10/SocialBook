@@ -15,7 +15,7 @@ interface ClientLayoutProps {
 
 export default function ClientLayout(props: ClientLayoutProps) {
     const { children, profileUserId, initialFollowState } = props
-    const { data: overview, isLoading: isOverviewLoading } =
+    const { data: overview } =
         useGetUserOverviewQuery(profileUserId, {
             skip: !profileUserId,
         });
