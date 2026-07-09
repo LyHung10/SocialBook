@@ -61,7 +61,13 @@ export class AskChapterAIUseCase {
       Câu hỏi của độc giả: "${command.question}"
 
       Hãy trả lời một cách thông minh, sâu sắc, đúng trọng tâm nội dung chương sách.
-      Ngôn ngữ: Tiếng Việt. Độ dài: Ngắn gọn (2-4 câu).
+      Ngôn ngữ: Tiếng Việt.
+      
+      Quy tắc định dạng (BẮT BUỘC):
+      - Chia câu trả lời thành 2-3 đoạn văn ngắn, mỗi đoạn 1-2 câu.
+      - Ngăn cách các đoạn bằng một dòng trống (\\n\\n).
+      - Dùng **từ quan trọng** để nhấn mạnh tên nhân vật, địa danh, khái niệm chính.
+      - Không dùng markdown khác (không dùng #, -, *, danh sách).
     `;
 
     const aiResponse = await this.geminiService.generateText(prompt);

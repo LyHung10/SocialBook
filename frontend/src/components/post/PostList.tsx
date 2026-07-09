@@ -28,6 +28,7 @@ const PostList: React.FC<PostListProps> = memo(function PostList({ scrollRef: ex
     const scrollRef = externalScrollRef ?? ownScrollRef;
     const [showScrollTop, setShowScrollTop] = useState(false);
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const virtualizer = useVirtualizer({
         count: viewMode === 'list' ? posts.length : 0,
         getScrollElement: () => scrollRef.current,

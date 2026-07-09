@@ -11,8 +11,17 @@ export function useRateLimitManagement() {
 
   const [updateRateLimit, { isLoading: isSaving }] = useUpdateGeminiRateLimitMutation();
 
-  const [guestLimit, setGuestLimit] = useState(config?.guestLimit ?? 2);
-  const [userLimit, setUserLimit] = useState(config?.userLimit ?? 10);
+  const [guestLimit, setGuestLimit] = useState(2);
+  const [userLimit, setUserLimit] = useState(10);
+  const [prevConfig, setPrevConfig] = useState(config);
+
+  if (config !== prevConfig) {
+    setPrevConfig(config);
+    if (config) {
+      setGuestLimit(config.guestLimit);
+      setUserLimit(config.userLimit);
+    }
+  }
 
   const handleSave = async () => {
     try {

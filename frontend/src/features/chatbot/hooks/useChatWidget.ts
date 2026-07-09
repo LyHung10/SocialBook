@@ -1,14 +1,22 @@
 import { toast } from 'sonner';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+export interface ChatbotSource {
+    title: string;
+    bookSlug?: string;
+    chapterTitle?: string;
+    type: 'book' | 'chapter';
+}
+
 export interface ChatMessage {
     id: string;
     role: 'user' | 'ai';
     content: string;
+    sources?: ChatbotSource[];
 }
 
 interface UseChatWidgetOptions {
-    askChatbot: (params: { question: string }) => Promise<{ answer: string }>;
+    askChatbot: (params: { question: string }) => Promise<{ answer: string; sources?: ChatbotSource[] }>;
     isAuthenticated: boolean;
 }
 
@@ -82,6 +90,7 @@ export function useChatWidget({ askChatbot, isAuthenticated }: UseChatWidgetOpti
                 id: (Date.now() + 1).toString(),
                 role: 'ai',
                 content: formatAIResponse(data.answer),
+                sources: data.sources,
             };
             setMessages((prev) => [...prev, aiMsg]);
         } catch (error: unknown) {

@@ -288,7 +288,11 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
                         : 'bg-primary/10 text-foreground rounded-tr-sm'
                     }`}
                   >
-                    {msg.content}
+                    {msg.role === 'ai' ? (
+                      <MarkdownText text={msg.content} />
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               ))}
@@ -334,6 +338,37 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
   );
 };
 
+
+const MarkdownText = ({ text }: { text: string }) => {
+  // Split on any newline(s) — treat every line break as a paragraph boundary.
+  // Filter out blank lines so double-\n doesn't produce empty <p> tags.
+  const paragraphs = text
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((para, pi) => (
+        <p key={pi}>
+          <InlineBold text={para} />
+        </p>
+      ))}
+    </div>
+  );
+};
+
+/** Renders **bold** markers inside a single line of text. */
+const InlineBold = ({ text }: { text: string }) => {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>,
+      )}
+    </>
+  );
+};
 
 const EntityCard = ({ entity }: { entity: KnowledgeEntity }) => {
   const [isExpanded, setIsExpanded] = useState(true);
