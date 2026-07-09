@@ -191,14 +191,28 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
 
   const savedProgress = progressData?.progress || 0;
 
+  const resumeAskedRef = useRef(false);
   useEffect(() => {
     if (!chapter?.id || savedProgress <= 0 || savedProgress >= 100) return;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const targetScrollY = (savedProgress / 100) * docHeight;
-    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+    if (resumeAskedRef.current) return;
+    resumeAskedRef.current = true;
+
+    toast('Tiếp tục từ vị trí cũ?', {
+      description: `Bạn đã đọc đến ${savedProgress}% chương này`,
+      action: {
+        label: 'Tiếp tục',
+        onClick: () => {
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const targetScrollY = (savedProgress / 100) * docHeight;
+          window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+        },
+      },
+      duration: 8000,
+    });
   }, [chapter?.id, savedProgress]);
 
   useRoomPresence(currentChapterSlug || 'unknown', sendHeartbeat, readingParagraphId, readingProgress, bookData?.id, chapter?.id);
+
 
   if (!isAuthenticated) {
     return (

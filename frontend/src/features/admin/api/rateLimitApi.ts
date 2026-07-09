@@ -25,7 +25,6 @@ export const rateLimitApi = createApi({
         url: '/admin/rate-limits/gemini',
         method: 'GET',
       }),
-      transformResponse: (response: { data: RateLimitConfig }) => response.data,
       providesTags: ['RateLimit'],
     }),
 

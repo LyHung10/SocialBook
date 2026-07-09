@@ -114,22 +114,10 @@ export const useReadingRoomSocket = (roomId?: string) => {
     }
   }, [socket]);
 
-  const notifyCommented = useCallback((paragraphId: string, chapterId: string, commentId: string) => {
-    const store = useReadingRoomStore.getState();
-    if (socket?.connected && store.room) {
-      socket.emit(ReadingRoomClientEvent.PARAGRAPH_COMMENTED, { 
-        roomId: store.room.roomId,
-        paragraphId,
-        chapterId,
-        commentId,
-      });
-    }
-  }, [socket]);
-
   const generateHighlightInsight = useCallback((highlightId: string) => {
     const store = useReadingRoomStore.getState();
     if (socket?.connected && store.room) {
-      socket.emit('generate_highlight_insight', { roomId: store.room.roomId, highlightId });
+      socket.emit(ReadingRoomClientEvent.GENERATE_HIGHLIGHT_INSIGHT, { roomId: store.room.roomId, highlightId });
     }
   }, [socket]);
 
@@ -149,8 +137,6 @@ export const useReadingRoomSocket = (roomId?: string) => {
     socket.off(ReadingRoomServerEvent.ROOM_ENDED);
     socket.off(ReadingRoomServerEvent.ROOM_REACTIVATED);
     socket.off(ReadingRoomServerEvent.ROOM_DELETED);
-    socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
-    socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
     socket.off(ReadingRoomServerEvent.NEW_HIGHLIGHT);
     socket.off(ReadingRoomServerEvent.HIGHLIGHT_REMOVED);
     socket.off(ReadingRoomServerEvent.UPDATE_HIGHLIGHT_INSIGHT);
@@ -159,6 +145,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
     socket.off(ReadingRoomServerEvent.COMMENT_ADDED);
     socket.off(ReadingRoomServerEvent.COMMENT_DELETED);
     socket.off(ReadingRoomServerEvent.REACTION_ADDED);
+    socket.off(ReadingRoomServerEvent.REACTION_REMOVED);
     socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
     socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
 
@@ -245,22 +232,6 @@ export const useReadingRoomSocket = (roomId?: string) => {
       useReadingRoomStore.getState().clearRoom();
       reduxStore.dispatch(readingRoomsApi.util.invalidateTags(['MyRooms', 'MyHistory', { type: 'Room', id: roomId }]));
       router.refresh();
-    });
-
-    socket.on(ReadingRoomServerEvent.ANNOTATION_ADDED, (data) => {
-      const store = useReadingRoomStore.getState();
-      const currentCount = store.annotations[data.paragraphId] || 0;
-      store.updateAnnotation(data.paragraphId, currentCount + 1);
-    });
-
-    socket.on(ReadingRoomServerEvent.ANNOTATION_REMOVED, (data) => {
-      const store = useReadingRoomStore.getState();
-      const currentCount = store.annotations[data.paragraphId] || 0;
-      if (currentCount > 1) {
-        store.updateAnnotation(data.paragraphId, currentCount - 1);
-      } else {
-        store.removeAnnotation(data.paragraphId);
-      }
     });
 
     socket.on(ReadingRoomServerEvent.ERROR, (error) => {
@@ -364,8 +335,6 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.ROOM_ENDED);
       socket.off(ReadingRoomServerEvent.ROOM_REACTIVATED);
       socket.off(ReadingRoomServerEvent.ROOM_DELETED);
-      socket.off(ReadingRoomServerEvent.ANNOTATION_ADDED);
-      socket.off(ReadingRoomServerEvent.ANNOTATION_REMOVED);
       socket.off(ReadingRoomServerEvent.NEW_HIGHLIGHT);
       socket.off(ReadingRoomServerEvent.HIGHLIGHT_REMOVED);
       socket.off(ReadingRoomServerEvent.UPDATE_HIGHLIGHT_INSIGHT);
@@ -374,6 +343,7 @@ export const useReadingRoomSocket = (roomId?: string) => {
       socket.off(ReadingRoomServerEvent.COMMENT_ADDED);
       socket.off(ReadingRoomServerEvent.COMMENT_DELETED);
       socket.off(ReadingRoomServerEvent.REACTION_ADDED);
+      socket.off(ReadingRoomServerEvent.REACTION_REMOVED);
       socket.off(ReadingRoomServerEvent.QUOTE_ADDED);
       socket.off(ReadingRoomServerEvent.QUOTE_VOTED);
       useReadingRoomStore.getState().clearRoom();
@@ -398,7 +368,6 @@ export const useReadingRoomSocket = (roomId?: string) => {
     deleteRoom,
     leaveRoom,
     sendHeartbeat,
-    notifyCommented,
     addHighlight,
     removeHighlight,
     generateHighlightInsight,

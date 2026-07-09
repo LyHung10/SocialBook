@@ -1,8 +1,7 @@
 'use client';
 import { useCallback } from 'react';
 import { useSocket } from '@/context/SocketProvider';
-import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
-import type { RoomComment, RoomSocket } from '../types/room-interaction.types';
+import { ReadingRoomClientEvent } from '@/features/reading-rooms/types/reading-room.events';
 
 export const useRoomAnnotations = () => {
   const { getSocket } = useSocket();
@@ -39,24 +38,4 @@ export const useRoomAnnotations = () => {
   }, [socket]);
 
   return { addComment, deleteComment };
-};
-
-interface RoomAnnotationStore {
-  getState(): {
-    addRoomComment: (data: RoomComment) => void;
-    removeRoomComment: (commentId: string, paragraphId: string) => void;
-  };
-}
-
-export const setupRoomAnnotationListeners = (socket: RoomSocket | null | undefined, store: RoomAnnotationStore | null | undefined) => {
-  if (!socket || !store) return;
-
-  socket.on(ReadingRoomServerEvent.COMMENT_ADDED, (data: unknown) => {
-    store.getState().addRoomComment(data as RoomComment);
-  });
-
-  socket.on(ReadingRoomServerEvent.COMMENT_DELETED, (data: unknown) => {
-    const { commentId, paragraphId } = data as { commentId: string; paragraphId: string };
-    store.getState().removeRoomComment(commentId, paragraphId);
-  });
 };

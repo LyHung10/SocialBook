@@ -91,22 +91,17 @@ export class CommentRepository extends ICommentRepository {
   async findByRoom(
     roomId: string,
     chapterSlug?: string,
-    options?: { limit?: number; before?: Date },
   ): Promise<RoomComment[]> {
     const query: FilterQuery<RoomCommentDocument> = { roomId };
     if (chapterSlug) {
       query.chapterSlug = chapterSlug;
     }
-    if (options?.before) {
-      query.createdAt = { $lt: options.before };
-    }
     const docs = await this.commentModel
       .find(query)
-      .sort({ createdAt: 1 })
-      .limit(options?.limit || 50)
+      .sort({ createdAt: -1 })
       .lean()
       .exec();
-    return docs.map((d) =>
+    return docs.reverse().map((d) =>
       RoomComment.reconstitute({
         id: String(d._id),
         roomId: d.roomId,

@@ -6,7 +6,7 @@ import { useRoomAnnotations } from '../hooks/useRoomAnnotations';
 import { useAppAuth } from '@/features/auth/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, MessageSquare, Send } from 'lucide-react';
+import { MessageCircle, MessageSquare, Send, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +31,7 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
     c => c.paragraphId === paragraphId && !c.parentCommentId,
   )));
   const commentCount = useReadingRoomStore((s) => s.annotations[paragraphId] || 0);
-  const { addComment } = useRoomAnnotations();
+  const { addComment, deleteComment } = useRoomAnnotations();
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,12 +85,22 @@ export const ParagraphAnnotations = memo(function ParagraphAnnotations({ roomId,
                     </p>
                   </div>
                 )}
+
                 {comments.map((c) => {
                   const isMe = c.userId === user?.id;
                   return (
-                    <div key={c.id} className={cn('w-full', isMe && 'flex flex-col items-end')}>
+                    <div key={c.id} className={cn('w-full group', isMe && 'flex flex-col items-end')}>
                       <div className={cn('flex items-baseline gap-1.5 mb-1', isMe ? 'mr-1' : 'ml-1')}>
                         <span className={cn('font-bold text-[10px] uppercase tracking-wider', isMe ? 'text-foreground/60' : 'text-primary/80')}>{c.displayName || c.userId.slice(0, 6)}</span>
+                        {isMe && (
+                          <button
+                            onClick={() => deleteComment(roomId, c.id, c.paragraphId)}
+                            className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Xoá bình luận"
+                          >
+                            <X size={10} className="text-muted-foreground hover:text-destructive" />
+                          </button>
+                        )}
                       </div>
                       <div className={cn(
                         'px-3 py-2.5 rounded-2xl border w-fit max-w-[95%]',

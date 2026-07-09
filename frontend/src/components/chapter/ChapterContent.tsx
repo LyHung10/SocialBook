@@ -237,13 +237,13 @@ export const ChapterContent = memo(function ChapterContent({
 
         const hydrate = async () => {
             try {
-                const [comments, reactionsData] = await Promise.all([
+                const [commentsData, reactionsData] = await Promise.all([
                     fetchComments({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
                     fetchReactions({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
                 ]);
                 if (cancelled) return;
 
-                useReadingRoomStore.getState().setRoomComments(comments);
+                useReadingRoomStore.getState().setRoomComments(commentsData);
 
                 const reactions: Record<string, Record<string, string[]>> = {};
                 for (const r of reactionsData) {

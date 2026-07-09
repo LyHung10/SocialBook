@@ -12,7 +12,6 @@ export abstract class ICommentRepository {
   abstract findByRoom(
     roomId: string,
     chapterSlug?: string,
-    options?: { limit?: number; before?: Date },
   ): Promise<RoomComment[]>;
   abstract delete(id: string): Promise<void>;
   abstract deleteByRoom(roomId: string): Promise<void>;

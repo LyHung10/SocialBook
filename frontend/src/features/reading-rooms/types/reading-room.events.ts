@@ -13,15 +13,12 @@ export enum ReadingRoomServerEvent {
   HIGHLIGHT_REMOVED = 'highlight_removed',
   UPDATE_HIGHLIGHT_INSIGHT = 'update_highlight_insight',
   NEW_CHAT_MESSAGE = 'new_chat_message',
-  ANNOTATION_ADDED = 'annotation_added',
-  ANNOTATION_REMOVED = 'annotation_removed',
   ERROR = 'error',
 
   COMMENT_ADDED = 'room:comment_added',
   COMMENT_DELETED = 'room:comment_deleted',
   REACTION_ADDED = 'room:reaction_added',
   REACTION_REMOVED = 'room:reaction_removed',
-  PROGRESS_UPDATED = 'room:progress_updated',
 
   QUOTE_ADDED = 'room:quote_added',
   QUOTE_VOTED = 'room:quote_voted',
@@ -31,6 +28,7 @@ export enum ReadingRoomServerEvent {
 }
 
 export enum ReadingRoomClientEvent {
+  GENERATE_HIGHLIGHT_INSIGHT = 'generate_highlight_insight',
   JOIN_ROOM = 'join_room',
   LEAVE_ROOM = 'leave_room',
   CHAPTER_CHANGE = 'chapter_change',
@@ -41,13 +39,10 @@ export enum ReadingRoomClientEvent {
   ADD_HIGHLIGHT = 'add_highlight',
   REMOVE_HIGHLIGHT = 'remove_highlight',
   SEND_CHAT_MESSAGE = 'send_chat_message',
-  PARAGRAPH_COMMENTED = 'paragraph_commented',
-  PARAGRAPH_COMMENT_DELETED = 'paragraph_comment_deleted',
 
   ADD_COMMENT = 'room:add_comment',
   DELETE_COMMENT = 'room:delete_comment',
   ADD_REACTION = 'room:add_reaction',
-  REMOVE_REACTION = 'room:remove_reaction',
 
   ADD_QUOTE = 'room:add_quote',
   VOTE_QUOTE = 'room:vote_quote',
