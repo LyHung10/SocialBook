@@ -16,7 +16,7 @@ export function SearchTrigger() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [triggerSearch, { data: searchData, isLoading, isFetching }] =
+  const [triggerSearch, { data: searchData, isFetching, isError }] =
     useLazyGetBooksQuery();
   const [recordSearchKeyword] = useRecordSearchKeywordMutation();
 
@@ -103,7 +103,7 @@ export function SearchTrigger() {
   };
 
   const books = searchData?.data ?? [];
-  const isLoadingResults = isLoading || isFetching;
+  const isLoadingResults = isFetching;
 
   return (
     <div ref={containerRef} className="relative hidden lg:block">
@@ -155,6 +155,10 @@ export function SearchTrigger() {
               <span className="text-xs text-muted-foreground">
                 Đang tìm kiếm...
               </span>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-8 px-4 gap-2">
+              <p className="text-sm text-destructive">Có lỗi xảy ra, vui lòng thử lại</p>
             </div>
           ) : books.length > 0 ? (
             <>

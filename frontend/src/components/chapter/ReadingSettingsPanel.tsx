@@ -18,9 +18,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import * as SheetPrimitive from '@radix-ui/react-dialog';
 import {
     Sheet,
-    SheetContent,
+    SheetPortal,
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
@@ -104,7 +105,16 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
     return (
         <>
             <Sheet open={isOpen} onOpenChange={onClose}>
-                <SheetContent side="left" className="w-80 p-0 flex flex-col gap-0 border-r border-border bg-background">
+                {/* Dùng SheetPortal + Content thủ công để bỏ overlay tối */}
+                <SheetPortal>
+                <SheetPrimitive.Content
+                    className={cn(
+                        'fixed z-50 inset-y-0 left-0 h-full w-80 p-0 flex flex-col gap-0 border-r border-border bg-background shadow-lg',
+                        'transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500',
+                        'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                        'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+                    )}
+                >
                     <SheetHeader className="p-5 border-b border-border bg-background flex flex-row items-center justify-between space-y-0">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-muted rounded-lg">
@@ -332,7 +342,8 @@ export default function ReadingSettingsPanel({ isOpen, onClose }: ReadingSetting
                             <span className="font-medium">Đặt lại mặc định</span>
                         </Button>
                     </div>
-                </SheetContent>
+                </SheetPrimitive.Content>
+                </SheetPortal>
             </Sheet>
 
             <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>

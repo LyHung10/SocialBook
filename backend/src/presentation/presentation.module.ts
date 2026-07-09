@@ -21,6 +21,8 @@ import { StatisticsController } from './statistics/statistics.controller';
 import { TextToSpeechController } from './text-to-speech/text-to-speech.controller';
 import { UsersController } from './users/users.controller';
 import { AdminToxicWordsController } from './content-moderation/admin-toxic-words.controller';
+import { AdminRateLimitController } from './admin/rate-limit.controller';
+import { RateLimitConfigService } from '@/common/services/rate-limit-config.service';
 import { ReadingRoomsPresentationModule } from './reading-rooms/reading-rooms-presentation.module';
 import { UsersApplicationModule } from '@/application/users/users-application.module';
 import { BooksApplicationModule } from '@/application/books/books-application.module';
@@ -102,6 +104,8 @@ import { BookmarkModule } from './bookmarks/bookmark.module';
     TextToSpeechController,
     UsersController,
     AdminToxicWordsController,
+    AdminRateLimitController,
   ],
+  providers: [RateLimitConfigService],
 })
 export class PresentationModule {}
