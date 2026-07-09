@@ -5,7 +5,7 @@ import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { RoomId } from '../value-objects/room-id.vo';
 import { RoomMode } from '../value-objects/room-mode.vo';
 import { RoomMember } from './room-member.entity';
-import { DEFAULT_MAX_MEMBERS } from '../enums/constants';
+import { DEFAULT_MAX_MEMBERS, MAX_HIGHLIGHTS_PER_USER } from '../enums/constants';
 
 export interface RoomHighlightProps {
   id?: string;
@@ -166,6 +166,15 @@ export class ReadingRoom extends Entity<RoomId> {
     if (this._props.status === 'ended') {
       throw new BadRequestDomainException(
         'Không thể highlight trong phòng đã kết thúc',
+      );
+    }
+
+    const userHighlightCount = this._props.highlights.filter(
+      (h) => h.userId === props.userId,
+    ).length;
+    if (userHighlightCount >= MAX_HIGHLIGHTS_PER_USER) {
+      throw new BadRequestDomainException(
+        `Bạn đã đạt giới hạn ${MAX_HIGHLIGHTS_PER_USER} highlight trong phòng này`,
       );
     }
 

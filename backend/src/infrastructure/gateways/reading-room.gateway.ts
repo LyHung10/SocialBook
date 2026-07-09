@@ -313,6 +313,15 @@ export class ReadingRoomGateway
 
       const presences = await this.presenceService.getRoomPresences(roomId);
 
+      // Ưu tiên highlights của chapter hiện tại, giới hạn tổng 200
+      const currentChapterHighlights = room.highlights.filter(
+        (h) => h.chapterSlug === room.currentChapterSlug,
+      );
+      const otherHighlights = room.highlights
+        .filter((h) => h.chapterSlug !== room.currentChapterSlug)
+        .slice(0, 200 - currentChapterHighlights.length);
+      const snapshotHighlights = [...currentChapterHighlights, ...otherHighlights];
+
       socket.emit(ReadingRoomServerEvent.ROOM_SNAPSHOT, {
         room: {
           roomId: room.roomId,
@@ -321,7 +330,7 @@ export class ReadingRoomGateway
           mode: room.mode,
           currentChapterSlug: room.currentChapterSlug,
           status: room.status,
-          highlights: room.highlights.map((h) => ({
+          highlights: snapshotHighlights.map((h) => ({
             id: h.id,
             userId: h.userId,
             chapterSlug: h.chapterSlug,
@@ -330,7 +339,7 @@ export class ReadingRoomGateway
             aiInsight: h.aiInsight,
             createdAt: h.createdAt,
           })),
-          chatMessages: room.chatMessages,
+          chatMessages: [],
         },
         members: room.members.map((m) => ({ userId: m.userId, role: m.role })),
         presences,
