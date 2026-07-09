@@ -48,7 +48,6 @@ export default function LibraryPage() {
   });
 
   const currentUserId = user?.id;
-  const router = useRouter();
 
   const { data: collections, isLoading: isLoadingCollections, refetch: refetchCollections } =
     useGetCollectionsQuery(currentUserId, {

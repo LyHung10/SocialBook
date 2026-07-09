@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useCallback, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useRouter } from "next/navigation";
 import { useModalStore } from '@/store/useModalStore';
@@ -48,12 +48,6 @@ export default function Post() {
             feedRef.current = document.documentElement as HTMLDivElement;
         }
     }, []);
-
-    const goToFollowing = useCallback(() => {
-        if (currentUserId) {
-            router.push(`/users/${currentUserId}/following`);
-        }
-    }, [router, currentUserId]);
 
     if (isLoading) {
         return (

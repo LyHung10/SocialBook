@@ -48,6 +48,7 @@ export const ReaderAvatars = memo(function ReaderAvatars({
                 >
                   {reader.avatarUrl ? (
                     <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                       src={reader.avatarUrl}
                       alt={reader.displayName}
