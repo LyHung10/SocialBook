@@ -73,9 +73,21 @@ export function usePostsFeed(options: UsePostsFeedOptions = {}): UsePostsFeedRet
       );
     };
 
+    const handlePostCreated = (e: Event) => {
+      const newPost = (e as CustomEvent<Post>).detail;
+      setAllPosts((prev) => {
+        if (prev.some((p) => p.id === newPost.id)) {
+          return prev;
+        }
+        return [newPost, ...prev];
+      });
+    };
+
     window.addEventListener('post-updated', handlePostUpdated);
+    window.addEventListener('post-created', handlePostCreated);
     return () => {
       window.removeEventListener('post-updated', handlePostUpdated);
+      window.removeEventListener('post-created', handlePostCreated);
     };
   }, []);
 

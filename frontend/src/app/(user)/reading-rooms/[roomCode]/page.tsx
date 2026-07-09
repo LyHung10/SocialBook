@@ -299,6 +299,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                         <div className="flex -space-x-2 mr-1 hidden min-[400px]:flex">
                           {Object.values(presences).slice(0, 3).map(p =>
                             p.avatarUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 key={p.userId}
                                 src={p.avatarUrl}
@@ -475,6 +476,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
                     <div className="flex flex-col -space-y-2 mt-2 items-center cursor-pointer">
                       {Object.values(presences).slice(0, 4).map(p =>
                         p.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img key={p.userId} src={p.avatarUrl} alt="Avatar" width={28} height={28} className="w-7 h-7 rounded-full border-2 border-background z-10 hover:z-20 relative" />
                         ) : (
                           <div key={p.userId} className="w-7 h-7 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold z-10 hover:z-20 relative">

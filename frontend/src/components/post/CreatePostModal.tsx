@@ -67,6 +67,8 @@ export default function CreatePostModal() {
               duration: 6000,
             });
           }
+
+          window.dispatchEvent(new CustomEvent('post-created', { detail: postData }));
         }
         closeCreatePost();
         form.reset();

@@ -8,7 +8,6 @@ import { useLoginFlow } from '@/features/auth/hooks/useLoginFlow';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -27,14 +26,10 @@ import { Input } from '@/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 
 function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const {
     isLoading,
     serverError,
     showPassword,
-    setServerError,
     setShowPassword,
     handleSubmit,
     handleGoogleSignin,

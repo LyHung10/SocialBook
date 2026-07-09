@@ -1,4 +1,4 @@
-export default {
+const config = {
   source: ['design-tokens/tokens.json'],
   hooks: {
     formats: {
@@ -83,3 +83,5 @@ export default {
     },
   },
 };
+
+export default config;

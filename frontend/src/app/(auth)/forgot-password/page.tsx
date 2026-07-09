@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
         newPassword: data.newPassword,
       }).unwrap();
       setStep('success');
-    } catch (err) { }
+    } catch { }
   };
 
   const handleSendOtp = async () => {
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
       setOtpBoxes(['', '', '', '', '', '']);
       setStep('otp');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (err) { }
+    } catch { }
   };
 
   const handleResendOtp = async () => {
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
       setResendMessage('Đã gửi lại mã OTP mới thành công.');
       setOtpBoxes(['', '', '', '', '', '']);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (err) { }
+    } catch { }
   };
 
   const handleOtpBoxChange = (index: number, value: string) => {

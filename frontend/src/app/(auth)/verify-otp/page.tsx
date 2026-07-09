@@ -106,10 +106,6 @@ function VerifyOtpPage() {
     router.push('/signup');
   };
 
-  const handleLoginClick = () => {
-    router.push('/login');
-  };
-
   if (success) {
     return (
       <div className="min-h-screen flex">

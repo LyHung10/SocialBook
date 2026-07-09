@@ -82,7 +82,7 @@ export default function CollectionDetailPage() {
       }).unwrap();
       toast.success('Đã cập nhật tên bộ sưu tập');
       setIsEditingName(false);
-    } catch (err) {
+    } catch {
       toast.error('Lỗi khi cập nhật tên');
     }
   };
@@ -103,7 +103,7 @@ export default function CollectionDetailPage() {
       await deleteCollection(collectionId).unwrap();
       toast.success('Đã xóa bộ sưu tập');
       router.push('/library');
-    } catch (error) {
+    } catch {
       toast.error('Lỗi khi xóa bộ sưu tập');
     }
   };
