@@ -8,24 +8,23 @@ import {
 } from '@nestjs/common';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { InjectThrottlerStorage } from '@nestjs/throttler/dist/throttler.decorator';
+import { RateLimitConfigService } from '@/common/services/rate-limit-config.service';
 
 @Injectable()
 export class GeminiThrottleGuard implements CanActivate {
-  private readonly guestLimit = 5;
-  private readonly userLimit = 30;
-  private readonly ttl = 60_000;
-  private readonly blockDuration = 60_000;
-
   constructor(
     @InjectThrottlerStorage()
     private readonly storageService: ThrottlerStorage,
+    private readonly configService: RateLimitConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const { req, res } = this.getRequestResponse(context);
 
+    const config = await this.configService.getGeminiConfig();
+
     const isAuthenticated = req.user != null;
-    const limit = isAuthenticated ? this.userLimit : this.guestLimit;
+    const limit = isAuthenticated ? config.userLimit : config.guestLimit;
 
     let tracker: string;
     if (isAuthenticated) {
@@ -38,9 +37,9 @@ export class GeminiThrottleGuard implements CanActivate {
     const { totalHits, timeToExpire, isBlocked } =
       await this.storageService.increment(
         tracker,
-        this.ttl,
+        config.ttl,
         limit,
-        this.blockDuration,
+        config.blockDuration,
         'gemini',
       );
 

@@ -24,6 +24,7 @@ import { moderationApi } from '../features/admin/api/moderationApi';
 import { readingRoomsApi } from '../features/reading-rooms/api/readingRoomsApi';
 import { roomInteractionsApi } from '../features/reading-room-interactions/api/roomInteractionsApi';
 import { toxicWordsApi } from '../features/admin/api/toxicWordsApi';
+import { rateLimitApi } from '../features/admin/api/rateLimitApi';
 
 export const store = configureStore({
   reducer: {
@@ -51,6 +52,7 @@ export const store = configureStore({
     [userHighlightsApi.reducerPath]: userHighlightsApi.reducer,
     [bookmarkApi.reducerPath]: bookmarkApi.reducer,
     [toxicWordsApi.reducerPath]: toxicWordsApi.reducer,
+    [rateLimitApi.reducerPath]: rateLimitApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -78,6 +80,7 @@ export const store = configureStore({
       .concat(userHighlightsApi.middleware)
       .concat(bookmarkApi.middleware)
       .concat(toxicWordsApi.middleware)
+      .concat(rateLimitApi.middleware)
 });
 
 setupListeners(store.dispatch);
