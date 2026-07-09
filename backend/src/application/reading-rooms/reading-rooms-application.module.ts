@@ -19,7 +19,7 @@ import { RemoveHighlightUseCase } from './use-cases/remove-highlight/remove-high
 import { GeminiApplicationModule } from '../gemini/gemini-application.module';
 import { ChaptersRepositoryModule } from '@/infrastructure/database/repositories/chapters/chapters-repository.module';
 import { ReadingRoomInteractionsRepositoryModule } from '@/infrastructure/database/repositories/reading-room-interactions/reading-room-interactions-repository.module';
-import { ReadingRoomPresenceModule } from '@/infrastructure/gateways/reading-room-presence.module';
+import { ReadingRoomPresenceModule } from '@/presentation/gateways/reading-room-presence.module';
 
 @Module({
   imports: [
