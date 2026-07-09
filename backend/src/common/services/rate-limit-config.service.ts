@@ -28,13 +28,14 @@ export class RateLimitConfigService {
   ) {}
 
   async getGeminiConfig(): Promise<GeminiRateLimitConfig> {
-    const cached = await this.cacheService.get<GeminiRateLimitConfig>(CACHE_KEY);
+    const cached =
+      await this.cacheService.get<GeminiRateLimitConfig>(CACHE_KEY);
     if (cached) return cached;
 
     try {
-      const doc = await this.connection
-        .collection('configs')
-        .findOne({ key: 'rate_limit_gemini' });
+      const doc = (await this.connection.collection('configs').findOne({
+        key: 'rate_limit_gemini',
+      })) as Partial<GeminiRateLimitConfig> | null;
 
       if (doc) {
         const config: GeminiRateLimitConfig = {
