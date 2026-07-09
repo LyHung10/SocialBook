@@ -65,7 +65,9 @@ export class AskChatbotUseCase {
     const slugMap = new Map<string, string>();
     await Promise.all(
       bookIds.map(async (id) => {
-        const book = await this.bookRepository.findById(BookId.create(id)).catch(() => null);
+        const book = await this.bookRepository
+          .findById(BookId.create(id))
+          .catch(() => null);
         if (book) slugMap.set(id, book.slug);
       }),
     );

@@ -95,7 +95,9 @@ describe('ContentModerationService (Unit)', () => {
         reason: 'Tiết lộ kết thúc mà không có cảnh báo spoiler.',
       });
 
-      const result = await service.checkContent('Nhân vật chính chết ở cuối truyện');
+      const result = await service.checkContent(
+        'Nhân vật chính chết ở cuối truyện',
+      );
 
       expect(result.isSpoiler).toBe(true);
       expect(result.isSafe).toBe(false);
