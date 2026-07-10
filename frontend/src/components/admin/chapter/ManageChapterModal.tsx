@@ -33,7 +33,8 @@ import { getErrorMessage } from "@/lib/utils";
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ManageChapterModal() {
-    const { isManageChapterOpen, closeManageChapter, manageChapterData } = useModalStore();
+    const { modals, closeManageChapter } = useModalStore();
+    const { isOpen: isManageChapterOpen, data: manageChapterData } = modals.manageChapter;
     const isEdit = !!manageChapterData?.chapter;
     
     const [triggerGetDetails, { isFetching: isFetchingDetails }] = useLazyGetChapterByIdQuery();

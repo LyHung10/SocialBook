@@ -15,7 +15,8 @@ interface BookCardProps {
 }
 
 export const BookCard = memo(function BookCard({ book, priority }: BookCardProps) {
-    const { openAddToLibrary, isAddToLibraryOpen, addToLibraryData } = useModalStore();
+    const { modals, openAddToLibrary } = useModalStore();
+    const { isOpen: isAddToLibraryOpen, data: addToLibraryData } = modals.addToLibrary;
     const isCurrentBookOpen = isAddToLibraryOpen && addToLibraryData?.bookId === book.id;
 
     const handleAddToLibrary = useCallback((e: React.MouseEvent) => {

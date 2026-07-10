@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/dialog";
 
 export default function ChapterSummaryModal() {
-    const { isChapterSummaryOpen, closeChapterSummary, chapterSummaryData } = useModalStore();
+    const { modals, closeChapterSummary } = useModalStore();
+    const { isOpen: isChapterSummaryOpen, data: chapterSummaryData } = modals.chapterSummary;
     const { user } = useAppAuth();
     const [summarize, { isLoading, error, data: summary }] = useSummarizeChapterMutation();
     const [hasFetched, setHasFetched] = useState(false);

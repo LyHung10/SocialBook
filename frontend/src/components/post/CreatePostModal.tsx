@@ -25,7 +25,8 @@ import { useCreatePostMutation } from '@/features/posts/api/postApi';
 import BookSelector from './BookSelector';
 
 export default function CreatePostModal() {
-  const { isCreatePostOpen, closeCreatePost, createPostData } = useModalStore();
+  const { modals, closeCreatePost } = useModalStore();
+  const { isOpen: isCreatePostOpen, data: createPostData } = modals.createPost;
   const {
     title = 'Tạo bài viết mới',
     contentPlaceholder = 'Chia sẻ suy nghĩ của bạn...',

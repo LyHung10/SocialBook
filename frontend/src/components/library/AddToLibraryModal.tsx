@@ -31,7 +31,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from '@/lib/utils';
 
 export default function AddToLibraryModal() {
-  const { isAddToLibraryOpen, closeAddToLibrary, addToLibraryData } = useModalStore();
+  const { modals, closeAddToLibrary } = useModalStore();
+  const { isOpen: isAddToLibraryOpen, data: addToLibraryData } = modals.addToLibrary;
   const bookId = addToLibraryData?.bookId || '';
 
   const { data: book } = useGetBookByIdQuery(bookId, { skip: !bookId || !isAddToLibraryOpen });

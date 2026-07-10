@@ -34,7 +34,8 @@ const TumblrIcon = () => (
 );
 
 export default function SharePostModal() {
-  const { isSharePostOpen, closeSharePost, sharePostData } = useModalStore();
+  const { modals, closeSharePost } = useModalStore();
+  const { isOpen: isSharePostOpen, data: sharePostData } = modals.sharePost;
   const { copy, copiedText } = useCopyToClipboard();
   const copied = !!copiedText;
 
