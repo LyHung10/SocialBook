@@ -339,6 +339,7 @@ export const ChapterContent = memo(function ChapterContent({
         if (!selection || !room) return;
 
         addQuote(room.currentChapterSlug, selection.paraId, selection.text);
+        toast.success('Đã thêm trích dẫn!');
 
         setSelection(null);
         window.getSelection()?.removeAllRanges();
