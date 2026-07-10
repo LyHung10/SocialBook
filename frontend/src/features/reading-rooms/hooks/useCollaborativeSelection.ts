@@ -5,24 +5,11 @@ import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/readi
 import { getCharOffset } from '@/utils/char-offset';
 
 interface CollaborativeSelectionOptions {
-  /** The current room ID */
   roomId: string | null;
-  /** The current user's ID — their own selection is sent but not rendered locally */
   currentUserId: string | undefined;
-  /** Map of userId → index for stable color assignment */
   userColorMap: Map<string, number>;
 }
 
-/**
- * useCollaborativeSelection
- *
- * Wires up:
- * 1. Local mouseup → capture selection offset → debounced socket emit
- * 2. Remote 'party:remote_selection' socket event → update store
- * 3. Cleanup on unmount → emit party:selection_cleared
- *
- * Returns a ref-based handler to attach to paragraph containers.
- */
 export function useCollaborativeSelection({
   roomId,
   currentUserId,
@@ -33,7 +20,6 @@ export function useCollaborativeSelection({
   const lastEmitRef = useRef<{ paragraphId: string; startOffset: number; endOffset: number } | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Register socket listener for remote selections ─────────────────
   useEffect(() => {
     if (!socket || !roomId) return;
 
@@ -48,12 +34,10 @@ export function useCollaborativeSelection({
       if (!data.userId || data.userId === currentUserId) return;
 
       if (!data.paragraphId) {
-        // null paragraphId = clear signal
         useReadingRoomStore.getState().clearRemoteSelection(data.userId);
         return;
       }
 
-      // Assign color index deterministically
       let colorIdx = userColorMap.get(data.userId);
       if (colorIdx === undefined) {
         colorIdx = userColorMap.size % PARTY_COLORS.length;
@@ -77,21 +61,18 @@ export function useCollaborativeSelection({
 
     return () => {
       socket.off(ReadingRoomServerEvent.PARTY_REMOTE_SELECTION, handleRemoteSelection);
-      // Notify others that we've cleared our selection
       if (roomId) {
         socket.emit(ReadingRoomClientEvent.PARTY_SELECTION_CLEARED, { roomId });
       }
     };
   }, [socket, roomId, currentUserId, userColorMap]);
 
-  // ── Mouseup handler to emit local selection ────────────────────────
   const handleParagraphMouseUp = useCallback(
     (paragraphId: string, containerEl: HTMLElement) => {
       if (!socket?.connected || !roomId) return;
 
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.toString().trim().length < 3) {
-        // Empty selection → clear
         if (lastEmitRef.current !== null) {
           lastEmitRef.current = null;
           socket.emit(ReadingRoomClientEvent.PARTY_SELECTION_CLEARED, { roomId });
@@ -105,7 +86,6 @@ export function useCollaborativeSelection({
 
       const { startOffset, endOffset } = offsets;
 
-      // Deduplicate — only emit if something changed
       const prev = lastEmitRef.current;
       if (
         prev &&
@@ -116,7 +96,6 @@ export function useCollaborativeSelection({
         return;
       }
 
-      // Debounce 100ms
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         lastEmitRef.current = { paragraphId, startOffset, endOffset };

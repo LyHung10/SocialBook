@@ -23,7 +23,7 @@ import { useGetHighlightsByChapterQuery, useCreateHighlightMutation, useDeleteHi
 import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
-import { useCollaborativeSelection } from '@/hooks/useCollaborativeSelection';
+import { useCollaborativeSelection } from '@/features/reading-rooms/hooks/useCollaborativeSelection';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
