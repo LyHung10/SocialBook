@@ -35,6 +35,7 @@ import { DeletePostCommand } from '@/application/posts/use-cases/delete-post.com
 import { DeletePostUseCase } from '@/application/posts/use-cases/delete-post.use-case';
 import { GetFlaggedPostsQuery } from '@/application/posts/use-cases/get-flagged-posts.query';
 import { GetFlaggedPostsUseCase } from '@/application/posts/use-cases/get-flagged-posts.use-case';
+import { GetModerationStatsUseCase } from '@/application/posts/use-cases/get-moderation-stats.use-case';
 import { GetPostQuery } from '@/application/posts/use-cases/get-post.query';
 import { GetPostUseCase } from '@/application/posts/use-cases/get-post.use-case';
 import { GetPostsByUserQuery } from '@/application/posts/use-cases/get-posts-by-user.query';
@@ -48,12 +49,24 @@ import { RemovePostImageUseCase } from '@/application/posts/use-cases/remove-pos
 import { UpdatePostCommand } from '@/application/posts/use-cases/update-post.command';
 import { UpdatePostUseCase } from '@/application/posts/use-cases/update-post.use-case';
 import { PostResponseDto } from '@/presentation/posts/dto/post.response.dto';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
 
 export class FlaggedPostsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsEnum(['newest', 'oldest', 'violations'])
+  declare sortBy?: 'newest' | 'oldest' | 'violations';
 }
 
 @Controller('posts')
@@ -67,6 +80,7 @@ export class PostsController {
     private readonly deletePostUseCase: DeletePostUseCase,
     private readonly removePostImageUseCase: RemovePostImageUseCase,
     private readonly getFlaggedPostsUseCase: GetFlaggedPostsUseCase,
+    private readonly getModerationStatsUseCase: GetModerationStatsUseCase,
     private readonly approvePostUseCase: ApprovePostUseCase,
     private readonly rejectPostUseCase: RejectPostUseCase,
   ) {}
@@ -240,6 +254,9 @@ export class PostsController {
       query.actualPage,
       limit,
       query.reason,
+      query.startDate ? new Date(query.startDate) : undefined,
+      query.endDate ? new Date(query.endDate) : undefined,
+      query.sortBy,
     );
     const result = await this.getFlaggedPostsUseCase.execute(flaggedQuery);
     return {
@@ -251,6 +268,17 @@ export class PostsController {
         total: result.total,
         totalPages: Math.ceil(result.total / limit),
       },
+    };
+  }
+
+  @Get('admin/moderation/stats')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  async getModerationStats() {
+    const data = await this.getModerationStatsUseCase.execute();
+    return {
+      message: 'Get moderation stats successfully',
+      data,
     };
   }
 

@@ -15,6 +15,9 @@ export class GetFlaggedPostsUseCase {
       page: query.page,
       limit: query.limit,
       reason: query.reason,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      sortBy: query.sortBy,
     });
   }
 }

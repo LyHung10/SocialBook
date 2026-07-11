@@ -13,6 +13,9 @@ export interface FindFlaggedOptions {
   page: number;
   limit: number;
   reason?: string;
+  startDate?: Date;
+  endDate?: Date;
+  sortBy?: 'newest' | 'oldest' | 'violations';
 }
 
 export interface PaginatedResult<T> {
@@ -39,6 +42,12 @@ export abstract class IPostRepository {
   abstract findFlagged(
     options: FindFlaggedOptions,
   ): Promise<PaginatedResult<Post>>;
+  abstract getModerationStats(): Promise<{
+    total: number;
+    toxic: number;
+    spoiler: number;
+    other: number;
+  }>;
 
   // User profile specific
   abstract countByUser(userId: string): Promise<number>;

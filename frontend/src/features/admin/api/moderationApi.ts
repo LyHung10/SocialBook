@@ -30,13 +30,21 @@ export const moderationApi = createApi({
     baseQuery: axiosBaseQuery(),
     tagTypes: ['FlaggedPosts'],
     endpoints: (builder) => ({
-        getFlaggedPosts: builder.query<FlaggedPostsResponse, { page?: number; limit?: number; reason?: string }>({
-            query: ({ page = 1, limit = 10, reason }) => ({
+        getFlaggedPosts: builder.query<FlaggedPostsResponse, { page?: number; limit?: number; reason?: string; startDate?: string; endDate?: string; sortBy?: string }>({
+            query: ({ page = 1, limit = 10, reason, startDate, endDate, sortBy }) => ({
                 url: '/posts/admin/flagged',
                 method: 'GET',
-                params: { page, limit, reason },
+                params: { page, limit, reason, startDate, endDate, sortBy },
             }),
             transformResponse: normalizeArrayResponse<FlaggedPost>,
+            providesTags: ['FlaggedPosts'],
+        }),
+
+        getModerationStats: builder.query<{ total: number; toxic: number; spoiler: number; other: number }, void>({
+            query: () => ({
+                url: '/posts/admin/moderation/stats',
+                method: 'GET',
+            }),
             providesTags: ['FlaggedPosts'],
         }),
 
@@ -78,6 +86,7 @@ export const moderationApi = createApi({
 
 export const {
     useGetFlaggedPostsQuery,
+    useGetModerationStatsQuery,
     useApprovePostMutation,
     useRejectPostMutation,
     useBulkApprovePostsMutation,
