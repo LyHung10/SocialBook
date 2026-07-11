@@ -44,14 +44,23 @@ export class AskChatbotUseCase {
       query: question,
       embedding,
       limit: 5,
-      threshold: 0.3,
+      threshold: 0.5,
     });
 
     const results = await this.vectorRepository.search(searchQuery);
 
     this.logger.log(
-      `Chatbot search: "${question}" → ${results.length} results`,
+      `Chatbot search: "${question}" → results: ${JSON.stringify(results, null, 2)}`,
     );
+
+    if (results.length === 0) {
+      return {
+        question,
+        answer:
+          'Xin lỗi, tôi không có đủ thông tin để trả lời câu hỏi này. Bạn hãy thử hỏi về một cuốn sách cụ thể trong thư viện nhé!',
+        sources: [],
+      };
+    }
 
     // Collect unique bookIds to resolve slugs in one batch
     const bookIds = [
@@ -103,9 +112,7 @@ export class AskChatbotUseCase {
       })
       .join('\n\n');
 
-    const prompt =
-      results.length > 0
-        ? `Bạn là trợ lý đọc sách thông minh của SocialBook. Hãy trả lời câu hỏi dưới đây dựa trên ngữ cảnh từ các cuốn sách và chương được cung cấp.
+    const prompt = `Bạn là trợ lý đọc sách thông minh của SocialBook. Hãy trả lời câu hỏi dưới đây dựa trên ngữ cảnh từ các cuốn sách và chương được cung cấp.
 
 Ngữ cảnh:
 ${contextText}
@@ -115,10 +122,7 @@ Câu hỏi: ${question}
 Yêu cầu:
 - Trả lời bằng tiếng Việt, ngắn gọn và chính xác
 - Dựa trên ngữ cảnh được cung cấp
-- Nếu ngữ cảnh không đủ thông tin, hãy nói rõ`
-        : `Bạn là trợ lý đọc sách thông minh của SocialBook. Hãy trả lời câu hỏi sau bằng tiếng Việt một cách ngắn gọn và hữu ích:
-
-Câu hỏi: ${question}`;
+- Nếu ngữ cảnh không đủ thông tin, hãy nói rõ`;
 
     const answer = await this.geminiService.generateText(prompt);
 

@@ -44,6 +44,7 @@ export interface EmotionEvent {
   avatarUrl: string;
   emoji: string;
   reactionType: string;
+  chapterSlug: string;
   paragraphId: string;
   paragraphPreview: string; // first ~50 chars of paragraph text
   timestamp: number;
@@ -101,6 +102,7 @@ interface ReadingRoomState {
   quotes: RoomQuote[];
 
   setRoomComments: (comments: RoomComment[]) => void;
+  setReactions: (reactions: Record<string, Record<ReactionType, string[]>>) => void;
   addRoomComment: (comment: RoomComment) => void;
   removeRoomComment: (commentId: string, paragraphId: string) => void;
   updateReaction: (paragraphId: string, type: ReactionType, userId: string, add: boolean) => void;
@@ -113,7 +115,7 @@ interface ReadingRoomState {
 
   // Emotion stream (ephemeral, max 50 items FIFO)
   emotionEvents: EmotionEvent[];
-  addEmotionEvent: (event: Omit<EmotionEvent, 'id' | 'emoji' | 'paragraphPreview'> & { reactionType: string }) => void;
+  addEmotionEvent: (event: Omit<EmotionEvent, 'id' | 'emoji' | 'paragraphPreview'> & { reactionType: string; paragraphPreview?: string }) => void;
 
   // Collaborative selections (ephemeral, per-user, no DB)
   remoteSelections: Record<string, RemoteSelection>; // userId → selection
@@ -230,6 +232,7 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
   setScrollTargetParagraphId: (id) => set({ scrollTargetParagraphId: id }),
 
   // Room interaction actions
+  setReactions: (reactions) => set({ reactions }),
   setRoomComments: (comments) => set((state) => {
     const annotations: Record<string, number> = {};
     for (const c of comments) {
@@ -322,11 +325,11 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
     
     // Create excerpt preview (first 40 chars)
     const content = state.paragraphContentMap[event.paragraphId] || '';
-    const preview = content.length > 40 ? content.slice(0, 40) + '...' : content;
+    const mapPreview = content.length > 40 ? content.slice(0, 40) + '...' : content;
 
     const newEvent: EmotionEvent = {
       ...event,
-      paragraphPreview: preview || 'đoạn này',
+      paragraphPreview: event.paragraphPreview || mapPreview || 'đoạn này',
       id: `${event.userId}-${event.timestamp}-${Math.random().toString(36).slice(2, 7)}`,
       emoji,
     };

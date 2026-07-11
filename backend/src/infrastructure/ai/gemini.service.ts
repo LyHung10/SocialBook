@@ -32,7 +32,7 @@ export class GeminiService implements IGeminiService, OnModuleInit {
         this.configService.get<string>('env.MODERATION_MODEL') ??
         'gemini-2.5-flash-lite',
       timeout:
-        this.configService.get<number>('env.MODERATION_TIMEOUT') ?? 15_000,
+        this.configService.get<number>('env.MODERATION_TIMEOUT') ?? 60_000,
     });
 
     this.logger.log(
@@ -62,67 +62,18 @@ export class GeminiService implements IGeminiService, OnModuleInit {
 
   async summarizeChapter(content: string, title?: string): Promise<string> {
     const titlePart = title ? ` có tiêu đề "${title}"` : '';
-    const prompt = `Hãy cung cấp một bản tóm tắt ngắn gọn cho nội dung chương sau đây${titlePart}.
-Tập trung vào các sự kiện chính, sự phát triển của nhân vật và các điểm cốt truyện quan trọng.
-Giữ bản tóm tắt trong 2-3 đoạn văn.
-Hãy trả lời bằng tiếng Việt.
+    const prompt = `Hãy tóm tắt nội dung chương sau đây${titlePart}.
+Trả về tóm tắt có cấu trúc:
+- Bối cảnh: 1 câu
+- Sự kiện chính: 2-3 câu
+- Nhân vật: 1-2 câu
+- Gợi mở tiếp theo: 1 câu
+
+Ngôn ngữ: Tiếng Việt.
 
 Nội dung chương:
-${content.substring(0, 25_000)}`;
+${content.substring(0, 20_000)}`;
 
     return this.generateText(prompt);
-  }
-
-  async generateBookRecommendations(preferences: string): Promise<string[]> {
-    const prompt = `Based on these reading preferences: "${preferences}", 
-please recommend 5 books that the user might enjoy. 
-Format your response as a numbered list with book titles only, one per line.
-Do not include any additional text or explanations.`;
-
-    const response = await this.generateText(prompt);
-
-    return response
-      .split('\n')
-      .filter((line) => line.trim())
-      .map((line) => line.replace(/^\d+\.\s*/, '').trim())
-      .filter((t) => t.length > 0);
-  }
-
-  async generateChapterTitle(content: string): Promise<string> {
-    const prompt = `Based on this chapter content, generate a compelling and appropriate chapter title:
-
-${content.substring(0, 1_000)}
-
-The title should be:
-- Engaging and descriptive
-- No more than 10 words
-- Appropriate for the genre and tone
-- In the same language as the content
-
-Respond with only the title, no additional text.`;
-
-    return this.generateText(prompt);
-  }
-
-  async extractKeywords(text: string): Promise<string[]> {
-    const prompt = `Extract the most important keywords and key phrases from this text:
-
-${text.substring(0, 2_000)}
-
-Please provide:
-- 5-10 relevant keywords
-- Focus on themes, characters, places, and important concepts
-- One keyword per line
-- No additional text or explanations
-
-Format as a simple list.`;
-
-    const response = await this.generateText(prompt);
-
-    return response
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((kw) => kw.length > 0)
-      .slice(0, 10);
   }
 }

@@ -273,7 +273,9 @@ export const useReadingRoomSocket = (roomId?: string) => {
         displayName: data.displayName || data.userId.slice(0, 6),
         avatarUrl: '',
         reactionType: data.reactionType,
+        chapterSlug: data.chapterSlug || '',
         paragraphId: data.paragraphId,
+        paragraphPreview: data.paragraphPreview,
         timestamp: Date.now(),
       });
     });

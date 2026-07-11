@@ -33,7 +33,7 @@ export function TransferHostModal({
 
   const activeMembers = members.filter((m) => {
     const presence = presences[m.userId];
-    return m.userId !== room?.hostId && (presence || true);
+    return m.userId !== room?.hostId && !!presence;
   });
 
   const handleConfirm = () => {

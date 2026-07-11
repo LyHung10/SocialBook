@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { motion } from 'framer-motion';
 import { GlassCard } from '@/components/common/GlassCard';
+import { MarkdownText } from '@/components/common/MarkdownText';
 
 
 interface KnowledgeSidebarProps {
@@ -162,7 +163,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
         </div>
 
 
-        <TabsContent value="knowledge" className="flex-1 overflow-hidden mt-0">
+        <TabsContent value="knowledge" className="flex-1 min-h-0 overflow-hidden mt-0">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-6">
               {isLoading ? (
@@ -195,9 +196,9 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
                   {summary && (
                     <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl">
                       <h4 className="text-[10px] font-black uppercase text-primary mb-2">Tóm tắt chương</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed italic">
-                        &ldquo;{summary}&rdquo;
-                      </p>
+                      <div className="text-xs text-muted-foreground leading-relaxed italic">
+                        &ldquo;<MarkdownText text={summary} />&rdquo;
+                      </div>
                     </div>
                   )}
 
@@ -255,7 +256,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0">
+        <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col overflow-hidden mt-0">
           <ScrollArea ref={scrollContainerRef} className="flex-1 px-3 py-3">
             <div className="space-y-2">
               {chatMessages.length === 0 && (
@@ -339,37 +340,6 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
 };
 
 
-const MarkdownText = ({ text }: { text: string }) => {
-  // Split on any newline(s) — treat every line break as a paragraph boundary.
-  // Filter out blank lines so double-\n doesn't produce empty <p> tags.
-  const paragraphs = text
-    .split(/\n+/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
-
-  return (
-    <div className="space-y-2">
-      {paragraphs.map((para, pi) => (
-        <p key={pi}>
-          <InlineBold text={para} />
-        </p>
-      ))}
-    </div>
-  );
-};
-
-/** Renders **bold** markers inside a single line of text. */
-const InlineBold = ({ text }: { text: string }) => {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
-  return (
-    <>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>,
-      )}
-    </>
-  );
-};
-
 const EntityCard = ({ entity }: { entity: KnowledgeEntity }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -389,9 +359,9 @@ const EntityCard = ({ entity }: { entity: KnowledgeEntity }) => {
         </div>
       </div>
       {isExpanded && (
-        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
-          {entity.description}
-        </p>
+        <div className="mt-2 text-[11px] text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
+          <MarkdownText text={entity.description} />
+        </div>
       )}
     </div>
   );

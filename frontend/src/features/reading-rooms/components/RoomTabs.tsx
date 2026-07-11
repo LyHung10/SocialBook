@@ -105,14 +105,16 @@ export function RoomTabs({
                     {isDesktop && (
                       <TooltipProvider>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary" onClick={() => router.push(`/reading-rooms/${roomCode}?chapter=${p.currentChapterSlug}`)}>
-                                <BookOpen size={14} />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs font-medium">Đến chương này</TooltipContent>
-                          </Tooltip>
+                          {p.userId !== currentUserId && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-primary/10 hover:text-primary" onClick={() => router.push(`/reading-rooms/${roomCode}?chapter=${p.currentChapterSlug}`)}>
+                                  <BookOpen size={14} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs font-medium">Đến chương này</TooltipContent>
+                            </Tooltip>
+                          )}
 
                           <Tooltip>
                             <TooltipTrigger asChild>

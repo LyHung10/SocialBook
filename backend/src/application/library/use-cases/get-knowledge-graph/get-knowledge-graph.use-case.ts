@@ -200,26 +200,25 @@ export class GetKnowledgeGraphUseCase {
         `[KnowledgeGraph] Available genres: ${availableGenres.length}`,
       );
 
-      const prompt = `You are a professional librarian and knowledge curator. 
-            The user has read books in these genres: [${uniqueUserGenres.join(', ')}]. 
-            Our entire library contains these genres: [${availableGenres.join(', ')}].
+      const prompt = `Bạn là một thủ thư và chuyên gia quản lý tri thức.
+            Người dùng đã đọc sách thuộc các thể loại: [${uniqueUserGenres.join(', ')}].
+            Thư viện của chúng tôi có các thể loại: [${availableGenres.join(', ')}].
             
-            Based on their current profile, identify 3 DISTINCT genres they haven't explored yet but should. 
-            For each gap, explain why it provides a "mental balance" to their current reading (e.g., if they read Tech, suggest Philosophy for ethics).
-            Also suggest 1 specific famous book title for each gap.
+            Dựa trên hồ sơ hiện tại, hãy xác định 3 thể loại KHÁC BIỆT mà họ chưa khám phá nhưng nên thử.
+            Với mỗi khoảng trống, giải thích tại sao thể loại này giúp "cân bằng tư duy" cho việc đọc hiện tại của họ.
+            Đề xuất 1 tên sách nổi tiếng cụ thể cho mỗi khoảng trống.
             
-            CRITICAL REQUIREMENTS:
-            - The "reason" field MUST be written in Vietnamese (tiếng Việt).
-            - The "suggestedBook" field MUST be the title of the book in Vietnamese if it is commonly translated, or in its original language, but the text must be in Vietnamese.
+            YÊU CẦU QUAN TRỌNG:
+            - Tất cả các trường PHẢI bằng tiếng Việt.
+            - suggestedBook: tên sách bằng tiếng Việt (nếu đã dịch) hoặc nguyên gốc.
             
-            CRITICAL: Respond ONLY with a valid JSON object in this format:
+            CHỈ trả về JSON hợp lệ theo định dạng:
             {
               "gaps": [
                 {
-                  "genre": "Genre Name",
-                  "reason": "Giải thích chi tiết bằng tiếng Việt lý do tại sao thể loại này giúp cân bằng tư duy cho người đọc",
-                  "suggestedBook": "Tên một cuốn sách nổi tiếng tương ứng",
-                  "url": "Một đường link thực tế (Goodreads, Wikipedia, Amazon...) để tìm hiểu hoặc đọc quyển sách này"
+                  "genre": "Tên thể loại",
+                  "reason": "Giải thích chi tiết bằng tiếng Việt",
+                  "suggestedBook": "Tên sách nổi tiếng tương ứng"
                 }
               ]
             }`;
@@ -242,7 +241,6 @@ export class GetKnowledgeGraphUseCase {
             genre: string;
             reason: string;
             suggestedBook: string;
-            url?: string;
           }>;
         }>(prompt);
         this.logger.log(
@@ -320,6 +318,8 @@ export class GetKnowledgeGraphUseCase {
               locale: 'vi',
             });
 
+          const url = `https://www.google.com/search?q=${encodeURIComponent(gap.suggestedBook)}`;
+
           // Add Gap Book Node
           nodes.push({
             id: bookGapId,
@@ -328,12 +328,10 @@ export class GetKnowledgeGraphUseCase {
             val: 10,
             color: '#f472b6', // pink-400
             isGap: true,
-            reason: gap.url
-              ? `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn. Xem thêm tại link đính kèm.`
-              : `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn.`,
+            reason: `Gợi ý để lấp đầy khoảng trống ${gap.genre} của bạn.`,
             slug: bookSlug,
             img: gap.img,
-            url: gap.url,
+            url,
           });
 
           // Links
