@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
 import Image from 'next/image';
 import { useGetBooksQuery } from '@/features/books/api/bookApi';
+import { useGetChaptersQuery } from '@/features/chapters/api/chaptersApi';
 import { useCreateRoomMutation, useGetMyActiveRoomsQuery, useGetMyHistoryQuery, useReactivateRoomMutation } from '@/features/reading-rooms/api/readingRoomsApi';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -71,6 +72,10 @@ export default function ReadingRoomsHub() {
   const selectedBookData = booksData?.data.find(b => b.id === selectedBook);
   const hasNoChapters = selectedBookData && (!selectedBookData.stats?.chapterCount || selectedBookData.stats.chapterCount === 0);
 
+  const { data: chaptersData } = useGetChaptersQuery(
+    { bookSlug: selectedBookData?.slug || '' }, 
+    { skip: !selectedBookData?.slug }
+  );
   const handleCreate = async () => {
     if (!selectedBook) {
       toast.error('Vui lòng chọn một cuốn sách để đọc chung');
@@ -81,9 +86,10 @@ export default function ReadingRoomsHub() {
       return;
     }
     try {
+      const firstChapterSlug = chaptersData?.chapters?.[0]?.slug || 'chuong-1';
       const res = await createRoom({
         bookId: selectedBook,
-        currentChapterSlug: 'chuong-1',
+        currentChapterSlug: firstChapterSlug,
         mode: 'sync',
         maxMembers,
       }).unwrap();
