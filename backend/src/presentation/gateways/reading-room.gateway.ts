@@ -300,17 +300,7 @@ export class ReadingRoomGateway
 
       const presences = await this.presenceService.getRoomPresences(roomId);
 
-      // Ưu tiên highlights của chapter hiện tại, giới hạn tổng 200
-      const currentChapterHighlights = room.highlights.filter(
-        (h) => h.chapterSlug === room.currentChapterSlug,
-      );
-      const otherHighlights = room.highlights
-        .filter((h) => h.chapterSlug !== room.currentChapterSlug)
-        .slice(0, 200 - currentChapterHighlights.length);
-      const snapshotHighlights = [
-        ...currentChapterHighlights,
-        ...otherHighlights,
-      ];
+      const snapshotHighlights = room.highlights;
 
       socket.emit(ReadingRoomServerEvent.ROOM_SNAPSHOT, {
         room: {
