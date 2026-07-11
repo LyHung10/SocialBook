@@ -74,6 +74,8 @@ export class UpdateProgressUseCase {
       this.bookRepository.findById(DomainBookId.create(command.bookId)),
     ]);
 
+    const oldStatus = readingList.status;
+
     readingList.updateLastReadChapter(command.chapterId);
 
     if (book) {
@@ -106,7 +108,9 @@ export class UpdateProgressUseCase {
       this.readingProgressRepository.save(readingProgress),
     ]);
 
-    void this.recommendationCache.clear(command.userId);
+    if (readingList.status !== oldStatus) {
+      void this.recommendationCache.clear(command.userId);
+    }
 
     const detail = await this.readingListRepository.findDetailByUserIdAndBookId(
       userId,
