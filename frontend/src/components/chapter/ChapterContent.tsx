@@ -108,7 +108,7 @@ export const ChapterContent = memo(function ChapterContent({
         handleMouseUp, handleAIAction,
         handleAddHighlight: handleRoomHighlight,
         handleAddPersonalHighlight, handleAddQuote,
-    } = useSelectionToolbar({ bookId, chapterId, chapterSlug, bookSlug, room, addHighlight, addQuote });
+    } = useSelectionToolbar({ bookId, chapterId, bookSlug, room, addHighlight, addQuote });
 
     // Stable color map — userId → color index, persists across renders
     const [userColorMap] = useState(() => new Map<string, number>());
@@ -354,7 +354,6 @@ export const ChapterContent = memo(function ChapterContent({
                 onClose={handleCloseDrawer}
                 paragraphId={activeParagraph?.id || null}
                 paragraphContent={activeParagraph?.content}
-                chapterId={chapterId}
             />
         </TooltipProvider>
     );
