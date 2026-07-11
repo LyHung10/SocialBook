@@ -44,8 +44,6 @@ import { DeleteCommentUseCase } from '@/application/reading-room-interactions/us
 import { DeleteCommentCommand } from '@/application/reading-room-interactions/use-cases/delete-comment/delete-comment.command';
 import { AddReactionUseCase } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.use-case';
 import { AddReactionCommand } from '@/application/reading-room-interactions/use-cases/add-reaction/add-reaction.command';
-import { RemoveReactionUseCase } from '@/application/reading-room-interactions/use-cases/remove-reaction/remove-reaction.use-case';
-import { RemoveReactionCommand } from '@/application/reading-room-interactions/use-cases/remove-reaction/remove-reaction.command';
 import { AddQuoteUseCase } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.use-case';
 import { AddQuoteCommand } from '@/application/reading-room-interactions/use-cases/add-quote/add-quote.command';
 import { VoteQuoteUseCase } from '@/application/reading-room-interactions/use-cases/vote-quote/vote-quote.use-case';
@@ -88,7 +86,6 @@ export class ReadingRoomGateway
     private readonly addCommentUseCase: AddCommentUseCase,
     private readonly deleteCommentUseCase: DeleteCommentUseCase,
     private readonly addReactionUseCase: AddReactionUseCase,
-    private readonly removeReactionUseCase: RemoveReactionUseCase,
     private readonly addQuoteUseCase: AddQuoteUseCase,
     private readonly voteQuoteUseCase: VoteQuoteUseCase,
     private readonly generateHighlightInsightUseCase: GenerateHighlightInsightUseCase,
@@ -138,16 +135,6 @@ export class ReadingRoomGateway
         highlightId: payload.highlightId,
         insight: payload.insight,
       });
-  }
-
-  @OnEvent('reading-room.chat_message_added')
-  handleChatMessageAdded(payload: {
-    roomId: string;
-    message: { userId: string; role: string; content: string; createdAt: Date };
-  }) {
-    this.server
-      .to(`room:${payload.roomId}`)
-      .emit('new_chat_message', payload.message);
   }
 
   @SubscribeMessage('add_highlight')
@@ -220,7 +207,7 @@ export class ReadingRoomGateway
     }
   }
 
-  @SubscribeMessage('generate_highlight_insight')
+  @SubscribeMessage(ReadingRoomClientEvent.GENERATE_HIGHLIGHT_INSIGHT)
   async handleGenerateHighlightInsight(
     @ConnectedSocket() socket: Socket,
     @MessageBody() body: { roomId: string; highlightId: string },
@@ -640,39 +627,6 @@ export class ReadingRoomGateway
     }
   }
 
-  @SubscribeMessage('paragraph_commented')
-  handleParagraphCommented(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    body: {
-      roomId: string;
-      paragraphId: string;
-      chapterId: string;
-      commentId: string;
-    },
-  ) {
-    const sd = socket.data as SocketData;
-    const userId = sd.userId ?? '';
-    socket.to(`room:${body.roomId}`).emit('annotation_added', {
-      paragraphId: body.paragraphId,
-      chapterId: body.chapterId,
-      commentId: body.commentId,
-      user: { userId, displayName: sd.displayName ?? '' },
-    });
-  }
-
-  @SubscribeMessage('paragraph_comment_deleted')
-  handleParagraphCommentDeleted(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    body: { roomId: string; paragraphId: string; commentId: string },
-  ) {
-    socket.to(`room:${body.roomId}`).emit('annotation_removed', {
-      paragraphId: body.paragraphId,
-      commentId: body.commentId,
-    });
-  }
-
   @SubscribeMessage('send_chat_message')
   handleSendChatMessage(
     @ConnectedSocket() socket: Socket,
@@ -832,44 +786,6 @@ export class ReadingRoomGateway
       }
     } catch (error: unknown) {
       this.emitError(socket, 'REACTION_FAILED', 'Add reaction failed', error);
-    }
-  }
-
-  @SubscribeMessage(ReadingRoomClientEvent.REMOVE_REACTION)
-  async handleRemoveReaction(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    body: {
-      roomId: string;
-      paragraphId: string;
-      reactionType: string;
-    },
-  ) {
-    const sd = socket.data as SocketData;
-    const userId = sd.userId ?? '';
-    try {
-      const command = new RemoveReactionCommand(
-        userId,
-        body.roomId,
-        body.paragraphId,
-        body.reactionType,
-      );
-      await this.removeReactionUseCase.execute(command);
-
-      this.server
-        .to(`room:${body.roomId}`)
-        .emit(ReadingRoomServerEvent.REACTION_REMOVED, {
-          paragraphId: body.paragraphId,
-          reactionType: body.reactionType,
-          userId,
-        });
-    } catch (error: unknown) {
-      this.emitError(
-        socket,
-        'REACTION_FAILED',
-        'Remove reaction failed',
-        error,
-      );
     }
   }
 

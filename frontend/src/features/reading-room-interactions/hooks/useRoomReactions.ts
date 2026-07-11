@@ -1,8 +1,8 @@
 'use client';
 import { useCallback } from 'react';
 import { useSocket } from '@/context/SocketProvider';
-import { ReadingRoomClientEvent, ReadingRoomServerEvent } from '@/features/reading-rooms/types/reading-room.events';
-import type { ReactionType, RoomReactionEvent, RoomSocket } from '../types/room-interaction.types';
+import { ReadingRoomClientEvent } from '@/features/reading-rooms/types/reading-room.events';
+import type { ReactionType } from '../types/room-interaction.types';
 
 export const useRoomReactions = () => {
   const { getSocket } = useSocket();
@@ -24,34 +24,4 @@ export const useRoomReactions = () => {
   }, [socket]);
 
   return { addReaction };
-};
-
-interface RoomReactionStore {
-  getState(): {
-    updateReaction: (paragraphId: string, reactionType: string, userId: string, add: boolean) => void;
-  };
-}
-
-export const setupRoomReactionListeners = (socket: RoomSocket | null | undefined, store: RoomReactionStore | null | undefined) => {
-  if (!socket || !store) return;
-
-  socket.on(ReadingRoomServerEvent.REACTION_ADDED, (data: unknown) => {
-    const event = data as RoomReactionEvent;
-    store.getState().updateReaction(
-      event.paragraphId,
-      event.reactionType,
-      event.userId,
-      true,
-    );
-  });
-
-  socket.on(ReadingRoomServerEvent.REACTION_REMOVED, (data: unknown) => {
-    const event = data as RoomReactionEvent;
-    store.getState().updateReaction(
-      event.paragraphId,
-      event.reactionType,
-      event.userId,
-      false,
-    );
-  });
 };

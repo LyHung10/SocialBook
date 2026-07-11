@@ -11,7 +11,8 @@ import { useAppAuth } from '@/features/auth/hooks';
 export default function PostModalOverlay() {
     const router = useRouter();
     const { id } = useParams<{ id: string }>();
-    const { openPostComment, isPostCommentOpen } = useModalStore();
+    const { modals, openPostComment } = useModalStore();
+    const isPostCommentOpen = modals.postComment.isOpen;
 
     const { user, isLoading: isAuthLoading } = useAppAuth();
     const { data: post, isLoading } = useGetPostByIdQuery({ id, userId: user?.id }, {

@@ -23,6 +23,7 @@ import { UsersController } from './users/users.controller';
 import { AdminToxicWordsController } from './content-moderation/admin-toxic-words.controller';
 import { AdminRateLimitController } from './admin/rate-limit.controller';
 import { RateLimitConfigService } from '@/common/services/rate-limit-config.service';
+import { GatewaysModule } from './gateways/gateways.module';
 import { ReadingRoomsPresentationModule } from './reading-rooms/reading-rooms-presentation.module';
 import { UsersApplicationModule } from '@/application/users/users-application.module';
 import { BooksApplicationModule } from '@/application/books/books-application.module';
@@ -79,6 +80,7 @@ import { BookmarkModule } from './bookmarks/bookmark.module';
     ReadingRoomInteractionsPresentationModule,
     UserHighlightsModule,
     BookmarkModule,
+    GatewaysModule,
     InfrastructureModule,
   ],
   controllers: [

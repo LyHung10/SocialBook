@@ -52,4 +52,4 @@ export const roomInteractionsApi = createApi({
   }),
 });
 
-export const { useAddReactionMutation, useGetRoomQuotesQuery, useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery, useDeleteRoomQuoteMutation } = roomInteractionsApi;
+export const { useAddReactionMutation, useGetRoomQuotesQuery, useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery, useDeleteRoomQuoteMutation, useGetRoomCommentsQuery } = roomInteractionsApi;

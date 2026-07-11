@@ -31,7 +31,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 export default function ModalPostComment() {
-    const { isPostCommentOpen, closePostComment, postCommentData, openSharePost } = useModalStore();
+    const { modals, closePostComment, openSharePost } = useModalStore();
+    const { isOpen: isPostCommentOpen, data: postCommentData } = modals.postComment;
     const router = useRouter();
     const { isAuthenticated } = useAppAuth();
     const [createComment] = usePostCreateMutation();

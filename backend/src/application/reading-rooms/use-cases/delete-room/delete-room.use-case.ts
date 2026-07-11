@@ -8,7 +8,7 @@ import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';
 import { ICommentRepository } from '@/domain/reading-room-interactions/repositories/comment.repository.interface';
 import { IReactionRepository } from '@/domain/reading-room-interactions/repositories/reaction.repository.interface';
 import { IQuoteRepository } from '@/domain/reading-room-interactions/repositories/quote.repository.interface';
-import { ReadingRoomPresenceService } from '@/infrastructure/gateways/reading-room-presence.service';
+import { ReadingRoomPresenceService } from '@/presentation/gateways/reading-room-presence.service';
 import { DeleteRoomCommand } from './delete-room.command';
 
 @Injectable()

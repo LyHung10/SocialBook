@@ -23,7 +23,7 @@ import { useGetHighlightsByChapterQuery, useCreateHighlightMutation, useDeleteHi
 import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
-import { useCollaborativeSelection } from '@/hooks/useCollaborativeSelection';
+import { useCollaborativeSelection } from '@/features/reading-rooms/hooks/useCollaborativeSelection';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -237,13 +237,13 @@ export const ChapterContent = memo(function ChapterContent({
 
         const hydrate = async () => {
             try {
-                const [comments, reactionsData] = await Promise.all([
+                const [commentsData, reactionsData] = await Promise.all([
                     fetchComments({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
                     fetchReactions({ code: room.roomId, chapterSlug: room.currentChapterSlug }).unwrap(),
                 ]);
                 if (cancelled) return;
 
-                useReadingRoomStore.getState().setRoomComments(comments);
+                useReadingRoomStore.getState().setRoomComments(commentsData);
 
                 const reactions: Record<string, Record<string, string[]>> = {};
                 for (const r of reactionsData) {
@@ -339,6 +339,7 @@ export const ChapterContent = memo(function ChapterContent({
         if (!selection || !room) return;
 
         addQuote(room.currentChapterSlug, selection.paraId, selection.text);
+        toast.success('Đã thêm trích dẫn!');
 
         setSelection(null);
         window.getSelection()?.removeAllRanges();

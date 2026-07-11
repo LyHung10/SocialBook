@@ -30,7 +30,6 @@ import { AddCommentDto } from './dto/add-comment.dto';
 import { AddReactionDto } from './dto/add-reaction.dto';
 import { AddQuoteDto } from './dto/add-quote.dto';
 import { VoteQuoteDto } from './dto/vote-quote.dto';
-
 @Controller('reading-rooms/:code')
 export class ReadingRoomInteractionsController {
   constructor(
