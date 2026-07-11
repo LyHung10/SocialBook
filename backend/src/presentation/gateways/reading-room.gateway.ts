@@ -395,16 +395,9 @@ export class ReadingRoomGateway
       );
       await this.changeChapterUseCase.execute(command);
 
-      // Save progress as 0 when starting a new chapter
+      // Reset debounce cache so heartbeat saves naturally as user reads
       if (body.bookId) {
         this.lastSavedProgress.set(`${userId}:${body.chapterSlug}`, 0);
-        await this.saveReadingProgress(
-          userId,
-          body.bookId,
-          body.chapterId,
-          body.chapterSlug,
-          0,
-        );
       }
 
       this.server

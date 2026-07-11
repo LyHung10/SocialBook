@@ -46,7 +46,7 @@ export function useReadingRoomData(roomCode: string) {
   const presences = useReadingRoomStore(state => state.presences);
   const currentChapterSlug = !isEnded && room?.mode === 'sync'
     ? room?.currentChapterSlug || ''
-    : (searchParams.get('chapter') || room?.currentChapterSlug || '');
+    : (searchParams.get('chapter') || '');
 
   // ── Book / Chapter queries ──
   const { data: bookData } = useGetBookByIdQuery(room?.bookId || '', { skip: !room?.bookId });
