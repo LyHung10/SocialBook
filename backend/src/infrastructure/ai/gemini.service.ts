@@ -74,10 +74,10 @@ ${content.substring(0, 25_000)}`;
   }
 
   async generateBookRecommendations(preferences: string): Promise<string[]> {
-    const prompt = `Based on these reading preferences: "${preferences}", 
-please recommend 5 books that the user might enjoy. 
-Format your response as a numbered list with book titles only, one per line.
-Do not include any additional text or explanations.`;
+    const prompt = `Dựa trên những sở thích đọc sách sau: "${preferences}", 
+vui lòng đề xuất 5 cuốn sách mà người dùng có thể thích. 
+Định dạng câu trả lời của bạn dưới dạng một danh sách đánh số chỉ gồm tên sách, mỗi tên sách trên một dòng.
+Không bao gồm bất kỳ văn bản bổ sung hoặc giải thích nào.`;
 
     const response = await this.generateText(prompt);
 
@@ -89,33 +89,33 @@ Do not include any additional text or explanations.`;
   }
 
   async generateChapterTitle(content: string): Promise<string> {
-    const prompt = `Based on this chapter content, generate a compelling and appropriate chapter title:
+    const prompt = `Dựa trên nội dung chương sau đây, hãy tạo ra một tiêu đề chương hấp dẫn và phù hợp:
 
 ${content.substring(0, 1_000)}
 
-The title should be:
-- Engaging and descriptive
-- No more than 10 words
-- Appropriate for the genre and tone
-- In the same language as the content
+Tiêu đề phải:
+- Hấp dẫn và có tính mô tả
+- Không quá 10 từ
+- Phù hợp với thể loại và văn phong
+- Sử dụng cùng ngôn ngữ với nội dung
 
-Respond with only the title, no additional text.`;
+Chỉ trả lời bằng tiêu đề, không có thêm bất kỳ văn bản nào khác.`;
 
     return this.generateText(prompt);
   }
 
   async extractKeywords(text: string): Promise<string[]> {
-    const prompt = `Extract the most important keywords and key phrases from this text:
+    const prompt = `Trích xuất các từ khóa và cụm từ khóa quan trọng nhất từ đoạn văn bản sau:
 
 ${text.substring(0, 2_000)}
 
-Please provide:
-- 5-10 relevant keywords
-- Focus on themes, characters, places, and important concepts
-- One keyword per line
-- No additional text or explanations
+Vui lòng cung cấp:
+- 5-10 từ khóa liên quan
+- Tập trung vào chủ đề, nhân vật, địa điểm và các khái niệm quan trọng
+- Mỗi từ khóa trên một dòng
+- Không có thêm bất kỳ văn bản hoặc giải thích nào khác
 
-Format as a simple list.`;
+Định dạng dưới dạng một danh sách đơn giản.`;
 
     const response = await this.generateText(prompt);
 

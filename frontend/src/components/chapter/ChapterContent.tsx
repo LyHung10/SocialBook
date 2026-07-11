@@ -190,7 +190,7 @@ export const ChapterContent = memo(function ChapterContent({
 
 
     return (
-        <TooltipProvider>
+        <TooltipProvider>   
             <main
                 className="flex-1 w-full antialiased relative transition-all duration-300 rounded-2xl p-10 selection:bg-brand/30"
                 style={{
