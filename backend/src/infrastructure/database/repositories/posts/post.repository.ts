@@ -383,22 +383,49 @@ export class PostRepository implements IPostRepository {
     if (options.reason) {
       filter.moderationReason = { $regex: options.reason, $options: 'i' };
     }
+    if (options.startDate || options.endDate) {
+      const dateFilter: { $gte?: Date; $lte?: Date } = {};
+      if (options.startDate) dateFilter.$gte = options.startDate;
+      if (options.endDate) dateFilter.$lte = options.endDate;
+      filter.createdAt = dateFilter;
+    }
     const skip = (options.page - 1) * options.limit;
 
-    const facetResult = await this.model
-      .aggregate<{ metadata: Array<{ total: number }>; data: PostDocument[] }>([
-        { $match: filter },
+    const pipeline: PipelineStage[] = [{ $match: filter }];
+
+    if (options.sortBy === 'violations') {
+      pipeline.push(
         {
-          $facet: {
-            metadata: [{ $count: 'total' }],
-            data: [
-              { $sort: { createdAt: -1 } },
-              { $skip: skip },
-              { $limit: options.limit },
-            ],
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userInfo',
           },
         },
-      ])
+        { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
+      );
+    }
+
+    const sortStage: PipelineStage.Sort =
+      options.sortBy === 'violations'
+        ? { $sort: { 'userInfo.violationCount': -1, createdAt: -1 } }
+        : options.sortBy === 'oldest'
+          ? { $sort: { createdAt: 1 } }
+          : { $sort: { createdAt: -1 } };
+
+    pipeline.push({
+      $facet: {
+        metadata: [{ $count: 'total' }],
+        data: [sortStage, { $skip: skip }, { $limit: options.limit }],
+      },
+    });
+
+    const facetResult = await this.model
+      .aggregate<{
+        metadata: Array<{ total: number }>;
+        data: PostDocument[];
+      }>(pipeline)
       .exec();
 
     const result = facetResult[0] ?? { metadata: [], data: [] };
@@ -417,6 +444,65 @@ export class PostRepository implements IPostRepository {
         .map((doc: PostDocument) => PostMapper.toDomain(doc))
         .filter((p: PostEntity | null): p is PostEntity => p !== null),
       total,
+    };
+  }
+
+  async getModerationStats(): Promise<{
+    total: number;
+    toxic: number;
+    spoiler: number;
+    other: number;
+  }> {
+    const result = await this.model
+      .aggregate<{ total: number; toxic: number; spoiler: number }>([
+        { $match: { isFlagged: true, isDeleted: false } },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            toxic: {
+              $sum: {
+                $cond: [
+                  {
+                    $regexMatch: {
+                      input: { $ifNull: ['$moderationReason', ''] },
+                      regex: /thô tục|toxic/i,
+                    },
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            spoiler: {
+              $sum: {
+                $cond: [
+                  {
+                    $regexMatch: {
+                      input: { $ifNull: ['$moderationReason', ''] },
+                      regex: /spoiler|tiết lộ/i,
+                    },
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ])
+      .exec();
+
+    if (!result || result.length === 0) {
+      return { total: 0, toxic: 0, spoiler: 0, other: 0 };
+    }
+
+    const stats = result[0];
+    return {
+      total: stats.total,
+      toxic: stats.toxic,
+      spoiler: stats.spoiler,
+      other: stats.total - stats.toxic - stats.spoiler,
     };
   }
 

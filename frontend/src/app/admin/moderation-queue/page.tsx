@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 import { useModerationManagement } from '@/features/admin/hooks/moderation/useModerationManagement';
 import { useToxicWordsManagement } from '@/features/admin/hooks/moderation/useToxicWordsManagement';
@@ -21,6 +23,14 @@ const ModerationQueuePage = () => {
         limit,
         reason,
         setReason,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        sortBy,
+        setSortBy,
+        clearFilters,
+        stats,
         posts,
         meta,
         selectedPostIds,
@@ -98,18 +108,83 @@ const ModerationQueuePage = () => {
                     Thêm &quot;{selectedText.length > 20 ? selectedText.substring(0, 20) + '...' : selectedText}&quot; vào danh sách thô tục
                 </div>
             )}
-            <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm Duyệt Nội Dung</h1>
-                    <p className="text-gray-600">Quản lý bài viết vi phạm cần phê duyệt</p>
+            <div className="py-6 flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm Duyệt Nội Dung</h1>
+                        <p className="text-gray-600">Quản lý bài viết vi phạm cần phê duyệt</p>
+                    </div>
+                    {stats && (
+                        <div className="flex flex-wrap gap-3">
+                            <div className="bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                                <span className="text-xs text-slate-500 font-bold uppercase">Tổng đang chờ</span>
+                                <span className="text-xl font-black text-slate-800">{stats.total}</span>
+                            </div>
+                            <div className="bg-rose-50 px-4 py-2 rounded-lg border border-rose-100 flex flex-col">
+                                <span className="text-xs text-rose-500 font-bold uppercase">Thô tục / Toxic</span>
+                                <span className="text-xl font-black text-rose-700">{stats.toxic}</span>
+                            </div>
+                            <div className="bg-amber-50 px-4 py-2 rounded-lg border border-amber-100 flex flex-col">
+                                <span className="text-xs text-amber-600 font-bold uppercase">Spoiler</span>
+                                <span className="text-xl font-black text-amber-700">{stats.spoiler}</span>
+                            </div>
+                            <div className="bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 flex flex-col">
+                                <span className="text-xs text-slate-500 font-bold uppercase">Khác</span>
+                                <span className="text-xl font-black text-slate-700">{stats.other}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <div className="flex items-center gap-2 max-w-sm w-full">
-                    <Input
-                        placeholder="Lọc theo lý do (VD: Toxic, Spam, ...)"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        className="bg-white"
-                    />
+
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-500 uppercase">Từ khóa vi phạm</Label>
+                        <Input
+                            placeholder="Lọc theo lý do (VD: Toxic, Spam, ...)"
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="w-full md:w-48 space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-500 uppercase">Từ ngày</Label>
+                        <Input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="w-full md:w-48 space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-500 uppercase">Đến ngày</Label>
+                        <Input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                            className="bg-white"
+                        />
+                    </div>
+                    <div className="w-full md:w-56 space-y-1.5">
+                        <Label className="text-xs font-bold text-slate-500 uppercase">Sắp xếp</Label>
+                        <Select 
+                            value={sortBy} 
+                            onValueChange={(val) => { setSortBy(val); setPage(1); }}
+                        >
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Sắp xếp" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="newest">Mới nhất trước</SelectItem>
+                                <SelectItem value="oldest">Cũ nhất trước</SelectItem>
+                                <SelectItem value="violations">Nhiều vi phạm nhất trước</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-end">
+                        <Button variant="outline" onClick={clearFilters} className="h-10 w-full md:w-auto">
+                            Xóa lọc
+                        </Button>
+                    </div>
                 </div>
             </div>
 

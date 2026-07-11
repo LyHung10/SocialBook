@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { 
     useGetFlaggedPostsQuery, 
+    useGetModerationStatsQuery,
     useApprovePostMutation, 
     useRejectPostMutation,
     useBulkApprovePostsMutation,
@@ -18,10 +19,20 @@ function getModerationErrorMessage(error: unknown, fallback: string) {
 export function useModerationManagement() {
     const [page, setPage] = useState(1);
     const [reason, setReason] = useState<string>('');
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
+    const [sortBy, setSortBy] = useState<string>('newest');
     const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
     const limit = 10;
 
-    const { data, isLoading, isFetching, refetch } = useGetFlaggedPostsQuery({ page, limit, reason: reason || undefined });
+    const { data, isLoading, isFetching, refetch } = useGetFlaggedPostsQuery({ 
+        page, limit, 
+        reason: reason || undefined, 
+        startDate: startDate || undefined, 
+        endDate: endDate || undefined, 
+        sortBy: sortBy || undefined 
+    });
+    const { data: stats } = useGetModerationStatsQuery();
     const { openConfirm } = useModalStore();
     const [approvePost, { isLoading: isApproving }] = useApprovePostMutation();
     const [rejectPost, { isLoading: isRejecting }] = useRejectPostMutation();
@@ -110,6 +121,14 @@ export function useModerationManagement() {
         setSelectedPostIds([]);
     };
 
+    const clearFilters = () => {
+        setReason('');
+        setStartDate('');
+        setEndDate('');
+        setSortBy('newest');
+        setPage(1);
+        setSelectedPostIds([]);
+    };
 
     return {
         page,
@@ -117,6 +136,14 @@ export function useModerationManagement() {
         limit,
         reason,
         setReason: handleReasonChange,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        sortBy,
+        setSortBy,
+        clearFilters,
+        stats,
         posts,
         meta,
         selectedPostIds,
