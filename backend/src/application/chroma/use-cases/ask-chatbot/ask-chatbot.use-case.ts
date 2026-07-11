@@ -32,7 +32,7 @@ export class AskChatbotUseCase {
     private readonly geminiService: IGeminiService,
     private readonly idGenerator: IIdGenerator,
     private readonly bookRepository: IBookRepository,
-  ) { }
+  ) {}
 
   async execute(command: AskChatbotCommand): Promise<AskChatbotResult> {
     const { question } = command;
@@ -56,7 +56,8 @@ export class AskChatbotUseCase {
     if (results.length === 0) {
       return {
         question,
-        answer: 'Xin lỗi, tôi không có đủ thông tin để trả lời câu hỏi này. Bạn hãy thử hỏi về một cuốn sách cụ thể trong thư viện nhé!',
+        answer:
+          'Xin lỗi, tôi không có đủ thông tin để trả lời câu hỏi này. Bạn hãy thử hỏi về một cuốn sách cụ thể trong thư viện nhé!',
         sources: [],
       };
     }

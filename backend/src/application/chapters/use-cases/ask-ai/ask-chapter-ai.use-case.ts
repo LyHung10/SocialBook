@@ -55,7 +55,7 @@ export class AskChapterAIUseCase {
       Tác phẩm: "${String(book.title)}"
       Chương: "${String(chapter.title)}"
 
-      Nội dung chương:
+      Nội dung dưới đây là các đoạn trích liên quan từ chương, không phải toàn bộ chương:
       ${selectedContent}
 
       Câu hỏi của độc giả: "${command.question}"

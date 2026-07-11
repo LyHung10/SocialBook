@@ -13,7 +13,7 @@ export class GeminiService implements IGeminiService, OnModuleInit {
   private readonly logger = new Logger(GeminiService.name);
   private client!: OpenAICompatibleClient;
 
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {}
 
   onModuleInit(): void {
     const apiKey = this.configService.get<string>('env.MODERATION_API_KEY');
@@ -32,7 +32,7 @@ export class GeminiService implements IGeminiService, OnModuleInit {
         this.configService.get<string>('env.MODERATION_MODEL') ??
         'gemini-2.5-flash-lite',
       timeout:
-        this.configService.get<number>('env.MODERATION_TIMEOUT') ?? 15_000,
+        this.configService.get<number>('env.MODERATION_TIMEOUT') ?? 60_000,
     });
 
     this.logger.log(
@@ -62,10 +62,14 @@ export class GeminiService implements IGeminiService, OnModuleInit {
 
   async summarizeChapter(content: string, title?: string): Promise<string> {
     const titlePart = title ? ` có tiêu đề "${title}"` : '';
-    const prompt = `Hãy cung cấp một bản tóm tắt ngắn gọn cho nội dung chương sau đây${titlePart}.
-Tập trung vào các sự kiện chính, sự phát triển của nhân vật và các điểm cốt truyện quan trọng.
-Giữ bản tóm tắt trong 2-3 đoạn văn.
-Hãy trả lời bằng tiếng Việt.
+    const prompt = `Hãy tóm tắt nội dung chương sau đây${titlePart}.
+Trả về tóm tắt có cấu trúc:
+- Bối cảnh: 1 câu
+- Sự kiện chính: 2-3 câu
+- Nhân vật: 1-2 câu
+- Gợi mở tiếp theo: 1 câu
+
+Ngôn ngữ: Tiếng Việt.
 
 Nội dung chương:
 ${content.substring(0, 20_000)}`;

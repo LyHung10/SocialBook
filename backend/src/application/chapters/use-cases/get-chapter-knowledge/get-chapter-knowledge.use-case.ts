@@ -66,6 +66,11 @@ export class GetChapterKnowledgeUseCase {
       - Trả về tối đa 15 thực thể quan trọng nhất.
       - Trả về các mối quan hệ quan trọng giữa các thực thể vừa trích xuất được (ví dụ: 'A là chồng của B', 'A ghét B', 'Sự kiện X diễn ra tại địa điểm Y').
       - ĐẢM BẢO trích xuất được ít nhất 5-10 mối quan hệ nếu có thể.
+      - importance: 1-10, với ý nghĩa:
+        1-3: Xuất hiện thoáng qua, không ảnh hưởng cốt truyện
+        4-6: Có vai trò nhất định, ảnh hưởng bối cảnh/tình tiết phụ
+        7-9: Quan trọng, ảnh hưởng trực tiếp đến cốt truyện chính
+        10:  Trọng tâm của chương, không thể bỏ qua
       - Ngôn ngữ: Tiếng Việt.
 
       Nội dung:

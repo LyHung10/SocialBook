@@ -10,9 +10,9 @@ import { MESSAGES } from '@/constants/messages';
 
 import { useAppAuth } from '@/features/auth/hooks';
 import { useGetBookmarksByBookQuery, useCreateBookmarkMutation, useDeleteBookmarkMutation } from '@/features/bookmarks/api/bookmarkApi';
-import { useGetChapterKnowledgeQuery } from '@/features/chapters/api/chaptersApi';
 import { useChapterComments } from '@/features/chapters/hooks/useChapterComments';
-import { KnowledgeEntity } from '@/features/chapters/types/chapter.interface';
+import { useGetChapterKnowledgeQuery } from '@/features/chapters/api/chaptersApi';
+
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useLazyGetRoomCommentsQuery, useLazyGetRoomReactionsQuery } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { ParagraphAnnotations } from '@/features/reading-room-interactions/components/ParagraphAnnotations';
@@ -25,10 +25,10 @@ import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore'
 import { useCollaborativeSelection } from '@/features/reading-rooms/hooks/useCollaborativeSelection';
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { ReaderAvatars } from './ReaderAvatars';
@@ -82,7 +82,7 @@ export const ChapterContent = memo(function ChapterContent({
     const presences = useReadingRoomStore(useShallow((state) => state.presences));
     const { addHighlight, removeHighlight, addQuote, generateHighlightInsight } = useReadingRoomSocket();
 
-    const { data } = useGetChapterKnowledgeQuery(
+    useGetChapterKnowledgeQuery(
         { bookSlug, chapterId },
         { skip: !bookSlug || !chapterId }
     );
@@ -242,7 +242,6 @@ export const ChapterContent = memo(function ChapterContent({
                                             content={para.content}
                                             highlights={paraHighlights}
                                             userHighlights={paraUserHighlights}
-                                            knowledge={data?.entities || []}
                                             currentUserId={user?.id}
                                             onRemoveHighlight={removeHighlight}
                                             onRemoveUserHighlight={deletePersonalHighlight}
@@ -365,7 +364,6 @@ const ChapterTextRenderer = ({
     content,
     highlights,
     userHighlights,
-    knowledge,
     currentUserId,
     onRemoveHighlight,
     onRemoveUserHighlight,
@@ -374,7 +372,6 @@ const ChapterTextRenderer = ({
     content: string,
     highlights: RoomHighlight[],
     userHighlights?: UserHighlight[],
-    knowledge: KnowledgeEntity[],
     currentUserId?: string,
     onRemoveHighlight?: (highlightId: string) => void,
     onRemoveUserHighlight?: (highlightId: string) => void,
@@ -383,52 +380,9 @@ const ChapterTextRenderer = ({
     // Track which highlight is currently being generated to show loading state
     const [generatingInsightId, setGeneratingInsightId] = useState<string | null>(null);
 
-    // 1. Process Knowledge (Dotted Underline)
-    // Only show vocabulary and reference as underlines to avoid clutter
-    const relevantKnowledge = knowledge.filter(k => ['vocabulary', 'reference', 'concept'].includes(k.type));
-
     let parts: (string | React.ReactNode)[] = [content];
 
-    // Simple replacement strategy
-    relevantKnowledge.forEach(k => {
-        const newParts: (string | React.ReactNode)[] = [];
-        parts.forEach(part => {
-            if (typeof part !== 'string') {
-                newParts.push(part);
-                return;
-            }
-
-            const index = part.toLowerCase().indexOf(k.name.toLowerCase());
-            if (index === -1) {
-                newParts.push(part);
-            } else {
-                newParts.push(part.substring(0, index));
-                newParts.push(
-                    <Tooltip key={`k-${k.name}-${index}`}>
-                        <TooltipTrigger asChild>
-                            <span className="border-b border-dotted border-primary/50 cursor-help hover:text-primary transition-colors">
-                                {part.substring(index, index + k.name.length)}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="p-3 max-w-xs bg-background/95 backdrop-blur-md border border-border shadow-xl rounded-xl">
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-black uppercase text-primary tracking-wider">{k.type}</span>
-                                    <Badge variant="outline" className="text-[8px] h-3.5 px-1 opacity-60">{k.importance}/10</Badge>
-                                </div>
-                                <p className="text-xs font-bold">{k.name}</p>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">{k.description}</p>
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
-                );
-                newParts.push(part.substring(index + k.name.length));
-            }
-        });
-        parts = newParts;
-    });
-
-    // 2. Process Highlights (Background)
+    // 1. Process Highlights (Background)
     highlights.forEach(h => {
         const newParts: (string | React.ReactNode)[] = [];
         parts.forEach(part => {
@@ -513,7 +467,7 @@ const ChapterTextRenderer = ({
         parts = newParts;
     });
 
-    // 3. Process Personal Highlights
+    // 2. Process Personal Highlights
     if (userHighlights && userHighlights.length > 0) {
         userHighlights.forEach(h => {
             const newParts: (string | React.ReactNode)[] = [];
