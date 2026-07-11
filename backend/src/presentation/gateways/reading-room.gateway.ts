@@ -748,6 +748,7 @@ export class ReadingRoomGateway
       chapterSlug: string;
       paragraphId: string;
       reactionType: string;
+      paragraphPreview?: string;
     },
   ) {
     const sd = socket.data as SocketData;
@@ -779,8 +780,10 @@ export class ReadingRoomGateway
             id: reaction.id,
             paragraphId: reaction.paragraphId,
             reactionType: reaction.reactionType,
+            chapterSlug: reaction.chapterSlug,
             userId,
             displayName,
+            paragraphPreview: body.paragraphPreview,
             createdAt: reaction.createdAt,
           });
       }

@@ -13,7 +13,7 @@ export interface GeminiRateLimitConfig {
 const CACHE_KEY = 'config:rate_limit_gemini';
 const FALLBACK: GeminiRateLimitConfig = {
   guestLimit: 2,
-  userLimit: 10,
+  userLimit: 5,
   ttl: 60_000,
   blockDuration: 60_000,
 };

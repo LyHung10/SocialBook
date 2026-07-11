@@ -5,9 +5,28 @@ import Image from 'next/image';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import type { EmotionEvent } from '@/store/useReadingRoomStore';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useReadingRoomNavigation } from '../hooks/useReadingRoomNavigation';
+import { useSearchParams } from 'next/navigation';
+import { useAppAuth } from '@/features/auth/hooks';
+import { useReadingRoomSocket } from '../hooks/useReadingRoomSocket';
+import { toast } from 'sonner';
 
 export const EmotionStream = memo(function EmotionStream() {
   const events = useReadingRoomStore((s) => s.emotionEvents);
+  const room = useReadingRoomStore((s) => s.room);
+  const { user } = useAppAuth();
+  const { changeChapter } = useReadingRoomSocket();
+  const searchParams = useSearchParams();
+  
+  const localChapterSlug = (room?.mode === 'sync' ? room?.currentChapterSlug : searchParams.get('chapter')) || room?.currentChapterSlug || '';
+
+  const { navigateChapter } = useReadingRoomNavigation({
+    roomCode: room?.roomId || '',
+    isEnded: room?.status === 'ended',
+    roomMode: room?.mode,
+    isHost: room?.hostId === user?.id,
+  });
+
   const [activeToasts, setActiveToasts] = useState<EmotionEvent[]>([]);
 
   useEffect(() => {
@@ -37,7 +56,33 @@ export const EmotionStream = memo(function EmotionStream() {
             exit={{ opacity: 0, scale: 0.8, y: -20 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             className="flex items-center gap-2 p-1.5 pr-3 rounded-full bg-background/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-border pointer-events-auto cursor-pointer hover:bg-accent transition-colors"
-            onClick={() => useReadingRoomStore.getState().setScrollTargetParagraphId(event.paragraphId)}
+            onClick={() => {
+              const isCrossChapter = !!(room && event.chapterSlug && event.chapterSlug !== localChapterSlug);
+
+              if (isCrossChapter) {
+                const res = navigateChapter(event.chapterSlug, room!.bookId, changeChapter);
+                if (res?.blocked) {
+                  toast.error('Chế độ Đồng bộ: Chỉ Trưởng phòng mới được đổi chương.');
+                  return;
+                }
+
+                let attempts = 0;
+                const maxAttempts = 50;
+                const check = setInterval(() => {
+                  const el = document.querySelector<HTMLElement>(`[data-para-id="${event.paragraphId}"]`);
+                  if (el) {
+                    clearInterval(check);
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
+                    setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
+                  } else if (++attempts >= maxAttempts) {
+                    clearInterval(check);
+                  }
+                }, 200);
+              } else {
+                useReadingRoomStore.getState().setScrollTargetParagraphId(event.paragraphId);
+              }
+            }}
           >
             <div className="shrink-0 relative">
               {event.avatarUrl ? (
