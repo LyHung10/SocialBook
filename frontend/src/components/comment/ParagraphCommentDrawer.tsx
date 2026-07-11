@@ -25,7 +25,6 @@ interface ParagraphCommentDrawerProps {
     onClose: () => void;
     paragraphId: string | null;
     paragraphContent?: string;
-    chapterId: string;
 }
 
 export default function ParagraphCommentDrawer({
@@ -33,7 +32,6 @@ export default function ParagraphCommentDrawer({
     onClose,
     paragraphId,
     paragraphContent,
-    chapterId,
 }: ParagraphCommentDrawerProps) {
     const [commentText, setCommentText] = useState('');
 

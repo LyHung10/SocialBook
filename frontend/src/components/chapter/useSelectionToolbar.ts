@@ -20,7 +20,6 @@ export interface AiState {
 interface UseSelectionToolbarOptions {
   bookId: string
   chapterId: string
-  chapterSlug: string
   bookSlug: string
   room: { currentChapterSlug: string } | null
   addHighlight: (data: { chapterSlug: string; paragraphId: string; content: string }) => void
@@ -28,7 +27,7 @@ interface UseSelectionToolbarOptions {
 }
 
 export function useSelectionToolbar({
-  bookId, chapterId, chapterSlug, bookSlug,
+  bookId, chapterId, bookSlug,
   room, addHighlight, addQuote,
 }: UseSelectionToolbarOptions) {
   const [selection, setSelection] = useState<Selection | null>(null)

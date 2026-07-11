@@ -51,6 +51,14 @@ export default function ReadingRoomsHub() {
   const { user, isAuthenticated, isLoading: isLoadingAuth } = useAppAuth();
   const router = useRouter();
 
+  const selectedBookData = booksData?.data.find(b => b.id === selectedBook);
+  const hasNoChapters = selectedBookData && (!selectedBookData.stats?.chapterCount || selectedBookData.stats.chapterCount === 0);
+
+  const { data: chaptersData } = useGetChaptersQuery(
+    { bookSlug: selectedBookData?.slug || '' }, 
+    { skip: !selectedBookData?.slug }
+  );
+
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
@@ -69,13 +77,6 @@ export default function ReadingRoomsHub() {
     );
   }
 
-  const selectedBookData = booksData?.data.find(b => b.id === selectedBook);
-  const hasNoChapters = selectedBookData && (!selectedBookData.stats?.chapterCount || selectedBookData.stats.chapterCount === 0);
-
-  const { data: chaptersData } = useGetChaptersQuery(
-    { bookSlug: selectedBookData?.slug || '' }, 
-    { skip: !selectedBookData?.slug }
-  );
   const handleCreate = async () => {
     if (!selectedBook) {
       toast.error('Vui lòng chọn một cuốn sách để đọc chung');
