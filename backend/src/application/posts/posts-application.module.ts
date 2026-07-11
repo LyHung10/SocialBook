@@ -5,6 +5,7 @@ import { CreatePostUseCase } from './use-cases/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
 import { GetFlaggedPostsUseCase } from './use-cases/get-flagged-posts.use-case';
 import { GetPostUseCase } from './use-cases/get-post.use-case';
+import { GetModerationStatsUseCase } from './use-cases/get-moderation-stats.use-case';
 import { GetPostsByUserUseCase } from './use-cases/get-posts-by-user.use-case';
 import { GetPostsUseCase } from './use-cases/get-posts.use-case';
 import { RejectPostUseCase } from './use-cases/reject-post.use-case';
@@ -34,6 +35,7 @@ import { POST_MODERATION_QUEUE } from '@/infrastructure/queues/post-moderation/p
     CreatePostUseCase,
     DeletePostUseCase,
     GetFlaggedPostsUseCase,
+    GetModerationStatsUseCase,
     GetPostUseCase,
     GetPostsByUserUseCase,
     GetPostsUseCase,
@@ -47,6 +49,7 @@ import { POST_MODERATION_QUEUE } from '@/infrastructure/queues/post-moderation/p
     CreatePostUseCase,
     DeletePostUseCase,
     GetFlaggedPostsUseCase,
+    GetModerationStatsUseCase,
     GetPostUseCase,
     GetPostsByUserUseCase,
     GetPostsUseCase,
