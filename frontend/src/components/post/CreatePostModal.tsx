@@ -127,7 +127,6 @@ export default function CreatePostModal() {
                                 }
                               }}
                               placeholder="Chọn sách cho bài viết..."
-                              onlyLibrary
                             />
                           </FormControl>
                           <FormMessage />
