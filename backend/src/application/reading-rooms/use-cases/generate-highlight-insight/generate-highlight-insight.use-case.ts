@@ -8,6 +8,7 @@ import { RoomId } from '@/domain/reading-rooms/value-objects/room-id.vo';
 import { BookId } from '@/domain/books/value-objects/book-id.vo';
 import { GEMINI_TOKENS } from '@/domain/gemini/tokens/gemini.tokens';
 import type { IGeminiService } from '@/domain/gemini/interfaces/gemini.service.interface';
+import { getChapterContext } from '@/application/shared/utils/chapter-context-extractor';
 import { GenerateHighlightInsightCommand } from './generate-highlight-insight.command';
 
 @Injectable()
@@ -54,11 +55,20 @@ export class GenerateHighlightInsightUseCase {
       ),
     ]);
 
+    const bookTitle = book?.title?.getValue() || 'Unknown';
+    const chapterTitle = chapter?.title?.getValue() || room.currentChapterSlug;
+
+    let contextBlock = '';
+    if (chapter?.paragraphs?.length) {
+      const context = getChapterContext(chapter.paragraphs, highlight.content);
+      contextBlock = `\nNgữ cảnh xung quanh đoạn văn:\n${context}\n`;
+    }
+
     const prompt = `
-      Phân tích đoạn văn sau từ cuốn sách "${book?.title?.getValue() || 'Unknown'}" (chương: "${chapter?.title?.getValue() || room.currentChapterSlug}").
+      Phân tích đoạn văn sau từ cuốn sách "${bookTitle}" (chương: "${chapterTitle}").
       Nội dung có thể là một câu nói hay, một ẩn dụ, một sự kiện lịch sử hoặc một khái niệm khó hiểu.
       Hãy giải thích ý nghĩa hoặc cung cấp thêm thông tin thú vị liên quan.
-      
+      ${contextBlock}
       Ngôn ngữ: Tiếng Việt.
       Độ dài: Tối đa 2 câu.
       
