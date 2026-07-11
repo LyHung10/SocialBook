@@ -82,9 +82,9 @@ export function useSelectionToolbar({
     }
   }, [selection, askAI, bookSlug, chapterId])
 
-  const getSelectionPerParagraph = useCallback((): { paraId: string; text: string }[] | null => {
+  const isMultiParagraphSelection = useCallback(() => {
     const sel = window.getSelection()
-    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false
     const range = sel.getRangeAt(0)
     const startPara = range.startContainer instanceof Element
       ? range.startContainer.closest('[data-para-id]')
@@ -92,45 +92,18 @@ export function useSelectionToolbar({
     const endPara = range.endContainer instanceof Element
       ? range.endContainer.closest('[data-para-id]')
       : range.endContainer.parentElement?.closest('[data-para-id]')
-    if (!startPara || !endPara || startPara === endPara) return null
+    return !!startPara && !!endPara && startPara !== endPara
+  }, [])
 
-    const results: { paraId: string; text: string }[] = []
-    let currentEl: Element | null = startPara
-    while (currentEl) {
-      const paraId = currentEl.getAttribute('data-para-id')
-      if (!paraId) { currentEl = currentEl.nextElementSibling; continue }
-      const walker = document.createTreeWalker(currentEl, NodeFilter.SHOW_TEXT)
-      const fragments: string[] = []
-      let node: Node | null
-      while ((node = walker.nextNode())) {
-        const tc = node.textContent || ''
-        if (node === range.startContainer && node === range.endContainer) {
-          fragments.push(tc.substring(range.startOffset, range.endOffset)); break
-        } else if (node === range.startContainer) {
-          fragments.push(tc.substring(range.startOffset))
-        } else if (node === range.endContainer) {
-          fragments.push(tc.substring(0, range.endOffset)); break
-        } else {
-          fragments.push(tc)
-        }
-      }
-      const text = fragments.join('').replace(/\s+/g, ' ').trim()
-      if (text) results.push({ paraId, text })
-      if (currentEl === endPara) break
-      currentEl = currentEl.nextElementSibling
-    }
-    return results.length > 0 ? results : null
+  const rejectMultiParagraph = useCallback(() => {
+    toast.warning('Chỉ hỗ trợ highlight 1 đoạn')
+    setSelection(null)
+    window.getSelection()?.removeAllRanges()
   }, [])
 
   const handleAddHighlight = useCallback(() => {
     if (!selection || !room) return
-    const paras = getSelectionPerParagraph()
-    if (paras) {
-      toast.warning('Phòng đọc chỉ hỗ trợ highlight 1 đoạn')
-      setSelection(null)
-      window.getSelection()?.removeAllRanges()
-      return
-    }
+    if (isMultiParagraphSelection()) { rejectMultiParagraph(); return }
     addHighlight({
       chapterSlug: room.currentChapterSlug,
       paragraphId: selection.paraId,
@@ -138,7 +111,7 @@ export function useSelectionToolbar({
     })
     setSelection(null)
     window.getSelection()?.removeAllRanges()
-  }, [selection, room, addHighlight, getSelectionPerParagraph])
+  }, [selection, room, addHighlight, isMultiParagraphSelection, rejectMultiParagraph])
 
   const handleAddQuote = useCallback(() => {
     if (!selection || !room) return
@@ -150,30 +123,19 @@ export function useSelectionToolbar({
 
   const handleAddPersonalHighlight = useCallback(async () => {
     if (!selection) return
-    const paras = getSelectionPerParagraph()
-    if (!paras) {
-      try {
-        await createPersonalHighlight({
-          bookId, chapterId, paragraphId: selection.paraId,
-          content: selection.text.replace(/\s+/g, ' ').trim(),
-        }).unwrap()
-        toast.success('Đã lưu highlight cá nhân')
-      } catch {
-        toast.error('Không thể lưu highlight cá nhân')
-      }
-    } else {
-      try {
-        for (const p of paras) {
-          await createPersonalHighlight({ bookId, chapterId, paragraphId: p.paraId, content: p.text }).unwrap()
-        }
-        toast.success(`Đã lưu ${paras.length} highlight`)
-      } catch {
-        toast.error('Không thể lưu highlight cá nhân')
-      }
+    if (isMultiParagraphSelection()) { rejectMultiParagraph(); return }
+    try {
+      await createPersonalHighlight({
+        bookId, chapterId, paragraphId: selection.paraId,
+        content: selection.text.replace(/\s+/g, ' ').trim(),
+      }).unwrap()
+      toast.success('Đã lưu highlight cá nhân')
+    } catch {
+      toast.error('Không thể lưu highlight cá nhân')
     }
     setSelection(null)
     window.getSelection()?.removeAllRanges()
-  }, [selection, bookId, chapterId, createPersonalHighlight, getSelectionPerParagraph])
+  }, [selection, bookId, chapterId, createPersonalHighlight, isMultiParagraphSelection, rejectMultiParagraph])
 
   return {
     selection,
