@@ -123,7 +123,7 @@ export default function BooksPage() {
                     {searchQuery ? `Kết quả tìm kiếm cho "${searchQuery}"` : 'Tất cả sách'}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {metaData?.total ? `Hiển thị ${metaData.total} kết quả` : 'Đang tải...'}
+                    {isBooksLoading ? 'Đang tải...' : `Hiển thị ${metaData?.total || 0} kết quả`}
                   </p>
                 </div>
                 
