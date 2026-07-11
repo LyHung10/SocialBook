@@ -125,21 +125,17 @@ export function useSelectionToolbar({
   const handleAddHighlight = useCallback(() => {
     if (!selection || !room) return
     const paras = getSelectionPerParagraph()
-    if (!paras) {
-      addHighlight({
-        chapterSlug: room.currentChapterSlug,
-        paragraphId: selection.paraId,
-        content: selection.text.replace(/\s+/g, ' ').trim(),
-      })
-    } else {
-      for (const p of paras) {
-        addHighlight({
-          chapterSlug: room.currentChapterSlug,
-          paragraphId: p.paraId,
-          content: p.text,
-        })
-      }
+    if (paras) {
+      toast.warning('Phòng đọc chỉ hỗ trợ highlight 1 đoạn')
+      setSelection(null)
+      window.getSelection()?.removeAllRanges()
+      return
     }
+    addHighlight({
+      chapterSlug: room.currentChapterSlug,
+      paragraphId: selection.paraId,
+      content: selection.text.replace(/\s+/g, ' ').trim(),
+    })
     setSelection(null)
     window.getSelection()?.removeAllRanges()
   }, [selection, room, addHighlight, getSelectionPerParagraph])
