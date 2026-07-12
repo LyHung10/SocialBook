@@ -22,7 +22,6 @@ import { useGetHighlightsByChapterQuery, useDeleteHighlightMutation, useUpdateHi
 import { UserHighlight } from '@/features/user-highlights/types/user-highlight.interface';
 import { useReadingSettings } from '@/store/useReadingSettings';
 import { useReadingRoomStore, RoomHighlight } from '@/store/useReadingRoomStore';
-import { useCollaborativeSelection } from '@/features/reading-rooms/hooks/useCollaborativeSelection';
 
 import { Button } from '@/components/ui/button';
 
@@ -32,7 +31,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 
 import ParagraphCommentDrawer from '../comment/ParagraphCommentDrawer';
 import { ReaderAvatars } from './ReaderAvatars';
-import { RemoteSelectionOverlay } from './RemoteSelectionOverlay';
 import { useScrollTracking } from './useScrollTracking';
 import { useSelectionToolbar } from './useSelectionToolbar';
 import { SelectionToolbar } from './SelectionToolbar';
@@ -102,22 +100,13 @@ export const ChapterContent = memo(function ChapterContent({
     const [deletePersonalHighlight] = useDeleteHighlightMutation();
 
     // ── Hooks ──
-    const { paraRefsMap, registerParaRef } = useScrollTracking(paragraphs, onActiveParagraphChange);
+    const { registerParaRef } = useScrollTracking(paragraphs, onActiveParagraphChange);
     const {
         selection, aiAnalysis, setAiAnalysis, menuRef,
         handleMouseUp, handleAIAction,
         handleAddHighlight: handleRoomHighlight,
         handleAddPersonalHighlight, handleAddQuote,
     } = useSelectionToolbar({ bookId, chapterId, bookSlug, room, addHighlight, addQuote });
-
-    // Stable color map — userId → color index, persists across renders
-    const [userColorMap] = useState(() => new Map<string, number>());
-
-    const { handleParagraphMouseUp } = useCollaborativeSelection({
-        roomId: room?.roomId ?? null,
-        currentUserId: user?.id,
-        userColorMap,
-    });
 
     const [openCommentParaId, setOpenCommentParaId] = useState<string | null>(null);
 
@@ -218,10 +207,6 @@ export const ChapterContent = memo(function ChapterContent({
                                 className="group relative flex items-start"
                                 onMouseUp={() => {
                                     handleMouseUp(para.id);
-                                    if (room) {
-                                        const container = paraRefsMap.current.get(para.id);
-                                        if (container) handleParagraphMouseUp(para.id, container);
-                                    }
                                 }}
                             >
                                 <div className="flex-1 min-w-0 relative">
@@ -248,13 +233,6 @@ export const ChapterContent = memo(function ChapterContent({
                                             generateHighlightInsight={generateHighlightInsight}
                                         />
                                     </p>
-
-                                    {/* Remote collaborative highlight overlay */}
-                                    {room && (
-                                        <RemoteSelectionOverlay
-                                            paragraphId={para.id}
-                                        />
-                                    )}
 
                                     {room && (
                                         <div className={`flex items-center gap-3 mt-1 transition-opacity duration-200 ${openCommentParaId === para.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>

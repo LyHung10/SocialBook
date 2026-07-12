@@ -60,16 +60,6 @@ export const PARTY_COLORS = [
   { bg: 'oklch(0.7 0.18 60 / 0.30)',   border: 'oklch(0.7 0.18 60)' },
 ];
 
-export interface RemoteSelection {
-  userId: string;
-  displayName: string;
-  avatarUrl: string;
-  paragraphId: string;
-  startOffset: number;
-  endOffset: number;
-  colorIndex: number;
-}
-
 interface ReadingRoomState {
   room: RoomResponse | null;
   members: { userId: string; role: string }[];
@@ -117,11 +107,6 @@ interface ReadingRoomState {
   emotionEvents: EmotionEvent[];
   addEmotionEvent: (event: Omit<EmotionEvent, 'id' | 'emoji' | 'paragraphPreview'> & { reactionType: string; paragraphPreview?: string }) => void;
 
-  // Collaborative selections (ephemeral, per-user, no DB)
-  remoteSelections: Record<string, RemoteSelection>; // userId → selection
-  setRemoteSelection: (selection: RemoteSelection) => void;
-  clearRemoteSelection: (userId: string) => void;
-
   // Paragraph content registry (for EmotionStream excerpt + scroll)
   paragraphContentMap: Record<string, string>; // paragraphId → plain text
   setParagraphContentMap: (map: Record<string, string>) => void;
@@ -146,7 +131,6 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
   paragraphActivities: {},
   quotes: [],
   emotionEvents: [],
-  remoteSelections: {},
   paragraphContentMap: {},
   scrollTargetParagraphId: null,
 
@@ -216,17 +200,8 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
     paragraphActivities: {},
     quotes: [],
     emotionEvents: [],
-    remoteSelections: {},
     paragraphContentMap: {},
     scrollTargetParagraphId: null,
-  }),
-  setRemoteSelection: (selection) => set((state) => ({
-    remoteSelections: { ...state.remoteSelections, [selection.userId]: selection },
-  })),
-  clearRemoteSelection: (userId) => set((state) => {
-    const next = { ...state.remoteSelections };
-    delete next[userId];
-    return { remoteSelections: next };
   }),
   setParagraphContentMap: (map) => set({ paragraphContentMap: map }),
   setScrollTargetParagraphId: (id) => set({ scrollTargetParagraphId: id }),

@@ -507,55 +507,6 @@ export class ReadingRoomGateway
     return false;
   }
 
-  @SubscribeMessage('party:selection_update')
-  handleSelectionUpdate(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    body: {
-      roomId: string;
-      paragraphId: string;
-      startOffset: number;
-      endOffset: number;
-    },
-  ) {
-    if (this.isRateLimited(socket, 'party:selection_update', 60)) return;
-    const sd = socket.data as SocketData;
-    const { userId, displayName, avatarUrl } = sd;
-    if (!userId || !body.roomId) return;
-
-    socket
-      .to(`room:${body.roomId}`)
-      .emit(ReadingRoomServerEvent.PARTY_REMOTE_SELECTION, {
-        userId,
-        displayName: displayName ?? '',
-        avatarUrl: avatarUrl ?? '',
-        paragraphId: body.paragraphId,
-        startOffset: body.startOffset,
-        endOffset: body.endOffset,
-      });
-  }
-
-  @SubscribeMessage('party:selection_cleared')
-  handleSelectionCleared(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() body: { roomId: string },
-  ) {
-    const sd = socket.data as SocketData;
-    const { userId } = sd;
-    if (!userId || !body.roomId) return;
-
-    socket
-      .to(`room:${body.roomId}`)
-      .emit(ReadingRoomServerEvent.PARTY_REMOTE_SELECTION, {
-        userId,
-        displayName: '',
-        avatarUrl: '',
-        paragraphId: null,
-        startOffset: 0,
-        endOffset: 0,
-      });
-  }
-
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,

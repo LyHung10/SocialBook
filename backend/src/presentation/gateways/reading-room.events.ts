@@ -22,9 +22,6 @@ export enum ReadingRoomServerEvent {
 
   QUOTE_ADDED = 'room:quote_added',
   QUOTE_VOTED = 'room:quote_voted',
-
-  // Collaborative reading (ephemeral, no DB)
-  PARTY_REMOTE_SELECTION = 'party:remote_selection',
 }
 
 export enum ReadingRoomClientEvent {
@@ -46,8 +43,4 @@ export enum ReadingRoomClientEvent {
 
   ADD_QUOTE = 'room:add_quote',
   VOTE_QUOTE = 'room:vote_quote',
-
-  // Collaborative reading (ephemeral, no DB)
-  PARTY_SELECTION_UPDATE = 'party:selection_update',
-  PARTY_SELECTION_CLEARED = 'party:selection_cleared',
 }
