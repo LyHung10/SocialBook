@@ -16,8 +16,8 @@ export default registerAs('env', () => ({
   // JWT
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || '',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || '',
-  JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',
-  JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES || '7d',
+  ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN || '1h',
+  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
 
   // Email (legacy SMTP — kept for reference, no longer used)
   EMAIL_USER: process.env.EMAIL_USER || '',
