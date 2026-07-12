@@ -70,6 +70,11 @@ export function TransferHostModal({
                 <Label
                   key={m.userId}
                   htmlFor={m.userId}
+                  onClick={() => {
+                    if (selectedId === m.userId) {
+                      setSelectedId(null);
+                    }
+                  }}
                   className="flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-accent transition-colors has-[[data-state=checked]]:border-warning has-[[data-state=checked]]:bg-warning/[0.08] dark:has-[[data-state=checked]]:bg-warning/10"
                 >
                   <RadioGroupItem value={m.userId} id={m.userId} />
