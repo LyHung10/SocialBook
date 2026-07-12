@@ -1,9 +1,8 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
-import type { EmotionEvent } from '@/store/useReadingRoomStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReadingRoomNavigation } from '../hooks/useReadingRoomNavigation';
 import { useSearchParams } from 'next/navigation';
@@ -28,21 +27,19 @@ export const EmotionStream = memo(function EmotionStream() {
     isHost: room?.hostId === user?.id,
   });
 
-  const [activeToasts, setActiveToasts] = useState<EmotionEvent[]>([]);
+  const [tick, setTick] = useState(() => Date.now());
 
   useEffect(() => {
-    // When events change, find the new ones that are very recent
-    const now = Date.now();
-    const newActive = events.filter(e => now - e.timestamp < 3500).slice(0, 5); // Max 5 toasts
-    setActiveToasts(newActive);
-
     const interval = setInterval(() => {
-      const currentNow = Date.now();
-      setActiveToasts(prev => prev.filter(e => currentNow - e.timestamp < 3500));
+      setTick(Date.now());
     }, 500);
 
     return () => clearInterval(interval);
-  }, [events]);
+  }, []);
+
+  const activeToasts = useMemo(() => {
+    return events.filter(e => tick - e.timestamp < 3500).slice(0, 5);
+  }, [events, tick]);
 
   return (
     <div className="fixed bottom-6 left-6 sm:bottom-8 sm:left-8 z-[100] pointer-events-none flex flex-col-reverse gap-2 items-start w-64">
