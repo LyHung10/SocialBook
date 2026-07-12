@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react'
 import { useReadingRoomStore } from '@/store/useReadingRoomStore'
+import { scrollToHighlight } from '@/utils/scroll-to-highlight'
 
 interface Paragraph {
   id: string
@@ -53,16 +54,9 @@ export function useScrollTracking(
     if (paragraphs.length > 0 && typeof window !== 'undefined' && window.location.hash) {
       const id = window.location.hash.substring(1)
       if (id.startsWith('paragraph-')) {
-        const element = document.getElementById(id)
-        if (element) {
-          setTimeout(() => {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            element.classList.add('bg-primary/20', 'transition-colors', 'duration-500')
-            setTimeout(() => {
-              element.classList.remove('bg-primary/20')
-            }, 2000)
-          }, 500)
-        }
+        setTimeout(() => {
+          scrollToHighlight(`#${id}`, 0)
+        }, 500)
       }
     }
   }, [paragraphs.length])

@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAppAuth } from '@/features/auth/hooks';
 import { useReadingRoomSocket } from '../hooks/useReadingRoomSocket';
 import { toast } from 'sonner';
+import { pollAndScroll } from '@/utils/scroll-to-highlight';
 
 export const EmotionStream = memo(function EmotionStream() {
   const events = useReadingRoomStore((s) => s.emotionEvents);
@@ -65,19 +66,7 @@ export const EmotionStream = memo(function EmotionStream() {
                   return;
                 }
 
-                let attempts = 0;
-                const maxAttempts = 50;
-                const check = setInterval(() => {
-                  const el = document.querySelector<HTMLElement>(`[data-para-id="${event.paragraphId}"]`);
-                  if (el) {
-                    clearInterval(check);
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    el.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
-                    setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
-                  } else if (++attempts >= maxAttempts) {
-                    clearInterval(check);
-                  }
-                }, 200);
+                pollAndScroll(`[data-para-id="${event.paragraphId}"]`);
               } else {
                 useReadingRoomStore.getState().setScrollTargetParagraphId(event.paragraphId);
               }

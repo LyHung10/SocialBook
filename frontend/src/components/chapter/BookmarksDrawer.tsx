@@ -7,6 +7,7 @@ import { Bookmark as BookmarkIcon, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useRouter, useParams } from 'next/navigation';
+import { scrollToHighlight } from '@/utils/scroll-to-highlight';
 
 interface BookmarksDrawerProps {
   open: boolean;
@@ -74,14 +75,7 @@ export const BookmarksDrawer = ({ open, onOpenChange, bookId, bookSlug: propBook
     }
     
     setTimeout(() => {
-      const element = document.getElementById(`paragraph-${bookmark.paragraphId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
-        setTimeout(() => {
-          element.classList.remove('bg-primary/20');
-        }, 2000);
-      }
+      scrollToHighlight(`#paragraph-${bookmark.paragraphId}`, 0);
     }, 300);
   };
 

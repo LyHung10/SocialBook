@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useDeleteRoomQuoteMutation } from '@/features/reading-room-interactions/api/roomInteractionsApi';
 import { useModalStore } from '@/store/useModalStore';
 import { toast } from 'sonner';
+import { scrollToHighlight, pollAndScroll } from '@/utils/scroll-to-highlight';
 
 interface QuoteBoardProps {
   currentChapterSlug: string;
@@ -47,49 +48,25 @@ export function QuoteBoard({ currentChapterSlug, roomCode }: QuoteBoardProps) {
       // Same chapter: just scroll to it
       const el = document.querySelector(`[data-para-id="${paragraphId}"]`);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Add a temporary highlight class
-        el.classList.add('bg-primary/20', 'transition-colors', 'duration-500', 'rounded-md');
-        setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
+        scrollToHighlight(el);
       } else {
         alert('Không tìm thấy đoạn văn này. Có thể sách đã được cập nhật và đoạn văn bị xóa/thay đổi.');
       }
     } else {
-      // Different chapter
       if (room?.mode === 'sync' && room.hostId !== user?.id) {
-        // Can't jump chapter in sync mode if not host
         alert('Phòng đang ở chế độ đồng bộ, bạn không thể tự chuyển chương.');
         return;
       }
 
-      // Navigate to the chapter
       if (room?.mode === 'sync' && room.hostId === user?.id) {
         changeChapter(chapterSlug);
       }
       router.push(`/reading-rooms/${roomCode}?chapter=${chapterSlug}`);
 
-      // Wait for new chapter to render then scroll (poll for up to 10 seconds)
-      let attempts = 0;
-      const maxAttempts = 50; // 50 * 200ms = 10000ms
-
-      const checkAndScroll = setInterval(() => {
-        const el = document.querySelector(`[data-para-id="${paragraphId}"]`);
-        if (el) {
-          clearInterval(checkAndScroll);
-          // Small delay to ensure layout is stable
-          setTimeout(() => {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('bg-primary/20', 'transition-colors', 'duration-500', 'rounded-md');
-            setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
-          }, 100);
-        } else {
-          attempts++;
-          if (attempts >= maxAttempts) {
-            clearInterval(checkAndScroll);
-            alert('Đã chuyển chương nhưng không tìm thấy đoạn văn. Có thể dữ liệu chương chưa tải kịp hoặc đoạn văn không còn tồn tại.');
-          }
-        }
-      }, 200);
+      pollAndScroll(`[data-para-id="${paragraphId}"]`, {
+        onFailed: () =>
+          alert('Đã chuyển chương nhưng không tìm thấy đoạn văn. Có thể dữ liệu chương chưa tải kịp hoặc đoạn văn không còn tồn tại.'),
+      });
     }
   };
 

@@ -13,6 +13,7 @@ import { Textarea } from '../ui/textarea';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAppAuth } from '@/features/auth/hooks';
+import { scrollToHighlight } from '@/utils/scroll-to-highlight';
 
 interface PersonalHighlightsDrawerProps {
   open: boolean;
@@ -155,12 +156,7 @@ export const PersonalHighlightsDrawer = ({ open, onOpenChange, bookId, bookSlug:
 
     if (h.chapterId === currentChapterId) {
       setTimeout(() => {
-        const el = document.getElementById(`paragraph-${h.paragraphId}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('bg-primary/20', 'transition-colors', 'duration-500');
-          setTimeout(() => el.classList.remove('bg-primary/20'), 2000);
-        }
+        scrollToHighlight(`#paragraph-${h.paragraphId}`, 0);
       }, 300);
     } else {
       router.push(`/books/${propBookSlug}/chapters/${targetSlug}#paragraph-${h.paragraphId}`);
