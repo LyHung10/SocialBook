@@ -164,11 +164,6 @@ export const RecommendedForYouSection = () => {
                         priority={index < 4}
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      {rec.matchScore && (
-                        <div className="absolute top-1 right-1 bg-brand text-brand-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
-                          {rec.matchScore}%
-                        </div>
-                      )}
                     </div>
 
                     {/* Book Info */}
