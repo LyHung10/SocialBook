@@ -154,6 +154,17 @@ export const useReadingRoomStore = create<ReadingRoomState>((set) => ({
     presencesList.forEach(p => {
       presencesMap[p.userId] = { ...p, progress: p.progress ?? state.memberProgress[p.userId] };
     });
+    // Dedup: skip update if presences are identical
+    const prevKeys = Object.keys(state.presences);
+    const nextKeys = Object.keys(presencesMap);
+    if (prevKeys.length === nextKeys.length &&
+        prevKeys.every(k => {
+          const a = state.presences[k];
+          const b = presencesMap[k];
+          return a && b && a.progress === b.progress && a.paragraphId === b.paragraphId && a.currentChapterSlug === b.currentChapterSlug;
+        })) {
+      return state;
+    }
     return { presences: presencesMap };
   }),
   updateAnnotation: (paragraphId, count) => set((state) => ({

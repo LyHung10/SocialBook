@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 
 export const useRoomPresence = (
@@ -10,39 +10,49 @@ export const useRoomPresence = (
   chapterId?: string,
 ) => {
   const room = useReadingRoomStore((state) => state.room);
-  
-  // Track the last time we actually fired the heartbeat to the socket
+
+  // 1. Dùng ref để lưu giá trị mới nhất, tránh tạo lại hàm emit liên tục
+  const readingProgressRef = useRef(readingProgress);
+  const activeParagraphIdRef = useRef(activeParagraphId);
+
+  useEffect(() => {
+    readingProgressRef.current = readingProgress;
+  }, [readingProgress]);
+
+  useEffect(() => {
+    activeParagraphIdRef.current = activeParagraphId;
+  }, [activeParagraphId]);
+
   const lastSentAt = useRef<number>(0);
   const pendingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const THROTTLE_MS = 2100;
+
+  const emit = useCallback(() => {
+    if (!room) return;
+    sendHeartbeat(chapterSlug, activeParagraphIdRef.current || undefined, readingProgressRef.current, bookId, chapterId);
+    lastSentAt.current = Date.now();
+    if (pendingTimeout.current) {
+      clearTimeout(pendingTimeout.current);
+      pendingTimeout.current = null;
+    }
+  }, [room, chapterSlug, sendHeartbeat, bookId, chapterId]);
 
   useEffect(() => {
     if (!room) return;
 
-    const emit = () => {
-      sendHeartbeat(chapterSlug, activeParagraphId || undefined, readingProgress, bookId, chapterId);
-      lastSentAt.current = Date.now();
-      if (pendingTimeout.current) {
-        clearTimeout(pendingTimeout.current);
-        pendingTimeout.current = null;
-      }
-    };
-
-    const now = Date.now();
-    const timeSinceLast = now - lastSentAt.current;
-
-    // Backend rate limit is 30 requests per minute = 1 req / 2000ms.
-    // We use 2100ms to be safe and avoid silent drops.
-    const THROTTLE_MS = 2100;
+    const timeSinceLast = Date.now() - lastSentAt.current;
 
     if (timeSinceLast >= THROTTLE_MS) {
       emit();
     } else {
-      // Schedule the emit for when the throttle window opens to ensure the LAST state is always sent
       if (pendingTimeout.current) clearTimeout(pendingTimeout.current);
       pendingTimeout.current = setTimeout(emit, THROTTLE_MS - timeSinceLast);
     }
+  }, [room, activeParagraphId, readingProgress, emit]);
 
-    // Background interval to keep presence alive when not interacting
+  useEffect(() => {
+    if (!room) return;
+
     const interval = setInterval(() => {
       if (Date.now() - lastSentAt.current >= 9000) {
         emit();
@@ -53,5 +63,5 @@ export const useRoomPresence = (
       clearInterval(interval);
       if (pendingTimeout.current) clearTimeout(pendingTimeout.current);
     };
-  }, [room, chapterSlug, activeParagraphId, readingProgress, sendHeartbeat, bookId, chapterId]);
+  }, [room, emit]);
 };

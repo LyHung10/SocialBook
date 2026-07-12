@@ -21,7 +21,7 @@ export function useReadingProgress() {
         return;
       }
       setReadingProgress(Math.min(100, Math.round((scrolledPast / totalScrollable) * 100)));
-    }, 500);
+    }, 1500);
 
     handleScroll();
     window.addEventListener('scroll', handleScroll);

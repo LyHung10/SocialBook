@@ -70,6 +70,9 @@ export class ReadingRoomGateway
   // Track last saved progress per userId:chapterSlug to avoid spamming DB
   private readonly lastSavedProgress = new Map<string, number>();
 
+  // Batch presence broadcasts — only emit every 3s per room
+  private readonly presenceBroadcastPending = new Map<string, NodeJS.Timeout>();
+
   @WebSocketServer() server: Server;
 
   constructor(
@@ -507,6 +510,26 @@ export class ReadingRoomGateway
     return false;
   }
 
+  private schedulePresenceBroadcast(roomId: string): void {
+    if (this.presenceBroadcastPending.has(roomId)) return;
+    const timer = setTimeout(() => {
+      this.presenceBroadcastPending.delete(roomId);
+      this.presenceService
+        .getRoomPresences(roomId)
+        .then((presences) => {
+          this.server
+            .to(`room:${roomId}`)
+            .emit(ReadingRoomServerEvent.PRESENCE_UPDATE, presences);
+        })
+        .catch((error: unknown) => {
+          this.logger.error(
+            `Failed to broadcast presences for room ${roomId}: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        });
+    }, 3000);
+    this.presenceBroadcastPending.set(roomId, timer);
+  }
+
   @SubscribeMessage('heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() socket: Socket,
@@ -552,12 +575,7 @@ export class ReadingRoomGateway
         }
       }
 
-      const presences = await this.presenceService.getRoomPresences(
-        body.roomId,
-      );
-      this.server
-        .to(`room:${body.roomId}`)
-        .emit(ReadingRoomServerEvent.PRESENCE_UPDATE, presences);
+      this.schedulePresenceBroadcast(body.roomId);
     }
   }
 

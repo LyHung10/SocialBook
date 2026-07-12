@@ -30,12 +30,12 @@ export const EmotionStream = memo(function EmotionStream() {
   const [tick, setTick] = useState(() => Date.now());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTick(Date.now());
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
+    const hasActiveEvents = events.some(e => Date.now() - e.timestamp < 3500);
+    if (!hasActiveEvents) return;
+    
+    const timer = setTimeout(() => setTick(Date.now()), 500);
+    return () => clearTimeout(timer);
+  }, [events, tick]);
 
   const activeToasts = useMemo(() => {
     return events.filter(e => tick - e.timestamp < 3500).slice(0, 5);
