@@ -38,7 +38,7 @@ export function useChatWidget({ askChatbot, isAuthenticated }: UseChatWidgetOpti
         {
             id: 'welcome',
             role: 'ai',
-            content: 'Xin chào! Tôi là trợ lý ảo AI. Bạn cần tìm sách gì hôm nay?',
+            content: 'Xin chào! Tôi là trợ lý sách.\n\nTôi có thể giúp bạn:\n• Hỏi về thông tin sách, tác giả\n• Tìm sách theo chủ đề quan tâm\n\nChỉ hỗ trợ câu hỏi về sách và văn học.',
         },
     ]);
     const [isLoading, setIsLoading] = useState(false);

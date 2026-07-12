@@ -112,7 +112,14 @@ export class AskChatbotUseCase {
       })
       .join('\n\n');
 
-    const prompt = `Bạn là trợ lý đọc sách thông minh của SocialBook. Hãy trả lời câu hỏi dưới đây dựa trên ngữ cảnh từ các cuốn sách và chương được cung cấp.
+    const systemPrompt = `Bạn là trợ lý đọc sách thông minh của SocialBook.
+CHỈ trả lời các câu hỏi liên quan đến sách, văn học, tác giả, nhân vật, tình tiết truyện, review sách.
+Nếu câu hỏi không liên quan đến sách và văn học, hãy trả lời chính xác:
+"Xin lỗi, mình chỉ hỗ trợ câu hỏi về sách và văn học."
+
+Luôn trả lời bằng tiếng Việt, ngắn gọn và chính xác.`;
+
+    const prompt = `Dựa trên ngữ cảnh từ các cuốn sách và chương được cung cấp bên dưới, hãy trả lời câu hỏi của người dùng.
 
 Ngữ cảnh:
 ${contextText}
@@ -120,11 +127,10 @@ ${contextText}
 Câu hỏi: ${question}
 
 Yêu cầu:
-- Trả lời bằng tiếng Việt, ngắn gọn và chính xác
-- Dựa trên ngữ cảnh được cung cấp
+- Trả lời dựa trên ngữ cảnh được cung cấp
 - Nếu ngữ cảnh không đủ thông tin, hãy nói rõ`;
 
-    const answer = await this.geminiService.generateText(prompt);
+    const answer = await this.geminiService.generateText(prompt, systemPrompt);
 
     return { question, answer, sources };
   }

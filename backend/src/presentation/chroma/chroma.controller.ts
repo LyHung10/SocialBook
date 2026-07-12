@@ -3,6 +3,7 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { Public } from '@/common/decorators/custom.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
+import { GeminiThrottleGuard } from '@/common/guards/gemini-throttle.guard';
 
 import { BatchIndexDto } from '@/presentation/chroma/dto/batch-index.dto';
 import { IndexDocumentDto } from '@/presentation/chroma/dto/index-document.dto';
@@ -142,6 +143,7 @@ export class ChromaController {
   }
 
   @Public()
+  @UseGuards(GeminiThrottleGuard)
   @Post('chat/ask')
   async askChatbot(@Body() body: { question: string }) {
     const command = new AskChatbotCommand(body.question);

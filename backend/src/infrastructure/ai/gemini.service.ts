@@ -44,12 +44,12 @@ export class GeminiService implements IGeminiService, OnModuleInit {
   // Core primitives
   // ---------------------------------------------------------------------------
 
-  async generateText(prompt: string): Promise<string> {
-    return this.client.generateText(prompt);
+  async generateText(prompt: string, systemPrompt?: string): Promise<string> {
+    return this.client.generateText(prompt, systemPrompt);
   }
 
-  async generateJSON<T>(prompt: string): Promise<T> {
-    return this.client.generateJSON<T>(prompt);
+  async generateJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
+    return this.client.generateJSON<T>(prompt, systemPrompt);
   }
 
   async embedText(text: string): Promise<number[]> {

@@ -91,19 +91,6 @@ export const ChatWidget = () => {
           {/* Messages */}
           <ScrollArea className="flex-1 px-3 py-3">
             <div className="space-y-2 pr-1">
-              {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-10 text-center space-y-3 px-4">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-                    <Bot className="w-7 h-7 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold">Xin chào! Tôi là trợ lý sách</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Hỏi tôi bất cứ điều gì về sách,<br />tác giả hoặc nội dung bạn đang đọc!
-                    </p>
-                  </div>
-                </div>
-              )}
               {messages.map((msg) => (
                 <div
                   key={msg.id}

@@ -40,13 +40,20 @@ export class OpenAICompatibleClient {
   /**
    * Send a user prompt and return plain text from the model.
    */
-  async generateText(prompt: string): Promise<string> {
+  async generateText(prompt: string, systemPrompt?: string): Promise<string> {
     try {
+      const messages = systemPrompt
+        ? [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt },
+          ]
+        : [{ role: 'user', content: prompt }];
+
       const response = await this.http.post<ChatCompletionResponse>(
         '/chat/completions',
         {
           model: this.model,
-          messages: [{ role: 'user', content: prompt }],
+          messages,
         },
       );
 
@@ -70,15 +77,22 @@ export class OpenAICompatibleClient {
    * Send a prompt and parse the model's response as structured JSON.
    * Uses json_object response_format when supported.
    */
-  async generateJSON<T>(prompt: string): Promise<T> {
+  async generateJSON<T>(prompt: string, systemPrompt?: string): Promise<T> {
     const jsonPrompt = `${prompt}\n\nIMPORTANT: Return ONLY a valid JSON object. No markdown, no code blocks, no extra text.`;
+
+    const messages = systemPrompt
+      ? [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: jsonPrompt },
+        ]
+      : [{ role: 'user', content: jsonPrompt }];
 
     try {
       const response = await this.http.post<ChatCompletionResponse>(
         '/chat/completions',
         {
           model: this.model,
-          messages: [{ role: 'user', content: jsonPrompt }],
+          messages,
           response_format: { type: 'json_object' },
         },
       );

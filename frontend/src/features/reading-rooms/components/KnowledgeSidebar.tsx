@@ -267,7 +267,7 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
                   <div className="space-y-1">
                     <p className="text-xs font-bold">Trợ lý AI đang chờ bạn</p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Hỏi AI về nội dung chương này<br />hoặc ý nghĩa các đoạn trích nhé!
+                      Giải đáp thắc mắc về chương sách bạn đang đọc
                     </p>
                   </div>
                 </div>

@@ -37,9 +37,15 @@ export class AskChapterAIUseCase {
       command.question,
     );
 
+    const systemPrompt = `Bạn là trợ lý đọc sách thông minh của SocialBook.
+CHỈ trả lời các câu hỏi liên quan đến sách, văn học, tác giả, nhân vật, tình tiết truyện.
+Nếu câu hỏi không liên quan đến sách và văn học, hãy trả lời chính xác:
+"Xin lỗi, mình chỉ hỗ trợ câu hỏi về sách và văn học."
+
+Luôn trả lời bằng tiếng Việt.`;
+
     const prompt = `
-      Bạn là một trợ lý đọc sách thông minh.
-      Nhiệm vụ của bạn là giải đáp thắc mắc của độc giả về chương sách hiện tại.
+      Nhiệm vụ: Giải đáp thắc mắc của độc giả về chương sách hiện tại.
 
       Tác phẩm: "${String(book.title)}"
       Chương: "${String(chapter.title)}"
@@ -50,8 +56,7 @@ export class AskChapterAIUseCase {
       Câu hỏi của độc giả: "${command.question}"
 
       Hãy trả lời một cách thông minh, sâu sắc, đúng trọng tâm nội dung chương sách.
-      Ngôn ngữ: Tiếng Việt.
-      
+
       Quy tắc định dạng (BẮT BUỘC):
       - Chia câu trả lời thành 2-3 đoạn văn ngắn, mỗi đoạn 1-2 câu.
       - Ngăn cách các đoạn bằng một dòng trống (\\n\\n).
@@ -59,7 +64,10 @@ export class AskChapterAIUseCase {
       - Không dùng markdown khác (không dùng #, -, *, danh sách).
     `;
 
-    const aiResponse = await this.geminiService.generateText(prompt);
+    const aiResponse = await this.geminiService.generateText(
+      prompt,
+      systemPrompt,
+    );
 
     return {
       answer:
