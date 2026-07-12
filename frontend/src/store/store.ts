@@ -25,6 +25,7 @@ import { readingRoomsApi } from '../features/reading-rooms/api/readingRoomsApi';
 import { roomInteractionsApi } from '../features/reading-room-interactions/api/roomInteractionsApi';
 import { toxicWordsApi } from '../features/admin/api/toxicWordsApi';
 import { rateLimitApi } from '../features/admin/api/rateLimitApi';
+import { apiResetMiddleware } from './api-reset.middleware';
 
 export const store = configureStore({
   reducer: {
@@ -81,6 +82,7 @@ export const store = configureStore({
       .concat(bookmarkApi.middleware)
       .concat(toxicWordsApi.middleware)
       .concat(rateLimitApi.middleware)
+      .concat(apiResetMiddleware)
 });
 
 setupListeners(store.dispatch);

@@ -85,14 +85,12 @@ export const useBookDetail = (bookSlug: string) => {
 
   const defaultShareContent = useMemo(() => {
     if (!book || !book.title) return '';
-    const authorName = book.authorId.name || 'Không rõ';
+    const authorName = book.authorName || book.authorId?.name || 'Không rõ';
     const title = book.title || '';
 
     return `Mọi người ơi, mình vừa tìm thấy cuốn sách này hay cực: "${title}" của tác giả ${authorName}. 📖✨
 
-Bạn nào mê đọc sách thì ghé qua SocialBook xem thử cùng mình nhé!
-
-#SocialBook #${authorName.replace(/\s+/g, '')} #${title.replace(/\s+/g, '')}`;
+Bạn nào mê đọc sách thì ghé qua SocialBook xem thử cùng mình nhé!`;
   }, [book]);
 
   return {

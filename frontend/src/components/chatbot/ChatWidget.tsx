@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 export const ChatWidget = () => {
   const pathname = usePathname();
   const [askChatbot] = useAskChatbotMutation();
-  const { isAuthenticated } = useAppAuth();
+  const { isAuthenticated, user } = useAppAuth();
 
   const isReadingPage = pathname?.includes('/chapters/') || pathname?.includes('/reading-rooms/');
 
@@ -36,6 +36,7 @@ export const ChatWidget = () => {
       return await askChatbot(params).unwrap();
     },
     isAuthenticated,
+    userId: user?.id,
   });
 
   useEffect(() => {

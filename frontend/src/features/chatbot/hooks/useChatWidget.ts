@@ -18,6 +18,32 @@ export interface ChatMessage {
 interface UseChatWidgetOptions {
     askChatbot: (params: { question: string }) => Promise<{ answer: string; sources?: ChatbotSource[] }>;
     isAuthenticated: boolean;
+    userId?: string;
+}
+
+const WELCOME_MESSAGE: ChatMessage = {
+    id: 'welcome',
+    role: 'ai',
+    content: 'Xin chào! Tôi là trợ lý sách.\n\nTôi có thể giúp bạn:\n• Hỏi về thông tin sách, tác giả\n• Tìm sách theo chủ đề quan tâm\n\nChỉ hỗ trợ câu hỏi về sách và văn học.',
+};
+
+const storageKey = (userId?: string) => `chatbot_messages_${userId || 'guest'}`;
+
+function loadMessages(userId?: string): ChatMessage[] {
+    try {
+        const raw = localStorage.getItem(storageKey(userId));
+        if (raw) {
+            const parsed = JSON.parse(raw) as ChatMessage[];
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+    } catch { /* ignore */ }
+    return [WELCOME_MESSAGE];
+}
+
+function saveMessages(userId: string | undefined, messages: ChatMessage[]) {
+    try {
+        localStorage.setItem(storageKey(userId), JSON.stringify(messages));
+    } catch { /* ignore */ }
 }
 
 export interface UseChatWidgetResult {
@@ -31,16 +57,11 @@ export interface UseChatWidgetResult {
     handleSendMessage: () => Promise<void>;
 }
 
-export function useChatWidget({ askChatbot, isAuthenticated }: UseChatWidgetOptions): UseChatWidgetResult {
+export function useChatWidget({ askChatbot, isAuthenticated, userId }: UseChatWidgetOptions): UseChatWidgetResult {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: 'welcome',
-            role: 'ai',
-            content: 'Xin chào! Tôi là trợ lý sách.\n\nTôi có thể giúp bạn:\n• Hỏi về thông tin sách, tác giả\n• Tìm sách theo chủ đề quan tâm\n\nChỉ hỗ trợ câu hỏi về sách và văn học.',
-        },
-    ]);
+    const [messages, setMessages] = useState<ChatMessage[]>(() => loadMessages(userId));
+    const userIdRef = useRef(userId);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +79,18 @@ export function useChatWidget({ askChatbot, isAuthenticated }: UseChatWidgetOpti
             )
             .replace(/^\s*[-•]\s+/gm, '<span class="inline-block mr-1">•</span>');
     }, []);
+
+    useEffect(() => {
+        if (userIdRef.current !== userId) {
+            userIdRef.current = userId;
+            setMessages(loadMessages(userId));
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (messages.length === 1 && messages[0].id === 'welcome') return;
+        saveMessages(userIdRef.current, messages);
+    }, [messages]);
 
     const scrollToBottom = useCallback(() => {
         setTimeout(() => {
