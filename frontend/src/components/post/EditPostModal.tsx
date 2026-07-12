@@ -173,7 +173,7 @@ export default function EditPostModal() {
         if (!post) return;
 
         try {
-            const imageUrlsToSend = existingImages.length === 0 ? undefined : existingImages;
+            const imageUrlsToSend = existingImages.length === 0 ? [''] : existingImages;
 
             const response = await updatePost({
                 id: post.id,
