@@ -134,7 +134,7 @@ export function useReadingRoomData(roomCode: string) {
     openCreatePost({
       title: `Chia sẻ "${chapter.title}"`,
       contentPlaceholder: 'Chia sẻ cảm nghĩ của bạn về chương này...',
-      defaultContent: `📖 Đang đọc cùng nhóm: ${bookData.title} - ${chapter.title}\n\n#${bookData.title.replace(/\s+/g, '')}`,
+      defaultContent: `📖 Đang đọc cùng nhóm: ${bookData.title} - ${chapter.title}`,
       defaultBookId: bookData.id,
       defaultBookTitle: bookData.title,
       onSubmit: async (data) => {

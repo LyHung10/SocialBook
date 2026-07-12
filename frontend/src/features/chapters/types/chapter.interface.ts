@@ -75,13 +75,22 @@ export interface ChapterDetailData {
     id: string;
     title: string;
     slug: string;
-    authorId: {
-      id: string;
-      name: string;
-      bio: string;
-    };
+    authorId: string;
+    authorName?: string;
+    genres: { id: string; name: string; slug: string }[];
     description: string;
+    publishedYear: string;
     coverUrl: string;
+    status: string;
+    tags: string[];
+    likedBy: string[];
+    stats: {
+      views: number;
+      likes: number;
+      chapterCount: number;
+    };
+    createdAt: Date;
+    updatedAt: Date;
   };
   chapter: Chapter;
   navigation: {

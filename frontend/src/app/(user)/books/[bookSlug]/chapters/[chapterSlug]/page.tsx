@@ -147,11 +147,9 @@ export default function ChapterPage({ params }: ChapterPageProps) {
   const defaultShareContent = useMemo(() => {
     if (!book || !chapter) return "";
     return `📖 Đang đọc: ${book.title} - ${chapter.title}
-✍️ Tác giả: ${book.authorId.name}
+✍️ Tác giả: ${book.authorName || "Không rõ"}
 
-${book.description?.slice(0, 100)}...
-
-#${book.title.replace(/\s+/g, "")} #${chapter.title.replace(/\s+/g, "")}`;
+${book.description?.slice(0, 100)}...`;
   }, [book, chapter]);
 
   const handleOpenShareModal = () => {

@@ -243,6 +243,7 @@ export class ChapterRepository
     const bookDocument = (await this.bookModel
       .findOne({ slug: bookSlug })
       .populate('genres')
+      .populate('authorId', 'name')
       .lean()
       .exec()) as unknown as RawBookDocument | null;
     if (!bookDocument) return null;

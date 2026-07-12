@@ -5,6 +5,7 @@ import { Chapter } from '@/features/chapters/types/chapter.interface';
 export interface Book {
   id: string;
   authorId: Author;
+  authorName?: string;
   genres: Genre[];
   title: string;
   slug: string;
