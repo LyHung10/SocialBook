@@ -107,7 +107,7 @@ export default function RecommendedBooks() {
 
             {/* Book list */}
             <div className="max-h-[600px] overflow-y-auto thin-scrollbar">
-                {booksToRender.map(({ book, id: itemId, matchScore, reason }: BookRenderItem) => {
+                {booksToRender.map(({ book, id: itemId, reason }: BookRenderItem) => {
 
                     return (
                         <div

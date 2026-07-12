@@ -71,6 +71,7 @@ export function useReadingRoomData(roomCode: string) {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
   const { isControlsVisible, showSettings, setShowSettings } = useReadingView();
 
   // ── Sub-hooks ──
@@ -196,6 +197,7 @@ export function useReadingRoomData(roomCode: string) {
     // UI toggles
     isControlsVisible, showSettings, setShowSettings,
     showBookmarks, setShowBookmarks, showTOC, setShowTOC,
+    showHighlights, setShowHighlights,
     showMobileSidebar, setShowMobileSidebar, transferHostOpen, setTransferHostOpen,
     // Socket actions
     sendChatMessage, changeMode, endRoom, deleteRoom,

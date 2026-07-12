@@ -15,6 +15,7 @@ import ReadingSettingsPanel from '@/components/chapter/ReadingSettingsPanel';
 import { TransferHostModal } from '@/features/reading-rooms/components/TransferHostModal';
 import { EmotionStream } from '@/features/reading-rooms/components/EmotionStream';
 import { ProgressRadar } from '@/features/reading-rooms/components/ProgressRadar';
+import { RoomHighlightsDrawer } from '@/features/reading-rooms/components/RoomHighlightsDrawer';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { LoadingOverlay } from '@/components/common/LoadingSpinner';
@@ -30,6 +31,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
     contentRef, onActiveParagraphChange,
     isControlsVisible, showSettings, setShowSettings,
     showBookmarks, setShowBookmarks, showTOC, setShowTOC,
+    showHighlights, setShowHighlights,
     showMobileSidebar, setShowMobileSidebar,
     transferHostOpen, setTransferHostOpen,
     sendChatMessage, changeMode, endRoom, deleteRoom,
@@ -147,6 +149,7 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
         showSettings={showSettings} setShowSettings={setShowSettings}
         showTOC={showTOC} setShowTOC={setShowTOC}
         showBookmarks={showBookmarks} setShowBookmarks={setShowBookmarks}
+        showHighlights={showHighlights} setShowHighlights={setShowHighlights}
         showMobileSidebar={showMobileSidebar} setShowMobileSidebar={setShowMobileSidebar}
         user={user} bookData={bookData} chapter={chapter}
         handleChapterNav={handleChapterNav} handleShareRoom={handleShareRoom}
@@ -157,6 +160,11 @@ export default function ReadingRoomPage({ params }: { params: Promise<{ roomCode
         open={showBookmarks} onOpenChange={setShowBookmarks}
         bookId={bookData?.id || ''} bookSlug={bookData?.slug || ''}
         currentChapterSlug={currentChapterSlug}
+      />
+
+      <RoomHighlightsDrawer
+        open={showHighlights} onOpenChange={setShowHighlights}
+        currentChapterSlug={currentChapterSlug} roomCode={roomCode}
       />
 
       <ChapterListDrawer

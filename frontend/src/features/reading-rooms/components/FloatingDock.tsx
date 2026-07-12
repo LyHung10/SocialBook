@@ -1,5 +1,5 @@
 'use client';
-import { ChevronLeftIcon, ChevronRightIcon, Settings, List, Bookmark, Library, Share2, MessageCircleQuestion, Users } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, Settings, List, Bookmark, Library, Share2, MessageCircleQuestion, Users, Highlighter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { MESSAGES } from '@/constants/messages';
@@ -42,6 +42,8 @@ interface FloatingDockProps {
   setShowTOC: (v: boolean) => void;
   showBookmarks: boolean;
   setShowBookmarks: (v: boolean) => void;
+  showHighlights: boolean;
+  setShowHighlights: (v: boolean) => void;
   showMobileSidebar: boolean;
   setShowMobileSidebar: (v: boolean) => void;
   user?: { id: string };
@@ -61,6 +63,8 @@ export function FloatingDock({
   setShowTOC,
   showBookmarks,
   setShowBookmarks,
+  showHighlights,
+  setShowHighlights,
   showMobileSidebar,
   setShowMobileSidebar,
   user,
@@ -120,6 +124,12 @@ export function FloatingDock({
             }
             setShowBookmarks(true);
           }}
+        />
+        <DockButton
+          icon={<Highlighter size={20} />}
+          label="Nổi bật"
+          isActive={showHighlights}
+          onClick={() => setShowHighlights(true)}
         />
         <DockButton
           icon={<Library size={20} />}
