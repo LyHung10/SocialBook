@@ -25,7 +25,7 @@ interface KnowledgeSidebarProps {
 }
 
 export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSidebarProps) => {
-  const { isAuthenticated } = useAppAuth();
+  const { isAuthenticated, user } = useAppAuth();
 
   const { data, isLoading: isQueryLoading, error, refetch } = useGetChapterKnowledgeQuery(
     { bookSlug, chapterId },
@@ -55,7 +55,8 @@ export const KnowledgeSidebar = ({ bookSlug, chapterId, roomId }: KnowledgeSideb
   const [askChapterAI, { isLoading: isSoloPending }] = useAskChapterAIMutation();
 
   const chatMessages = localChatMessages;
-  const storageKey = roomId ? `chat_room_${roomId}_${chapterId}` : `chat_solo_${chapterId}`;
+  const uid = user?.id || 'guest';
+  const storageKey = roomId ? `chat_room_${roomId}_${chapterId}_${uid}` : `chat_solo_${chapterId}_${uid}`;
 
   useEffect(() => {
     const savedMessages = localStorage.getItem(storageKey);
