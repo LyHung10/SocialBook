@@ -142,14 +142,6 @@ export default function RecommendedBooks() {
                                         {book.authorId?.name || 'Unknown Author'}
                                     </div>
 
-                                    {/* CHỈ HIỂN THỊ KHI ĐÃ LOGIN */}
-                                    {matchScore && (
-                                        <span
-                                            className="inline-block mb-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                                            Phù hợp {matchScore}%
-                                        </span>
-                                    )}
-
                                     {reason && (
                                         <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                                             {reason}
