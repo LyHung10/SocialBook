@@ -30,7 +30,7 @@ export class ReactivateRoomUseCase {
       throw new BadRequestDomainException('Phòng chưa kết thúc');
     }
 
-    if (!room.isHost(command.userId)) {
+    if (room.hostId !== command.userId) {
       throw new ForbiddenDomainException(
         'Chỉ chủ phòng mới có thể mở lại phòng',
       );

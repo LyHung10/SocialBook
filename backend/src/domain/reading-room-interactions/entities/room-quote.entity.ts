@@ -79,9 +79,7 @@ export class RoomQuote extends Entity<string> {
   }
 
   get voteCount(): number {
-    const ups = this._props.votes.filter((v) => v.type === 'up').length;
-    const downs = this._props.votes.filter((v) => v.type === 'down').length;
-    return ups - downs;
+    return this._props.votes.filter((v) => v.type === 'up').length;
   }
 
   get roomId(): string {

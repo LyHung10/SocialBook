@@ -3,7 +3,7 @@ import { useReadingRoomStore } from '@/store/useReadingRoomStore';
 import { useReadingRoomSocket } from '@/features/reading-rooms/hooks/useReadingRoomSocket';
 import { useAppAuth } from '@/features/auth/hooks';
 import { cn } from '@/lib/utils';
-import { ChevronUp, ChevronDown, QuoteIcon, ArrowRightCircle, Trash2 } from 'lucide-react';
+import { ChevronUp, QuoteIcon, ArrowRightCircle, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useDeleteRoomQuoteMutation } from '@/features/reading-room-interactions/api/roomInteractionsApi';
@@ -93,7 +93,7 @@ export function QuoteBoard({ currentChapterSlug, roomCode }: QuoteBoardProps) {
       <AnimatePresence initial={false}>
         {sortedQuotes.map((quote, index) => {
           const userVote = quote.votes.find((v) => v.userId === user?.id);
-          const isTopQuote = index === 0 && quote.voteCount > 0; // Highlight the top voted quote
+          const isTopQuote = index === 0 && quote.voteCount > 0;
 
           return (
             <motion.div
@@ -161,21 +161,9 @@ export function QuoteBoard({ currentChapterSlug, roomCode }: QuoteBoardProps) {
                   <span className={cn(
                     'text-[11px] font-black tabular-nums min-w-[2ch] text-center',
                     quote.voteCount > 0 && 'text-success',
-                    quote.voteCount < 0 && 'text-destructive',
-                    quote.voteCount === 0 && 'text-foreground'
                   )}>
-                    {quote.voteCount > 0 ? `+${quote.voteCount}` : quote.voteCount}
+                    {quote.voteCount}
                   </span>
-                  <button
-                    onClick={() => voteQuote(quote.id, 'down')}
-                    className={cn(
-                      'p-1.5 rounded-md hover:bg-destructive/15 transition-colors',
-                      userVote?.type === 'down' && 'text-destructive bg-destructive/10',
-                    )}
-                    title="Phản đối"
-                  >
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
                 </div>
               </div>
             </motion.div>
