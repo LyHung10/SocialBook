@@ -85,13 +85,25 @@ async function bootstrap() {
   const redisHost = configService.get<string>('env.REDIS_HOST', 'localhost');
   const redisPort = configService.get<number>('env.REDIS_PORT', 6379);
   const redisPassword = configService.get<string>('env.REDIS_PASSWORD', '');
+  const protocol =
+    redisHost.includes('upstash') || redisHost.includes('rediss')
+      ? 'rediss'
+      : 'redis';
   const redisUrl = redisPassword
-    ? `redis://:${redisPassword}@${redisHost}:${redisPort}`
-    : `redis://${redisHost}:${redisPort}`;
+    ? `${protocol}://:${redisPassword}@${redisHost}:${redisPort}`
+    : `${protocol}://${redisHost}:${redisPort}`;
 
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis(redisUrl);
-  app.useWebSocketAdapter(redisIoAdapter);
+  try {
+    const redisIoAdapter = new RedisIoAdapter(app);
+    await redisIoAdapter.connectToRedis(redisUrl);
+    app.useWebSocketAdapter(redisIoAdapter);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    const logger = app.get(Logger);
+    logger.warn(
+      `[RedisIoAdapter] Failed to connect Redis at ${redisHost}:${redisPort}: ${message}. Falling back to default WebSocket adapter.`,
+    );
+  }
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());

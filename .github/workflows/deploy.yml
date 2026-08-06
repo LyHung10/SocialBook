@@ -61,21 +61,21 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: daithien/socialbook-be:dev
-          cache-from: type=registry,ref=daithien/socialbook-be:cache
-          cache-to: type=registry,ref=daithien/socialbook-be:cache,mode=max
+          tags: lyhung/socialbook-be:dev
+          cache-from: type=registry,ref=lyhung/socialbook-be:cache
+          cache-to: type=registry,ref=lyhung/socialbook-be:cache,mode=max
 
       - name: Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: daithien/socialbook-fe:dev
+          tags: lyhung/socialbook-fe:dev
           build-args: |
             NEXT_PUBLIC_NEST_API_URL=/api
             NEXT_PUBLIC_SOCKET_URL=/
-          cache-from: type=registry,ref=daithien/socialbook-fe:cache
-          cache-to: type=registry,ref=daithien/socialbook-fe:cache,mode=max
+          cache-from: type=registry,ref=lyhung/socialbook-fe:cache
+          cache-to: type=registry,ref=lyhung/socialbook-fe:cache,mode=max
 
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@v1.0.3
