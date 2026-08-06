@@ -4,6 +4,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 export interface SearchSource {
     title: string;
     bookId?: string;
+    bookSlug?: string;
     chapterTitle?: string;
     type: 'book' | 'chapter';
 }

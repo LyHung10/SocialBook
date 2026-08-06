@@ -1,8 +1,8 @@
-
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import type { IPasswordHasher } from '@/shared/domain/password-hasher.interface';
+import { Inject } from '@nestjs/common';
 import { IUserRepository } from '@/domain/users/repositories/user.repository.interface';
 import { UserId } from '@/domain/users/value-objects/user-id.vo';
 import { Logger } from '@/shared/logger';
@@ -14,6 +14,7 @@ export class TokenService {
     private readonly configService: ConfigService,
     private readonly userRepository: IUserRepository,
     private readonly logger: Logger,
+    @Inject('IPasswordHasher') private readonly passwordHasher: IPasswordHasher,
   ) {
     this.logger.setContext(TokenService.name);
   }
@@ -21,38 +22,41 @@ export class TokenService {
   async signTokens(userId: string, email: string, role: string) {
     const payload = { sub: userId, email, role };
 
-    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    const accessSecret = this.configService.get<string>(
+      'env.JWT_ACCESS_SECRET',
+    );
+    const refreshSecret = this.configService.get<string>(
+      'env.JWT_REFRESH_SECRET',
+    );
 
     if (!accessSecret || !refreshSecret) {
-      this.logger.error('JWT secrets not configured - check JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables');
+      this.logger.error(
+        'JWT secrets not configured - check JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables',
+      );
       throw new InternalServerErrorException('JWT secrets chưa được cấu hình');
     }
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: accessSecret,
-        expiresIn: '15m',
+        expiresIn: this.configService.get<string>('env.ACCESS_TOKEN_EXPIRES_IN', '1h'),
       }),
       this.jwtService.signAsync(payload, {
         secret: refreshSecret,
-        expiresIn: '7d',
+        expiresIn: this.configService.get<string>('env.REFRESH_TOKEN_EXPIRES_IN', '7d'),
       }),
     ]);
 
-    const hashedRt = await bcrypt.hash(refreshToken, 10);
-    
+    const hashedRt = await this.passwordHasher.hash(refreshToken);
+
     // Update hashed RT
     const id = UserId.create(userId);
     const user = await this.userRepository.findById(id);
     if (user) {
-        user.updateHashedRt(hashedRt);
-        await this.userRepository.save(user);
+      user.updateHashedRt(hashedRt);
+      await this.userRepository.save(user);
     }
 
     return { accessToken, refreshToken };
   }
-
-  /* Note: validateRefreshToken logic from AuthService was tightly coupled with Refresh logic. 
-     Moving it to RefreshTokenUseCase or keeping helper here. */
 }
