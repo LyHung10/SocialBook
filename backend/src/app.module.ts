@@ -80,13 +80,22 @@ import { PresentationModule } from './presentation/presentation.module';
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('env.REDIS_HOST', 'localhost'),
-          port: configService.get<number>('env.REDIS_PORT', 6379),
-          password: configService.get<string>('env.REDIS_PASSWORD'),
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const host = configService.get<string>('env.REDIS_HOST', 'localhost');
+        const port = configService.get<number>('env.REDIS_PORT', 6379);
+        const password = configService.get<string>('env.REDIS_PASSWORD');
+        const isSecure = host.includes('upstash') || host.includes('rediss');
+
+        return {
+          connection: {
+            host,
+            port,
+            password,
+            maxRetriesPerRequest: null,
+            ...(isSecure && { tls: { rejectUnauthorized: false } }),
+          },
+        };
+      },
     }),
     ThrottlerModule.forRootAsync({
       inject: [getRedisConnectionToken()],

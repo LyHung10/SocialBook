@@ -112,6 +112,7 @@
     "@types/cheerio": "^0.22.35",
     "@types/cookie-parser": "^1.4.9",
     "@types/date-fns": "^2.5.3",
+    "@types/estree": "^1.0.9",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.0.0",

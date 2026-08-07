@@ -46,7 +46,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     'hnsw:construction_ef': 100,
   };
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   async onModuleInit(): Promise<void> {
     try {
