@@ -9,19 +9,22 @@ export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor?: ReturnType<typeof createAdapter>;
 
   async connectToRedis(redisUrl: string): Promise<void> {
-    const isTls = redisUrl.startsWith('rediss://') || redisUrl.includes('upstash');
+    const isTls =
+      redisUrl.startsWith('rediss://') || redisUrl.includes('upstash');
     const pubClient = createClient({
       url: redisUrl,
       socket: isTls ? { tls: true, rejectUnauthorized: false } : undefined,
     });
 
-    pubClient.on('error', (err) => {
-      this.logger.error(`[RedisIoAdapter PubClient Error] ${err.message}`);
+    pubClient.on('error', (err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`[RedisIoAdapter PubClient Error] ${message}`);
     });
 
     const subClient = pubClient.duplicate();
-    subClient.on('error', (err) => {
-      this.logger.error(`[RedisIoAdapter SubClient Error] ${err.message}`);
+    subClient.on('error', (err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`[RedisIoAdapter SubClient Error] ${message}`);
     });
 
     await Promise.all([pubClient.connect(), subClient.connect()]);
