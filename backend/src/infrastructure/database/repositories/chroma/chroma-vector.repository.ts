@@ -58,7 +58,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         this.logger.error(
           '❌ HUGGINGFACE_API_KEY is missing in configuration!',
         );
-        this.initError = new Error('HUGGINGFACE_API_KEY is missing in configuration');
+        this.initError = new Error(
+          'HUGGINGFACE_API_KEY is missing in configuration',
+        );
         return;
       }
 
@@ -88,11 +90,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       const parsedUrl = new URL(chromaUrl);
       const ssl = parsedUrl.protocol === 'https:';
       const host = parsedUrl.hostname;
-      const port = parsedUrl.port
-        ? Number(parsedUrl.port)
-        : ssl
-          ? 443
-          : 80;
+      const port = parsedUrl.port ? Number(parsedUrl.port) : ssl ? 443 : 80;
 
       this.chromaClient = new ChromaClient({
         ssl,
