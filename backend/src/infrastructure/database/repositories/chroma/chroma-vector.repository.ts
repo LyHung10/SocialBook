@@ -439,14 +439,12 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       this.collection = await this.chromaClient.createCollection({
         name: collectionName,
         metadata: this.DEFAULT_COLLECTION_METADATA,
+        embeddingFunction: null,
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
         collectionName,
-        url: this.configService.get<string>(
-          'env.CHROMA_URL',
-          'http://localhost:8000',
-        ),
+        index: this.chromaClient,
       });
 
       this.isInitialized = true;
