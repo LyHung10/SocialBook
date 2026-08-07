@@ -48,13 +48,17 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
   constructor(private readonly configService: ConfigService) {}
 
+  private initError?: Error;
+
   async onModuleInit(): Promise<void> {
     try {
+      this.initError = undefined;
       const hfKey = this.configService.get<string>('env.HUGGINGFACE_API_KEY');
       if (!hfKey) {
         this.logger.error(
           '❌ HUGGINGFACE_API_KEY is missing in configuration!',
         );
+        this.initError = new Error('HUGGINGFACE_API_KEY is missing in configuration');
         return;
       }
 
@@ -81,21 +85,37 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         `🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`,
       );
 
-      this.chromaClient = new ChromaClient({ path: chromaUrl });
+      const parsedUrl = new URL(chromaUrl);
+      const ssl = parsedUrl.protocol === 'https:';
+      const host = parsedUrl.hostname;
+      const port = parsedUrl.port
+        ? Number(parsedUrl.port)
+        : ssl
+          ? 443
+          : 80;
+
+      this.chromaClient = new ChromaClient({
+        ssl,
+        host,
+        port,
+      });
       this.collection = await this.chromaClient.getOrCreateCollection({
         name: collectionName,
         metadata: this.DEFAULT_COLLECTION_METADATA,
+        embeddingFunction: null,
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
         collectionName,
-        url: chromaUrl,
+        index: this.chromaClient,
       });
 
       this.isInitialized = true;
       this.logger.log('✅ Chroma vector store initialized successfully');
-    } catch (error) {
-      this.logger.error('❌ Failed to initialize Chroma:', error);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error('❌ Failed to initialize Chroma:', err);
+      this.initError = err;
       this.isInitialized = false;
     }
   }
@@ -107,7 +127,9 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       );
       await this.onModuleInit();
       if (!this.isInitialized) {
-        throw new Error('Vector store not initialized');
+        throw new InternalServerErrorException(
+          `Vector store not initialized: ${this.initError?.message || 'Unknown error'}`,
+        );
       }
     }
   }
