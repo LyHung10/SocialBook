@@ -81,27 +81,39 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Use Redis-backed Socket.IO adapter for horizontal scaling
-  const redisHost = configService.get<string>('env.REDIS_HOST', 'localhost');
-  const redisPort = configService.get<number>('env.REDIS_PORT', 6379);
-  const redisPassword = configService.get<string>('env.REDIS_PASSWORD', '');
-  const protocol =
-    redisHost.includes('upstash') || redisHost.includes('rediss')
-      ? 'rediss'
-      : 'redis';
-  const redisUrl = redisPassword
-    ? `${protocol}://:${redisPassword}@${redisHost}:${redisPort}`
-    : `${protocol}://${redisHost}:${redisPort}`;
+  // Use Redis-backed Socket.IO adapter ONLY if USE_REDIS_ADAPTER is explicitly set to 'true'
+  const useRedisAdapter =
+    configService.get<string>('USE_REDIS_ADAPTER') === 'true';
+  const logger = app.get(Logger);
 
-  try {
-    const redisIoAdapter = new RedisIoAdapter(app);
-    await redisIoAdapter.connectToRedis(redisUrl);
-    app.useWebSocketAdapter(redisIoAdapter);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    const logger = app.get(Logger);
-    logger.warn(
-      `[RedisIoAdapter] Failed to connect Redis at ${redisHost}:${redisPort}: ${message}. Falling back to default WebSocket adapter.`,
+  if (useRedisAdapter) {
+    const redisHost = configService.get<string>('env.REDIS_HOST', 'localhost');
+    const redisPort = configService.get<number>('env.REDIS_PORT', 6379);
+    const redisPassword = configService.get<string>('env.REDIS_PASSWORD', '');
+    const protocol =
+      redisHost.includes('upstash') || redisHost.includes('rediss')
+        ? 'rediss'
+        : 'redis';
+    const redisUrl = redisPassword
+      ? `${protocol}://:${redisPassword}@${redisHost}:${redisPort}`
+      : `${protocol}://${redisHost}:${redisPort}`;
+
+    try {
+      const redisIoAdapter = new RedisIoAdapter(app);
+      await redisIoAdapter.connectToRedis(redisUrl);
+      app.useWebSocketAdapter(redisIoAdapter);
+      logger.log(
+        '[WebSocket] Using RedisIoAdapter for multi-instance socket scaling.',
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.warn(
+        `[RedisIoAdapter] Failed to connect Redis at ${redisHost}:${redisPort}: ${message}. Falling back to default WebSocket adapter.`,
+      );
+    }
+  } else {
+    logger.log(
+      '[WebSocket] Using default in-memory adapter (Set USE_REDIS_ADAPTER=true for multi-node deployment).',
     );
   }
 
@@ -112,7 +124,6 @@ async function bootstrap() {
 
   // Start the server
   await app.listen(port, '0.0.0.0');
-  const logger = app.get(Logger);
   logger.log(`Backend running on ${await app.getUrl()}`);
 }
 void bootstrap();

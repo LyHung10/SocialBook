@@ -94,21 +94,32 @@ import { PresentationModule } from './presentation/presentation.module';
             maxRetriesPerRequest: null,
             ...(isSecure && { tls: { rejectUnauthorized: false } }),
           },
+          defaultJobOptions: {
+            removeOnComplete: true,
+            removeOnFail: 100,
+          },
         };
       },
     }),
     ThrottlerModule.forRootAsync({
-      inject: [getRedisConnectionToken()],
-      useFactory: (redis: Redis) => ({
-        throttlers: [
-          {
-            name: 'global',
-            ttl: 60_000,
-            limit: 100,
-          },
-        ],
-        storage: new ThrottlerStorageRedisService(redis),
-      }),
+      imports: [ConfigModule],
+      inject: [ConfigService, getRedisConnectionToken()],
+      useFactory: (configService: ConfigService, redis: Redis) => {
+        const useRedisThrottler =
+          configService.get<string>('USE_REDIS_THROTTLER') === 'true';
+        return {
+          throttlers: [
+            {
+              name: 'global',
+              ttl: 60_000,
+              limit: 100,
+            },
+          ],
+          storage: useRedisThrottler
+            ? new ThrottlerStorageRedisService(redis)
+            : undefined,
+        };
+      },
     }),
     EventEmitterModule.forRoot(),
     CacheModule,

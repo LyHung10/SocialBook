@@ -13,7 +13,10 @@ import type {
 const JOB_NAME = 'import-chapters';
 const QUEUE_NAME = 'chapters-import';
 
-@Processor(QUEUE_NAME)
+@Processor(QUEUE_NAME, {
+  drainDelay: 30,
+  stalledInterval: 60000,
+})
 export class ChaptersImportProcessor extends WorkerHost {
   private readonly logger = new Logger(ChaptersImportProcessor.name);
 

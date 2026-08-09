@@ -39,14 +39,11 @@ export class ReadingRoomPresenceService {
       lastSeen: Date.now(),
     };
 
-    await Promise.all([
-      // Set individual presence with 30s TTL (safer margin than 15s)
-      this.redis.setex(key, 30, JSON.stringify(presenceData)),
-      // Track member in room set
-      this.redis.sadd(setKey, userId),
-      // Set room set TTL for 1 hour to ensure cleanup if heartbeat fails
-      this.redis.expire(setKey, 3600),
-    ]);
+    const pipeline = this.redis.pipeline();
+    pipeline.setex(key, 30, JSON.stringify(presenceData));
+    pipeline.sadd(setKey, userId);
+    pipeline.expire(setKey, 3600);
+    await pipeline.exec();
   }
 
   async getRoomPresences(roomId: string): Promise<PresenceData[]> {

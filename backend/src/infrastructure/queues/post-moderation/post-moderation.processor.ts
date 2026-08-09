@@ -13,7 +13,10 @@ export interface PostModerationJobData {
   content: string;
 }
 
-@Processor(POST_MODERATION_QUEUE)
+@Processor(POST_MODERATION_QUEUE, {
+  drainDelay: 30,
+  stalledInterval: 60000,
+})
 export class PostModerationProcessor extends WorkerHost {
   private readonly logger = new Logger(PostModerationProcessor.name);
 
