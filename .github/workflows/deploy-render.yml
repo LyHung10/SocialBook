@@ -1,0 +1,39 @@
+name: CI/CD Deploy to Render
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    name: Run Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Backend - Install, Lint & Test
+        run: |
+          cd backend
+          npm ci
+          npm run lint
+          npm run test:unit
+          npm run build
+
+  deploy:
+    name: Trigger Render Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
