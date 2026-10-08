@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { ChromaClient, CloudClient, type Where, type Collection } from 'chromadb';
-import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
+import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { Document } from '@langchain/core/documents';
 
 import {
@@ -34,44 +34,31 @@ interface ChromaMetadata {
 export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
   private readonly logger = new Logger(ChromaVectorRepository.name);
   private vectorStore: Chroma;
-  private embeddings: HuggingFaceInferenceEmbeddings;
+  private embeddings: GoogleGenerativeAIEmbeddings;
   private isInitialized = false;
   private chromaClient: ChromaClient;
   private collection: Collection;
   private readonly DEFAULT_SEARCH_LIMIT = 10;
-  private readonly DEFAULT_COLLECTION_METADATA = {
-    'hnsw:space': 'cosine',
-    'hnsw:M': 16, // 1 vector have 16 edge in graph
-    'hnsw:search_ef': 50, // Reduce from 100 for faster search, slight recall trade-off
-    'hnsw:construction_ef': 100,
-  };
 
   constructor(private readonly configService: ConfigService) {}
 
-  private initError?: Error;
-
   async onModuleInit(): Promise<void> {
     try {
-      this.initError = undefined;
-      const hfKey = this.configService.get<string>('env.HUGGINGFACE_API_KEY');
-      if (!hfKey) {
+      const googleApiKey = this.configService.get<string>('env.GOOGLE_API_KEY');
+      if (!googleApiKey) {
         this.logger.error(
-          '❌ HUGGINGFACE_API_KEY is missing in configuration!',
-        );
-        this.initError = new Error(
-          'HUGGINGFACE_API_KEY is missing in configuration',
+          '❌ GOOGLE_API_KEY is missing in configuration!',
         );
         return;
       }
 
       this.logger.log(
-        `🔑 Using HuggingFace API Key: ${hfKey.substring(0, 5)}...${hfKey.substring(hfKey.length - 4)}`,
+        `🔑 Using Google Gemini Embeddings: ${googleApiKey.substring(0, 5)}...`,
       );
 
-      // model cho tiếng Việt
-      this.embeddings = new HuggingFaceInferenceEmbeddings({
-        apiKey: hfKey,
-        model: 'keepitreal/vietnamese-sbert',
+      this.embeddings = new GoogleGenerativeAIEmbeddings({
+        apiKey: googleApiKey,
+        model: 'models/gemini-embedding-001',
       });
 
       const chromaApiKey = this.configService.get<string>('env.CHROMA_API_KEY');
@@ -99,21 +86,17 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         this.logger.log(
           `🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`,
         );
-        const parsedUrl = new URL(chromaUrl);
-        const ssl = parsedUrl.protocol === 'https:';
-        const host = parsedUrl.hostname;
-        const port = parsedUrl.port ? Number(parsedUrl.port) : ssl ? 443 : 80;
-
-        this.chromaClient = new ChromaClient({
-          ssl,
-          host,
-          port,
-        });
+        this.chromaClient = new ChromaClient({ path: chromaUrl });
       }
+
       this.collection = await this.chromaClient.getOrCreateCollection({
         name: collectionName,
-        metadata: this.DEFAULT_COLLECTION_METADATA,
-        embeddingFunction: null,
+        metadata: {
+          'hnsw:space': 'cosine',
+          'hnsw:M': 16, // 1 vector have 16 edge in graph
+          'hnsw:search_ef': 50, // Reduce from 100 for faster search, slight recall trade-off
+          'hnsw:construction_ef': 100,
+        },
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
@@ -123,10 +106,8 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       this.isInitialized = true;
       this.logger.log('✅ Chroma vector store initialized successfully');
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      this.logger.error('❌ Failed to initialize Chroma:', err);
-      this.initError = err;
+    } catch (error) {
+      this.logger.error('❌ Failed to initialize Chroma:', error);
       this.isInitialized = false;
     }
   }
@@ -138,9 +119,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
       );
       await this.onModuleInit();
       if (!this.isInitialized) {
-        throw new InternalServerErrorException(
-          `Vector store not initialized: ${this.initError?.message || 'Unknown error'}`,
-        );
+        throw new Error('Vector store not initialized');
       }
     }
   }
@@ -451,8 +430,12 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
 
       this.collection = await this.chromaClient.createCollection({
         name: collectionName,
-        metadata: this.DEFAULT_COLLECTION_METADATA,
-        embeddingFunction: null,
+        metadata: {
+          'hnsw:space': 'cosine',
+          'hnsw:M': 16,
+          'hnsw:search_ef': 50,
+          'hnsw:construction_ef': 100,
+        },
       });
 
       this.vectorStore = new Chroma(this.embeddings, {
