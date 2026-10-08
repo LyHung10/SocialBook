@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Chroma } from '@langchain/community/vectorstores/chroma';
-import { ChromaClient, type Where, type Collection } from 'chromadb';
+import { ChromaClient, CloudClient, type Where, type Collection } from 'chromadb';
 import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
 import { Document } from '@langchain/core/documents';
 
@@ -74,29 +74,42 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
         model: 'keepitreal/vietnamese-sbert',
       });
 
+      const chromaApiKey = this.configService.get<string>('env.CHROMA_API_KEY');
+      const chromaTenant = this.configService.get<string>('env.CHROMA_TENANT');
+      const chromaDatabase = this.configService.get<string>('env.CHROMA_DATABASE');
       const chromaUrl = this.configService.get<string>(
         'env.CHROMA_URL',
         'http://localhost:8000',
       );
       const collectionName = this.configService.get<string>(
         'env.CHROMA_COLLECTION',
-        'socialbook_vectors_v2',
+        'socialbook_vectors',
       );
 
-      this.logger.log(
-        `🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`,
-      );
+      if (chromaApiKey) {
+        this.logger.log(
+          `🌐 Connecting to Chroma Cloud: Database=${chromaDatabase || 'default_database'}, Collection=${collectionName}`,
+        );
+        this.chromaClient = new CloudClient({
+          apiKey: chromaApiKey,
+          tenant: chromaTenant || undefined,
+          database: chromaDatabase || undefined,
+        });
+      } else {
+        this.logger.log(
+          `🌐 Connecting to Chroma at: ${chromaUrl}, Collection: ${collectionName}`,
+        );
+        const parsedUrl = new URL(chromaUrl);
+        const ssl = parsedUrl.protocol === 'https:';
+        const host = parsedUrl.hostname;
+        const port = parsedUrl.port ? Number(parsedUrl.port) : ssl ? 443 : 80;
 
-      const parsedUrl = new URL(chromaUrl);
-      const ssl = parsedUrl.protocol === 'https:';
-      const host = parsedUrl.hostname;
-      const port = parsedUrl.port ? Number(parsedUrl.port) : ssl ? 443 : 80;
-
-      this.chromaClient = new ChromaClient({
-        ssl,
-        host,
-        port,
-      });
+        this.chromaClient = new ChromaClient({
+          ssl,
+          host,
+          port,
+        });
+      }
       this.collection = await this.chromaClient.getOrCreateCollection({
         name: collectionName,
         metadata: this.DEFAULT_COLLECTION_METADATA,
@@ -422,7 +435,7 @@ export class ChromaVectorRepository implements IVectorRepository, OnModuleInit {
     try {
       const collectionName = this.configService.get<string>(
         'env.CHROMA_COLLECTION',
-        'socialbook_vectors_v2',
+        'socialbook_vectors',
       );
 
       this.logger.log(`🗑️ Permanently deleting collection: ${collectionName}`);

@@ -52,6 +52,9 @@ export default registerAs('env', () => ({
   // Chroma
   CHROMA_URL: process.env.CHROMA_URL || 'http://localhost:8000',
   CHROMA_COLLECTION: process.env.CHROMA_COLLECTION || 'socialbook_vectors',
+  CHROMA_API_KEY: process.env.CHROMA_API_KEY || '',
+  CHROMA_TENANT: process.env.CHROMA_TENANT || '',
+  CHROMA_DATABASE: process.env.CHROMA_DATABASE || '',
 
   // Cache
   CACHE_TTL: parseInt(process.env.CACHE_TTL ?? '', 10) || 900,
